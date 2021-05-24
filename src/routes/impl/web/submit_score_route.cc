@@ -171,12 +171,12 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.hash = score_metadata.at(2);
 
     try {
-        score._300_count = boost::lexical_cast<int32_t>(score_metadata.at(3));
-        score._100_count = boost::lexical_cast<int32_t>(score_metadata.at(4));
-        score._50_count = boost::lexical_cast<int32_t>(score_metadata.at(5));
-        score.gekis_count = boost::lexical_cast<int32_t>(score_metadata.at(6));
-        score.katus_count = boost::lexical_cast<int32_t>(score_metadata.at(7));
-        score.miss_count = boost::lexical_cast<int32_t>(score_metadata.at(8));
+        score.count_300 = boost::lexical_cast<int32_t>(score_metadata.at(3));
+        score.count_100 = boost::lexical_cast<int32_t>(score_metadata.at(4));
+        score.count_50 = boost::lexical_cast<int32_t>(score_metadata.at(5));
+        score.count_gekis = boost::lexical_cast<int32_t>(score_metadata.at(6));
+        score.count_katus = boost::lexical_cast<int32_t>(score_metadata.at(7));
+        score.count_misses = boost::lexical_cast<int32_t>(score_metadata.at(8));
         score.total_score = boost::lexical_cast<int64_t>(score_metadata.at(9));
         score.max_combo = boost::lexical_cast<int32_t>(score_metadata.at(10));
         score.mods = boost::lexical_cast<int32_t>(score_metadata.at(13));
@@ -219,12 +219,13 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.rank = score_metadata.at(12);
     score.fc = utils::strings::to_bool(score_metadata.at(11));
     score.passed = utils::strings::to_bool(score_metadata.at(14));
+    score.isRelax = (score.mods & (uint32_t)utils::mods::relax) > 0;
     score.time = seconds.count();
 
     score.accuracy = scores::helper::calculate_accuracy(
             (utils::play_mode) score.play_mode,
-            score._300_count, score._100_count, score._50_count,
-            score.gekis_count, score.katus_count, score.miss_count
+            score.count_300, score.count_100, score.count_50,
+            score.count_gekis, score.count_katus, score.count_misses
     );
 
     auto db_result = db(select(all_of(score_table)).from(score_table).where(score_table.hash == score.hash).limit(1u));
@@ -264,7 +265,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(beatmap.ranked_status)))
         score.pp = pp::calculate(beatmap, score);
 
-    std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user);
+    std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.isRelax);
     bool overwrite = true;
 
     // User has previous scores on this map, enable overwriting mode
@@ -331,16 +332,17 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             score_table.pp = score.pp,
             score_table.accuracy = score.accuracy,
             score_table.mods = score.mods,
-            score_table.fc = score.fc,
-            score_table.passed = score.passed,
-            score_table._300_count = score._300_count,
-            score_table._100_count = score._100_count,
-            score_table._50_count = score._50_count,
-            score_table.katus_count = score.katus_count,
-            score_table.gekis_count = score.gekis_count,
-            score_table.miss_count = score.miss_count,
+            score_table.full_combo = score.fc,
+            score_table.completed = score.passed,
+            score_table.count_300 = score.count_300,
+            score_table.count_100 = score.count_100,
+            score_table.count_50 = score.count_50,
+            score_table.count_katus = score.count_katus,
+            score_table.count_gekis = score.count_gekis,
+            score_table.count_misses = score.count_misses,
             score_table.play_mode = score.play_mode,
-            score_table.time = score.time
+            score_table.time = score.time,
+            score_table.is_relax = score.isRelax
     ));
 
     if (overwrite)
@@ -352,7 +354,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     replays::save_replay(score, beatmap, game_version, fields.at("replay-bin").body);
 
     if (!scores::helper::is_ranked(score, beatmap)) {
-        user->save_stats();
+        user->save_stats((score.mods & (int32_t)utils::mods::relax) > 0);
         response.end("ok" /*"error: disabled"*/);
         return;
     }
@@ -362,7 +364,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
-    scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user);
+    scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, score.isRelax);
     int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, scores::helper::fetch_all_scores(beatmap.beatmap_md5, 5));
 
     if (top_score.hash == score.hash && !user->hidden) {
@@ -385,13 +387,13 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (overwrite)
         user->stats.ranked_score += score.total_score;
 
-    user->stats.recalculate_pp();
-    user->stats.recalculate_accuracy();
+    user->stats.recalculate_pp(score.isRelax);
+    user->stats.recalculate_accuracy(score.isRelax);
 
-    user->save_stats();
+    user->save_stats((score.mods & (int32_t)utils::mods::relax) > 0);
 
     if (overwrite && !user->hidden)
-        ranking::helper::recalculate_ranks((utils::play_mode) score.play_mode);
+        ranking::helper::recalculate_ranks((utils::play_mode) score.play_mode, score.isRelax);
 
     response.end(display->build());
 }

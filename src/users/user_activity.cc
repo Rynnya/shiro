@@ -34,7 +34,7 @@ void shiro::users::activity::init() {
 
         users::manager::iterate([&db, &user_table](std::shared_ptr<users::user> user) {
             db(update(user_table).set(
-                    user_table.last_seen = user->last_ping.count()
+                    user_table.latest_activity = user->last_ping.count()
             ).where(user_table.id == user->user_id));
         }, true);
 
@@ -42,10 +42,10 @@ void shiro::users::activity::init() {
     });
 }
 
-bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mode) {
+bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mode, bool isRelax) {
     using days = std::chrono::duration<int32_t, std::ratio<86400>>;
 
-    std::optional<scores::score> score = scores::helper::get_latest_score(id, mode);
+    std::optional<scores::score> score = scores::helper::get_latest_score(id, mode, isRelax);
 
     if (!score.has_value())
         return false;

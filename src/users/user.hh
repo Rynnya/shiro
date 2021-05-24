@@ -45,6 +45,7 @@ namespace shiro::users {
         std::string hwid = ""; // SHA256
         std::chrono::seconds last_ping = 0s;
         bool hidden = false; // If the client is hidden, e.g. restricted
+        bool isRelax = false; // If user currently playing with relax or his last score was with relax
 
         std::string client_version = ""; // Full client version string sent on login (b20160403.6)
         int32_t client_build = 20131216; // Fixed client build version (20160403)
@@ -60,8 +61,8 @@ namespace shiro::users {
         explicit user(const std::string &username);
 
         bool init();
-        void update();
-        void save_stats();
+        void update(bool isRelax);
+        void save_stats(bool toRelax);
 
         std::string get_url();
 

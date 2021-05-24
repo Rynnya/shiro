@@ -35,23 +35,31 @@ namespace shiro::beatmaps {
         uint8_t play_mode = (uint8_t) utils::play_mode::standard;
 
         std::string beatmap_md5 = "";
+        std::string artist = "";
+        std::string title = "";
+        std::string difficulty_name = "";
+        std::string creator = "";
+
+        // Used to make header
         std::string song_name = "";
 
+        float cs = 0.0f;
         float ar = 0.0f;
         float od = 0.0f;
-        float size = 0.0f;
-        float drain = 0.0f;
-        float aim = 0.0f;
-        float speed = 0.0f;
+        float hp = 0.0f;
 
-        float diff_std = 0.0f;
-        float diff_taiko = 0.0f;
-        float diff_ctb = 0.0f;
-        float diff_mania = 0.0f;
+        float difficulty_std = 0.0f;
+        float difficulty_taiko = 0.0f;
+        float difficulty_ctb = 0.0f;
+        float difficulty_mania = 0.0f;
 
         int32_t max_combo = 0;
         int32_t hit_length = 0;
         int32_t bpm = 0;
+
+        int32_t count_normal = 0;
+        int32_t count_slider = 0;
+        int32_t count_spinner = 0;
 
         int32_t ranked_status = -2;
         bool ranked_status_freezed = false;

@@ -39,12 +39,12 @@ std::string shiro::scores::score::to_string(std::vector<score> &scores) {
     stream << user->presence.username << "|";
     stream << this->total_score << "|";
     stream << this->max_combo << "|";
-    stream << this->_50_count << "|";
-    stream << this->_100_count << "|";
-    stream << this->_300_count << "|";
-    stream << this->miss_count << "|";
-    stream << this->katus_count << "|";
-    stream << this->gekis_count << "|";
+    stream << this->count_50 << "|";
+    stream << this->count_100 << "|";
+    stream << this->count_300 << "|";
+    stream << this->count_misses << "|";
+    stream << this->count_katus << "|";
+    stream << this->count_gekis << "|";
     stream << (this->fc ? "True" : "False") << "|";
     stream << this->mods << "|";
     stream << this->user_id << "|";

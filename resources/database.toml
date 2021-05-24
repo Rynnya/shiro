@@ -2,10 +2,10 @@
 
 [database]
 address = "127.0.0.1"
-port = 3306
-database = "shiro"
+port = 3307
+database = "himitsu"
 username = "root"
-password = "hunter2"
+password = ""
 
 [redis]
 address = "127.0.0.1"

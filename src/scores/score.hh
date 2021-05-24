@@ -50,13 +50,14 @@ namespace shiro::scores {
 
         bool fc = false;
         bool passed = false;
+        bool isRelax = false;
 
-        int32_t _300_count = 0;
-        int32_t _100_count = 0;
-        int32_t _50_count = 0;
-        int32_t katus_count = 0;
-        int32_t gekis_count = 0;
-        int32_t miss_count = 0;
+        int32_t count_300 = 0;
+        int32_t count_100 = 0;
+        int32_t count_50 = 0;
+        int32_t count_katus = 0;
+        int32_t count_gekis = 0;
+        int32_t count_misses = 0;
 
         uint8_t play_mode = (uint8_t) utils::play_mode::standard;
         int32_t time = 0;

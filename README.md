@@ -13,6 +13,10 @@ more accurate than both of Ripple and Gigamons.
 Unlike other implementations, Shiro does not seperate
 Bancho and the Score Submission server.
 
+Currently WIP, may work but some features are not doing well...
+Also ripple_migration replaced with full_schema
+Can be used with [Aru](https://github.com/Rynnya/Aru)
+
 ## Features
 
 Shiro handles all major aspects of a fully

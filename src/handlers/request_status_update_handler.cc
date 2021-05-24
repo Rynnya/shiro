@@ -19,6 +19,6 @@
 #include "request_status_update_handler.hh"
 
 void shiro::handler::request_status_update::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    user->update();
+    user->update((user->stats.current_mods & (uint32_t)utils::mods::relax) > 0);
     user->refresh_stats();
 }

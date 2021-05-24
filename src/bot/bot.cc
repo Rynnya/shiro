@@ -52,27 +52,39 @@ static std::unordered_map<std::string, std::function<bool(std::deque<std::string
 
 void shiro::bot::init() {
     sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::users user_table {};
+    const tables::users user_table{};
+    const tables::users_stats users_stats_table{};
+    const tables::users_stats_relax users_stats_relax_table {};
 
-    auto result = db(select(all_of(user_table)).from(user_table).where(user_table.id == 1).limit(1u));
+    auto result1 = db(select(all_of(user_table)).from(user_table).where(user_table.id == 1).limit(1u));
 
     // Check if the bot user exists, if not insert it into the db
-    if (result.empty())
+    if (result1.empty())
         db(insert_into(user_table).set(
                 user_table.id = 1,
                 user_table.username = config::bot::name,
                 user_table.safe_username = utils::escaper::make_safe(config::bot::name),
-                user_table.password = digestpp::sha256().absorb(config::database::password).hexdigest(),
+                user_table.password_md5 = digestpp::sha256().absorb(config::database::password).hexdigest(),
                 user_table.salt = config::database::database,
                 user_table.email = config::bot::name + "@shiro.host",
                 user_table.ip = "127.0.0.1",
                 user_table.registration_date = 0,
-                user_table.last_seen = 0,
+                user_table.latest_activity = 0,
                 user_table.followers = 0,
                 user_table.roles = 0xDEADCAFE, // Special role for robots
-                user_table.user_page = "beep boop",
+                user_table.userpage = "beep boop",
                 user_table.country = "JP"
         ));
+
+    auto result2 = db(select(all_of(users_stats_table)).from(users_stats_table).where(users_stats_table.id == 1).limit(1u));
+
+    if (result2.empty())
+        db(insert_into(users_stats_table).set(users_stats_table.id = 1));
+
+    auto result3 = db(select(all_of(users_stats_relax_table)).from(users_stats_relax_table).where(users_stats_relax_table.id == 1).limit(1u));
+
+    if (result3.empty())
+        db(insert_into(users_stats_relax_table).set(users_stats_relax_table.id = 1));
 
     std::shared_ptr<users::user> bot_user = std::make_shared<users::user>(1);
 

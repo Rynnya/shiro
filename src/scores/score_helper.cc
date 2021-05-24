@@ -28,11 +28,13 @@
 #include "../utils/mods.hh"
 #include "score_helper.hh"
 
-shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user) {
+shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool isRelax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == isRelax)
+    );
 
     if (result.empty())
         return score(-1);
@@ -55,15 +57,16 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -87,11 +90,13 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
     return scores.at(0);
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::string beatmap_md5sum, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::string beatmap_md5sum, bool isRelax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.beatmap_md5 == beatmap_md5sum));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+    );
 
     if (result.empty())
         return {};
@@ -122,15 +127,16 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -172,11 +178,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(std::string beatmap_md5sum, uint8_t country, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(std::string beatmap_md5sum, uint8_t country, bool isRelax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.beatmap_md5 == beatmap_md5sum));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+    );
 
     if (result.empty())
         return {};
@@ -207,15 +215,16 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -270,11 +279,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, bool isRelax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.beatmap_md5 == beatmap_md5sum));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+    );
 
     if (result.empty())
         return {};
@@ -305,15 +316,16 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -358,11 +370,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool isRelax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.beatmap_md5 == beatmap_md5sum));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+    );
 
     if (result.empty())
         return {};
@@ -393,15 +407,16 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -459,12 +474,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool isRelax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table).where(
-            score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id
+            score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == isRelax
     ).limit(limit));
 
     if (result.empty())
@@ -496,15 +511,16 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -528,11 +544,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(int32_t user_id, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(int32_t user_id, bool isRelax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.user_id == user_id).limit(limit));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.user_id == user_id and score_table.is_relax == isRelax).limit(limit)
+    );
 
     if (result.empty())
         return {};
@@ -555,15 +573,16 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
+        s.isRelax = isRelax;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -578,11 +597,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro::utils::play_mode mode, int32_t user_id) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro::utils::play_mode mode, int32_t user_id, bool isRelax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.user_id == user_id and score_table.play_mode == (uint8_t) mode));
+    auto result = db(select(all_of(score_table)).from(score_table)
+        .where(score_table.user_id == user_id and score_table.play_mode == (uint8_t) mode and score_table.is_relax == isRelax)
+    );
 
     if (result.empty())
         return {};
@@ -605,15 +626,15 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
         s.accuracy = row.accuracy;
         s.mods = row.mods;
 
-        s.fc = row.fc;
-        s.passed = row.passed;
+        s.fc = row.full_combo;
+        s.passed = row.completed;
 
-        s._300_count = row._300_count;
-        s._100_count = row._100_count;
-        s._50_count = row._50_count;
-        s.katus_count = row.katus_count;
-        s.gekis_count = row.gekis_count;
-        s.miss_count = row.miss_count;
+        s.count_300 = row.count_300;
+        s.count_100 = row.count_100;
+        s.count_50 = row.count_50;
+        s.count_katus = row.count_katus;
+        s.count_gekis = row.count_gekis;
+        s.count_misses = row.count_misses;
 
         s.play_mode = row.play_mode;
         s.time = row.time;
@@ -661,13 +682,14 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
     return scores;
 }
 
-std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int32_t user_id, const utils::play_mode &mode) {
+std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int32_t user_id, const utils::play_mode &mode, bool isRelax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table).where(
             score_table.user_id == user_id and
-            score_table.play_mode == (uint8_t) mode
+            score_table.play_mode == (uint8_t) mode and
+            score_table.is_relax == isRelax
     ).order_by(score_table.time.desc()).limit(1u));
 
     if (result.empty())
@@ -691,15 +713,16 @@ std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int3
     s.accuracy = row.accuracy;
     s.mods = row.mods;
 
-    s.fc = row.fc;
-    s.passed = row.passed;
+    s.fc = row.full_combo;
+    s.passed = row.completed;
+    s.isRelax = isRelax;
 
-    s._300_count = row._300_count;
-    s._100_count = row._100_count;
-    s._50_count = row._50_count;
-    s.katus_count = row.katus_count;
-    s.gekis_count = row.gekis_count;
-    s.miss_count = row.miss_count;
+    s.count_300 = row.count_300;
+    s.count_100 = row.count_100;
+    s.count_50 = row.count_50;
+    s.count_katus = row.count_katus;
+    s.count_gekis = row.count_gekis;
+    s.count_misses = row.count_misses;
 
     s.play_mode = row.play_mode;
     s.time = row.time;
@@ -732,15 +755,15 @@ shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
     s.accuracy = row.accuracy;
     s.mods = row.mods;
 
-    s.fc = row.fc;
-    s.passed = row.passed;
+    s.fc = row.full_combo;
+    s.passed = row.completed;
 
-    s._300_count = row._300_count;
-    s._100_count = row._100_count;
-    s._50_count = row._50_count;
-    s.katus_count = row.katus_count;
-    s.gekis_count = row.gekis_count;
-    s.miss_count = row.miss_count;
+    s.count_300 = row.count_300;
+    s.count_100 = row.count_100;
+    s.count_50 = row.count_50;
+    s.count_katus = row.count_katus;
+    s.count_gekis = row.count_gekis;
+    s.count_misses = row.count_misses;
 
     s.play_mode = row.play_mode;
     s.time = row.time;
@@ -896,23 +919,23 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
         if (score.max_combo < 0)
             return { true, "Negative score value (max combo " + std::to_string(score.max_combo) + " < 0)" };
 
-        if (score._300_count < 0)
-            return { true, "Negative score value (300 count " + std::to_string(score._300_count) + " < 0)" };
+        if (score.count_300 < 0)
+            return { true, "Negative score value (300 count " + std::to_string(score.count_300) + " < 0)" };
 
-        if (score._100_count < 0)
-            return { true, "Negative score value (100 count " + std::to_string(score._100_count) + " < 0)" };
+        if (score.count_100 < 0)
+            return { true, "Negative score value (100 count " + std::to_string(score.count_100) + " < 0)" };
 
-        if (score._50_count < 0)
-            return { true, "Negative score value (50 count " + std::to_string(score._50_count) + " < 0)" };
+        if (score.count_50 < 0)
+            return { true, "Negative score value (50 count " + std::to_string(score.count_50) + " < 0)" };
 
-        if (score.katus_count < 0)
-            return { true, "Negative score value (katus count " + std::to_string(score.katus_count) + " < 0)" };
+        if (score.count_katus < 0)
+            return { true, "Negative score value (katus count " + std::to_string(score.count_katus) + " < 0)" };
 
-        if (score.gekis_count < 0)
-            return { true, "Negative score value (gekis count " + std::to_string(score.gekis_count) + " < 0)" };
+        if (score.count_gekis < 0)
+            return { true, "Negative score value (gekis count " + std::to_string(score.count_gekis) + " < 0)" };
 
-        if (score.miss_count < 0)
-            return { true, "Negative score value (miss count " + std::to_string(score.miss_count) + " < 0)" };
+        if (score.count_misses < 0)
+            return { true, "Negative score value (miss count " + std::to_string(score.count_misses) + " < 0)" };
 
         if (score.mods < 0)
             return { true, "Negative score value (mods " + std::to_string(score.mods) + " < 0)" };

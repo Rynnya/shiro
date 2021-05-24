@@ -27,8 +27,8 @@
 #include "../../../utils/play_mode.hh"
 #include "user_stats.hh"
 
-void shiro::io::layouts::user_stats::recalculate_accuracy() {
-    std::vector<scores::score> scores = scores::helper::fetch_top100_user((utils::play_mode) this->play_mode, this->user_id);
+void shiro::io::layouts::user_stats::recalculate_accuracy(bool isRelax) {
+    std::vector<scores::score> scores = scores::helper::fetch_top100_user((utils::play_mode) this->play_mode, this->user_id, isRelax);
     float accuracy = 0.0f;
 
     for (const scores::score &score : scores) {
@@ -38,12 +38,12 @@ void shiro::io::layouts::user_stats::recalculate_accuracy() {
     this->accuracy = std::clamp(accuracy / scores.size(), 0.0f, 100.0f);
 }
 
-void shiro::io::layouts::user_stats::recalculate_pp() {
+void shiro::io::layouts::user_stats::recalculate_pp(bool isRelax) {
     // Global pp recalculation is currently in progress.
-    if (pp::recalculator::in_progess())
+    if (pp::recalculator::in_progress())
         return;
 
-    std::vector<scores::score> scores = scores::helper::fetch_top100_user((utils::play_mode) this->play_mode, this->user_id);
+    std::vector<scores::score> scores = scores::helper::fetch_top100_user((utils::play_mode) this->play_mode, this->user_id, isRelax);
     float pp = 0; // Here it is a float to keep decimal points, round it when setting final pp value
 
     for (size_t i = 0; i < scores.size(); i++) {

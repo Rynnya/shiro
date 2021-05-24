@@ -30,26 +30,26 @@
 
 namespace shiro::scores::helper {
 
-    score fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<users::user> user);
+    score fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<users::user> user, bool isRelax);
 
-    std::vector<score> fetch_all_scores(std::string beatmap_md5sum, size_t limit = 50);
+    std::vector<score> fetch_all_scores(std::string beatmap_md5sum, bool isRelax, size_t limit = 50);
 
-    std::vector<score> fetch_country_scores(std::string beatmap_md5sum, uint8_t country, size_t limit = 50);
+    std::vector<score> fetch_country_scores(std::string beatmap_md5sum, uint8_t country, bool isRelax, size_t limit = 50);
 
-    std::vector<score> fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, size_t limit = 50);
+    std::vector<score> fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, bool isRelax, size_t limit = 50);
 
-    std::vector<score> fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<users::user> user, size_t limit = 50);
+    std::vector<score> fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<users::user> user, bool isRelax, size_t limit = 50);
 
-    std::vector<score> fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<users::user> user, size_t limit = std::numeric_limits<size_t>::max());
+    std::vector<score> fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<users::user> user, bool isRelax, size_t limit = std::numeric_limits<size_t>::max());
 
     int32_t get_scoreboard_position(const score &s, std::vector<score> scores);
 
-    std::vector<score> fetch_all_user_scores(int32_t user_id, size_t limit = std::numeric_limits<size_t>::max());
+    std::vector<score> fetch_all_user_scores(int32_t user_id, bool isRelax, size_t limit = std::numeric_limits<size_t>::max());
 
     // This method sorts using the pp value instead of score (like all other methods above)
-    std::vector<score> fetch_top100_user(utils::play_mode mode, int32_t user_id);
+    std::vector<score> fetch_top100_user(utils::play_mode mode, int32_t user_id, bool isRelax);
 
-    std::optional<score> get_latest_score(int32_t user_id, const utils::play_mode &mode);
+    std::optional<score> get_latest_score(int32_t user_id, const utils::play_mode &mode, bool isRelax);
 
     score get_score(int32_t id);
 

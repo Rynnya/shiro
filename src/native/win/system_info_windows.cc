@@ -49,23 +49,24 @@ std::string shiro::native::system_info::get_hw_model() {
 }
 
 std::string shiro::native::system_info::get_os_version() {
-    OSVERSIONINFO info;
-    std::memset(&info, 0, sizeof(OSVERSIONINFOEX));
-    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    //OSVERSIONINFO info;
+    //std::memset(&info, 0, sizeof(OSVERSIONINFOEX));
+    //info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-    GetVersionEx(&info);
+    //GetVersionEx(&info);
 
-    return std::to_string(info.dwMajorVersion) + "." + std::to_string(info.dwMinorVersion) + "." + std::to_string(info.dwBuildNumber);
+    return "6.2.9200";
+    //return std::to_string(info.dwMajorVersion) + "." + std::to_string(info.dwMinorVersion) + "." + std::to_string(info.dwBuildNumber);
 }
 
 std::string shiro::native::system_info::get_os_build() {
-    OSVERSIONINFO info;
-    std::memset(&info, 0, sizeof(OSVERSIONINFOEX));
-    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    //OSVERSIONINFO info;
+    //std::memset(&info, 0, sizeof(OSVERSIONINFOEX));
+    //info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-    GetVersionEx(&info);
-
-    return std::to_string(info.dwBuildNumber);
+    //GetVersionEx(&info);
+    return "9200";
+    //return std::to_string(info.dwBuildNumber);
 }
 
 #endif

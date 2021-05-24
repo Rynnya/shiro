@@ -68,7 +68,7 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
 
     // poot are you?
     std::snprintf(hash_buffer, sizeof(hash_buffer), "%ip%io%io%it%ia%sr%ie%sy%so%liu%s%i%s",
-            s._100_count + s._300_count, s._50_count, s.gekis_count, s.katus_count, s.miss_count,
+            s.count_100 + s.count_300, s.count_50, s.count_gekis, s.count_katus, s.count_misses,
             s.beatmap_md5.c_str(), s.max_combo, s.fc ? "True" : "False",
             user->presence.username.c_str(), s.total_score, s.rank.c_str(), s.mods, "True");
 
@@ -86,12 +86,12 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
     buffer.write_string(username);
     buffer.write_string(hash);
 
-    buffer.write<int16_t>(s._300_count);
-    buffer.write<int16_t>(s._100_count);
-    buffer.write<int16_t>(s._50_count);
-    buffer.write<int16_t>(s.gekis_count);
-    buffer.write<int16_t>(s.katus_count);
-    buffer.write<int16_t>(s.miss_count);
+    buffer.write<int16_t>(s.count_300);
+    buffer.write<int16_t>(s.count_100);
+    buffer.write<int16_t>(s.count_50);
+    buffer.write<int16_t>(s.count_gekis);
+    buffer.write<int16_t>(s.count_katus);
+    buffer.write<int16_t>(s.count_misses);
 
     buffer.write<int32_t>(s.total_score);
     buffer.write<int16_t>(s.max_combo);

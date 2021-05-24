@@ -36,20 +36,21 @@ namespace shiro::tables {
         object_struct(ranking, sqlpp::varchar);
         object_struct(score, sqlpp::bigint);
         object_struct(max_combo, sqlpp::integer);
-        object_struct(fc, sqlpp::boolean);
+        object_struct(full_combo, sqlpp::boolean);
         object_struct(mods, sqlpp::integer);
-        object_detailed_struct("300_count", _300_count, sqlpp::integer);
-        object_detailed_struct("100_count", _100_count, sqlpp::integer);
-        object_detailed_struct("50_count", _50_count, sqlpp::integer);
-        object_struct(katus_count, sqlpp::integer);
-        object_struct(gekis_count, sqlpp::integer);
-        object_struct(miss_count, sqlpp::integer);
+        object_struct(count_300, sqlpp::integer);
+        object_struct(count_100, sqlpp::integer);
+        object_struct(count_50, sqlpp::integer);
+        object_struct(count_katus, sqlpp::integer);
+        object_struct(count_gekis, sqlpp::integer);
+        object_struct(count_misses, sqlpp::integer);
         object_struct(time, sqlpp::integer);
         object_struct(play_mode, sqlpp::tinyint);
-        object_struct(passed, sqlpp::boolean);
+        object_struct(completed, sqlpp::boolean);
         object_struct(accuracy, sqlpp::floating_point);
         object_struct(pp, sqlpp::floating_point);
         object_struct(times_watched, sqlpp::integer);
+        object_struct(is_relax, sqlpp::boolean);
     };
 
     database_table(scores,
@@ -60,35 +61,36 @@ namespace shiro::tables {
             scores_objects::ranking,
             scores_objects::score,
             scores_objects::max_combo,
-            scores_objects::fc,
+            scores_objects::full_combo,
             scores_objects::mods,
-            scores_objects::_300_count,
-            scores_objects::_100_count,
-            scores_objects::_50_count,
-            scores_objects::katus_count,
-            scores_objects::gekis_count,
-            scores_objects::miss_count,
+            scores_objects::count_300,
+            scores_objects::count_100,
+            scores_objects::count_50,
+            scores_objects::count_katus,
+            scores_objects::count_gekis,
+            scores_objects::count_misses,
             scores_objects::time,
             scores_objects::play_mode,
-            scores_objects::passed,
+            scores_objects::completed,
             scores_objects::accuracy,
             scores_objects::pp,
-            scores_objects::times_watched
+            scores_objects::times_watched,
+            scores_objects::is_relax
     );
 
     namespace migrations::scores {
 
         inline void create(sqlpp::mysql::connection &db) {
-            db.execute(
-                    "CREATE TABLE IF NOT EXISTS `scores` "
-                    "(id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, "
-                    "beatmap_md5 VARCHAR(35) NOT NULL, hash VARCHAR(35) NOT NULL, user_id INT NOT NULL, ranking VARCHAR(2) NOT NULL, "
-                    "score BIGINT NOT NULL, max_combo INT NOT NULL, fc BOOLEAN NOT NULL, mods INT NOT NULL, "
-                    "300_count INT NOT NULL, 100_count INT NOT NULL, 50_count INT NOT NULL, "
-                    "katus_count INT NOT NULL, gekis_count INT NOT NULL, miss_count INT NOT NULL, "
-                    "time INT NOT NULL, play_mode TINYINT NOT NULL, passed BOOLEAN NOT NULL, "
-                    "accuracy FLOAT NOT NULL, pp FLOAT NOT NULL, times_watched INT NOT NULL DEFAULT 0);"
-            );
+            //db.execute(
+            //        "CREATE TABLE IF NOT EXISTS `scores` "
+            //        "(id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, "
+            //        "beatmap_md5 VARCHAR(35) NOT NULL, hash VARCHAR(35) NOT NULL, user_id INT NOT NULL, ranking VARCHAR(2) NOT NULL, "
+            //        "score BIGINT NOT NULL, max_combo INT NOT NULL, fc BOOLEAN NOT NULL, mods INT NOT NULL, "
+            //        "300_count INT NOT NULL, 100_count INT NOT NULL, 50_count INT NOT NULL, "
+            //        "katus_count INT NOT NULL, gekis_count INT NOT NULL, miss_count INT NOT NULL, "
+            //        "time INT NOT NULL, play_mode TINYINT NOT NULL, passed BOOLEAN NOT NULL, "
+            //        "accuracy FLOAT NOT NULL, pp FLOAT NOT NULL, times_watched INT NOT NULL DEFAULT 0);"
+            //);
         }
 
     }

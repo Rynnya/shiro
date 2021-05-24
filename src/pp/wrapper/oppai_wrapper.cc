@@ -38,10 +38,10 @@ shiro::pp::oppai_wrapper::oppai_wrapper(shiro::beatmaps::beatmap beatmap, shiro:
     ezpp_set_mods(this->ez, score.mods);
     ezpp_set_combo(this->ez, score.max_combo);
 
-    this->ez->n300 = score._300_count;
-    this->ez->n100 = score._100_count;
-    this->ez->n50 = score._50_count;
-    ezpp_set_nmiss(this->ez, score.miss_count);
+    this->ez->n300 = score.count_300;
+    this->ez->n100 = score.count_100;
+    this->ez->n50 = score.count_50;
+    ezpp_set_nmiss(this->ez, score.count_misses);
 
     // Enable auto calc now so the next call to ezpp_set below will calculate the whole beatmap difficulty
     ezpp_set_autocalc(this->ez, true);
