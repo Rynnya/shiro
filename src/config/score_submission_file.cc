@@ -49,6 +49,10 @@ int16_t shiro::config::score_submission::auto_restrict_pp_taiko = 1000;
 int16_t shiro::config::score_submission::auto_restrict_pp_catch = 2000;
 int16_t shiro::config::score_submission::auto_restrict_pp_mania = 3000;
 
+int16_t shiro::config::score_submission::auto_restrict_pp_std_relax = 4000;
+int16_t shiro::config::score_submission::auto_restrict_pp_taiko_relax = 4000;
+int16_t shiro::config::score_submission::auto_restrict_pp_catch_relax = 5000;
+
 bool shiro::config::score_submission::std_ranked = true;
 bool shiro::config::score_submission::taiko_ranked = true;
 bool shiro::config::score_submission::catch_ranked = true;
@@ -117,6 +121,10 @@ void shiro::config::score_submission::parse() {
     auto_restrict_pp_catch = config_file->get_qualified_as<int16_t>("anti_cheat.auto_restrict_pp_catch").value_or(-1);
     auto_restrict_pp_mania = config_file->get_qualified_as<int16_t>("anti_cheat.auto_restrict_pp_mania").value_or(-1);
 
+    auto_restrict_pp_std_relax = config_file->get_qualified_as<int16_t>("anti_cheat.auto_restrict_pp_std_relax").value_or(-1);
+    auto_restrict_pp_taiko_relax = config_file->get_qualified_as<int16_t>("anti_cheat.auto_restrict_pp_taiko_relax").value_or(-1);
+    auto_restrict_pp_catch_relax = config_file->get_qualified_as<int16_t>("anti_cheat.auto_restrict_pp_catch_relax").value_or(-1);
+
     // Ranked *modes*
     std_ranked = config_file->get_qualified_as<bool>("ranked_modes.std").value_or(true);
     taiko_ranked = config_file->get_qualified_as<bool>("ranked_modes.taiko").value_or(true);
@@ -132,7 +140,7 @@ void shiro::config::score_submission::parse() {
     hard_rock_ranked = config_file->get_qualified_as<bool>("ranked_mods.hard_rock").value_or(true);
     sudden_death_ranked = config_file->get_qualified_as<bool>("ranked_mods.sudden_death").value_or(true);
     double_time_ranked = config_file->get_qualified_as<bool>("ranked_mods.double_time").value_or(true);
-    relax_ranked = config_file->get_qualified_as<bool>("ranked_mods.relax").value_or(false);
+    relax_ranked = config_file->get_qualified_as<bool>("ranked_mods.relax").value_or(true);
     half_time_ranked = config_file->get_qualified_as<bool>("ranked_mods.half_time").value_or(true);
     nightcore_ranked = config_file->get_qualified_as<bool>("ranked_mods.nightcore").value_or(true);
     flashlight_ranked = config_file->get_qualified_as<bool>("ranked_mods.flashlight").value_or(true);

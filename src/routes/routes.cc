@@ -79,4 +79,5 @@ void shiro::routes::init_routes() {
 
     // Non osu! routes
     CROW_ROUTE(server, "/api/ci_trigger").methods("POST"_method)(shiro_route(api::ci_trigger::handle));
+    CROW_ROUTE(server, "/api/get_replay").methods("GET"_method)(shiro_route(web::get_replay::handle_full));
 }

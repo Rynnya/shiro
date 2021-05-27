@@ -30,6 +30,11 @@ auto_restrict_pp_taiko = 1000
 auto_restrict_pp_catch = 2000
 auto_restrict_pp_mania = 3000
 
+# Auto restrict user in Relax, set to -1 to disable.
+auto_restrict_pp_std_relax = 4000
+auto_restrict_pp_taiko_relax = 4000
+auto_restrict_pp_catch_relax = 5000
+
 # Ranked game modes
 [ranked_modes]
 std = true

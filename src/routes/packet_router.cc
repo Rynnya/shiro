@@ -20,6 +20,7 @@
 #include "../handlers/multiplayer/lobby/lobby_join_handler.hh"
 #include "../handlers/multiplayer/match/match_complete_handler.hh"
 #include "../handlers/multiplayer/match/match_load_handler.hh"
+#include "../handlers/multiplayer/match/match_player_failed_handler.hh"
 #include "../handlers/multiplayer/match/match_score_update_handler.hh"
 #include "../handlers/multiplayer/match/match_skip_request_handler.hh"
 #include "../handlers/multiplayer/match/match_start_handler.hh"
@@ -138,7 +139,8 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             handler::multiplayer::room::ready::handle_unready(in, out, user);
             break;
         case io::packet_id::in_match_failed:
-            // TODO: Handle failed players (if a whole team fails, the match gets aborted)
+            // TODO: Team SHOULD lose when everyone in party failed
+            handler::multiplayer::match::player_failed::handle(in, out, user);
             break;
         case io::packet_id::in_match_has_beatmap:
             handler::multiplayer::room::beatmap::handle_has_beatmap(in, out, user);
@@ -166,7 +168,9 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             handler::chat::leave::handle(in, out, user);
             break;
         case io::packet_id::in_receive_updates:break;
-        case io::packet_id::in_set_irc_away_message:break;
+        case io::packet_id::in_set_irc_away_message:
+            // TODO
+            break;
         case io::packet_id::in_user_stats_request:
             handler::stats::request_all::handle(in, out, user);
             break;
@@ -183,9 +187,15 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
         case io::packet_id::in_user_presence_request_all:
             handler::presence::request_all::handle(in, out, user);
             break;
-        case io::packet_id::in_user_toggle_block_non_friend_pm:break;
-        case io::packet_id::in_special_join_match_channel:break;
-        case io::packet_id::in_special_leave_match_channel:break;
+        case io::packet_id::in_user_toggle_block_non_friend_pm:
+            // TODO
+            break;
+        case io::packet_id::in_special_join_match_channel:
+            // TODO
+            break;
+        case io::packet_id::in_special_leave_match_channel:
+            // TODO
+            break;
         default:
             LOG_F(WARNING, "Packet %i was sent for incoming packet handling while being outbound.", (uint16_t) packet_id);
             return;

@@ -27,7 +27,7 @@
 
 void shiro::routes::web::get_replay::handle(const crow::request &request, crow::response &response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     char *username = request.url_params.get("u");
     char *md5sum = request.url_params.get("h");
@@ -80,24 +80,7 @@ void shiro::routes::web::get_replay::handle(const crow::request &request, crow::
         return;
     }
 
-    std::string replay = replays::get_replay(s);
-    io::buffer buffer(replay);
-    io::buffer replay_buffer;
-
-    // Extract raw replay
-    buffer.seek(5);
-    buffer.read_string();
-    buffer.read_string();
-    buffer.read_string();
-    buffer.advance(23);
-    buffer.read_string();
-    buffer.advance(8);
-
-    int32_t size = buffer.read<int32_t>();
-
-    for (int32_t i = 0; i < size; i++) {
-        replay_buffer.write<uint8_t>(buffer.read<uint8_t>());
-    }
+    io::buffer buffer(replays::get_replay(s));
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
@@ -106,7 +89,42 @@ void shiro::routes::web::get_replay::handle(const crow::request &request, crow::
             score_table.times_watched += 1
     ).where(score_table.id == s.id));
 
-    response.set_header("Content-Type", "application/zip");
-    response.set_header("Content-Disposition", "attachment; filename=replay.osr");
-    response.end(replay_buffer.serialize());
+    response.set_header("Content-Type", "application/octet-stream");
+    response.set_header("Content-Disposition", "attachment; filename=" + std::to_string(s.id) + ".osr");
+    response.end(buffer.serialize());
+}
+
+void shiro::routes::web::get_replay::handle_full(const crow::request& request, crow::response& response) {
+    response.set_header("Content-Type", "text/plain; charset=UTF-8");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
+
+    char *score_id = request.url_params.get("id");
+
+    if (score_id == nullptr) {
+        response.code = 400;
+        response.end();
+        return;
+    }
+
+    int32_t id = 0;
+
+    try {
+        id = boost::lexical_cast<int32_t>(score_id);
+    }
+    catch (const boost::bad_lexical_cast& ex) {
+        LOG_F(WARNING, "Unable to convert score id %s to int32_t: %s", score_id, ex.what());
+        logging::sentry::exception(ex);
+
+        response.code = 500;
+        response.end();
+        return;
+    }
+
+    scores::score s = scores::helper::get_score(id);
+
+    io::buffer buffer(replays::get_full_replay(s));
+
+    response.set_header("Content-Type", "application/octet-stream");
+    response.set_header("Content-Disposition", "attachment; filename=" + std::to_string(s.id) + ".osr");
+    response.end(buffer.serialize());
 }

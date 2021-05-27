@@ -757,6 +757,7 @@ shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
 
     s.fc = row.full_combo;
     s.passed = row.completed;
+    s.isRelax = row.is_relax;
 
     s.count_300 = row.count_300;
     s.count_100 = row.count_100;
@@ -996,7 +997,36 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
         return { true, reason };
     }
 
-    switch ((utils::play_mode) score.play_mode) {
+    if (score.isRelax)
+    {
+        switch ((utils::play_mode)score.play_mode) {
+        case utils::play_mode::standard:
+            if (config::score_submission::auto_restrict_pp_std_relax > -1 && score.pp > config::score_submission::auto_restrict_pp_std_relax) {
+                std::string reason = "High pp gain (osu!std - Relax, " + std::to_string(score.pp) + "pp > " + std::to_string(config::score_submission::auto_restrict_pp_std) + "pp)";
+                return { true, reason };
+            }
+            break;
+        case utils::play_mode::taiko:
+            if (config::score_submission::auto_restrict_pp_taiko_relax > -1 && score.pp > config::score_submission::auto_restrict_pp_taiko_relax) {
+                std::string reason = "High pp gain (osu!taiko - Relax, " + std::to_string(score.pp) + "pp > " + std::to_string(config::score_submission::auto_restrict_pp_taiko) + "pp)";
+                return { true, reason };
+            }
+            break;
+        case utils::play_mode::fruits:
+            if (config::score_submission::auto_restrict_pp_catch > -1 && score.pp > config::score_submission::auto_restrict_pp_catch_relax) {
+                std::string reason = "High pp gain (osu!catch - Relax, " + std::to_string(score.pp) + "pp > " + std::to_string(config::score_submission::auto_restrict_pp_catch) + "pp)";
+                return { true, reason };
+            }
+            break;
+        case utils::play_mode::mania:
+            std::string reason = "Impossible mode and mod combination (osu!mania + Relax)";
+            return { true, reason };
+            break;
+        }
+    }
+    else
+    {
+        switch ((utils::play_mode)score.play_mode) {
         case utils::play_mode::standard:
             if (config::score_submission::auto_restrict_pp_std > -1 && score.pp > config::score_submission::auto_restrict_pp_std) {
                 std::string reason = "High pp gain (osu!std, " + std::to_string(score.pp) + "pp > " + std::to_string(config::score_submission::auto_restrict_pp_std) + "pp)";
@@ -1021,6 +1051,7 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
                 return { true, reason };
             }
             break;
+        }
     }
 
     return { false, "" };

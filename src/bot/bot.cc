@@ -24,6 +24,7 @@
 #include "../commands/public/help_command.hh"
 #include "../commands/public/localclear_command.hh"
 #include "../commands/public/roll_command.hh"
+#include "../commands/public/switch_command.hh"
 #include "../commands/staff/announce_command.hh"
 #include "../commands/staff/ban_command.hh"
 #include "../commands/staff/clear_command.hh"
@@ -124,12 +125,14 @@ void shiro::bot::init() {
 void shiro::bot::init_commands() {
     commands_map.insert(std::make_pair("announce", commands::announce));
     commands_map.insert(std::make_pair("ban", commands::ban));
+    commands_map.insert(std::make_pair("classic", commands::classic));
     commands_map.insert(std::make_pair("clear", commands::clear));
     commands_map.insert(std::make_pair("clients", commands::clients));
     commands_map.insert(std::make_pair("help", commands::help));
     commands_map.insert(std::make_pair("kick", commands::kick));
     commands_map.insert(std::make_pair("localclear", commands::localclear));
     commands_map.insert(std::make_pair("recalculate", commands::recalculate));
+    commands_map.insert(std::make_pair("relax", commands::relax));
     commands_map.insert(std::make_pair("restart", commands::restart));
     commands_map.insert(std::make_pair("restrict", commands::restrict));
     commands_map.insert(std::make_pair("roll", commands::roll));

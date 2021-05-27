@@ -42,6 +42,10 @@ namespace shiro::config::score_submission {
     extern int16_t auto_restrict_pp_catch;
     extern int16_t auto_restrict_pp_mania;
 
+    extern int16_t auto_restrict_pp_std_relax;
+    extern int16_t auto_restrict_pp_taiko_relax;
+    extern int16_t auto_restrict_pp_catch_relax;
+
     extern bool std_ranked;
     extern bool taiko_ranked;
     extern bool catch_ranked;

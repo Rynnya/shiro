@@ -127,6 +127,9 @@ bool shiro::users::user::init() {
 void shiro::users::user::update(bool isRelax) {
     sqlpp::mysql::connection db(db_connection->get_config());
 
+    const tables::users user_table {};
+    db(sqlpp::update(user_table).set(user_table.is_relax = isRelax).where(user_table.id == this->user_id));
+
     if (isRelax)
     {
         const tables::users_stats_relax user_stats_table {};
@@ -168,6 +171,7 @@ void shiro::users::user::update(bool isRelax) {
             this->stats.accuracy = row.avg_accuracy_ctb;
         }
 
+        this->isRelax = true;
         return;
     }
 
@@ -219,6 +223,8 @@ void shiro::users::user::update(bool isRelax) {
         this->stats.max_combo = row.max_combo_mania;
         this->stats.accuracy = row.avg_accuracy_mania;
     }
+
+    this->isRelax = false;
 }
 
 void shiro::users::user::save_stats(bool toRelax) {

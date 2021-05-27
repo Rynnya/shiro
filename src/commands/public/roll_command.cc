@@ -26,15 +26,18 @@ static std::random_device random_device;
 static std::mt19937 engine(random_device());
 
 bool shiro::commands::roll(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
-    uint32_t max = 100;
+    int32_t max = 100;
 
     if (!args.empty()) {
         try {
-            max = boost::lexical_cast<uint32_t>(args.at(0));
+            max = boost::lexical_cast<int32_t>(args.at(0));
         } catch (const boost::bad_lexical_cast&) {
             // User wrote some non-sense, let's ignore and roll with default 100
         }
     }
+
+    if (max < 0)
+        max = 1;
 
     std::uniform_int_distribution<> distribution(0, max);
     int roll = distribution(engine);

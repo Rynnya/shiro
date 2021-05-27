@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,26 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SHIRO_REPLAY_MANAGER_HH
-#define SHIRO_REPLAY_MANAGER_HH
+#ifndef SHIRO_SWITCH_COMMAND_HH
+#define SHIRO_SWITCH_COMMAND_HH
 
+#include <deque>
 #include <string>
 
-#include "../beatmaps/beatmap.hh"
-#include "../scores/score.hh"
+#include "../../users/user.hh"
 
-namespace shiro::replays {
+namespace shiro::commands {
 
-    void init();
+    bool relax(std::deque<std::string>& args, std::shared_ptr<users::user> user, std::string channel);
 
-    void save_replay(const scores::score &s, const beatmaps::beatmap &beatmap, std::string replay);
-
-    std::string get_replay(const scores::score &s);
-
-    std::string get_full_replay(const scores::score &s);
-
-    bool has_replay(const scores::score &s);
+    bool classic(std::deque<std::string>& args, std::shared_ptr<users::user> user, std::string channel);
 
 }
 
-#endif //SHIRO_REPLAY_MANAGER_HH
+
+#endif //SHIRO_SWITCH_COMMAND_HH

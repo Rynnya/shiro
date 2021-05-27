@@ -238,6 +238,9 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
+    // Switch between Relax and Classic
+    user->update(score.isRelax);
+
     user->stats.play_count++;
 
     beatmaps::beatmap beatmap;
@@ -351,10 +354,10 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (overwrite && score.max_combo > user->stats.max_combo)
         user->stats.max_combo = score.max_combo;
 
-    replays::save_replay(score, beatmap, game_version, fields.at("replay-bin").body);
+    replays::save_replay(score, beatmap, fields.at("replay-bin").body);
 
     if (!scores::helper::is_ranked(score, beatmap)) {
-        user->save_stats((score.mods & (int32_t)utils::mods::relax) > 0);
+        user->save_stats(score.isRelax);
         response.end("ok" /*"error: disabled"*/);
         return;
     }
@@ -390,7 +393,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     user->stats.recalculate_pp(score.isRelax);
     user->stats.recalculate_accuracy(score.isRelax);
 
-    user->save_stats((score.mods & (int32_t)utils::mods::relax) > 0);
+    user->save_stats(score.isRelax);
 
     if (overwrite && !user->hidden)
         ranking::helper::recalculate_ranks((utils::play_mode) score.play_mode, score.isRelax);

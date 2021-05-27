@@ -88,7 +88,7 @@ std::string shiro::utils::crypto::md5::hash(const std::string &input) {
 std::string shiro::utils::crypto::lzma::decompress(std::string input) {
     lzma_stream stream = LZMA_STREAM_INIT;
 
-    lzma_ret decoder = lzma_stream_decoder(&stream, UINT64_MAX, LZMA_CONCATENATED);
+    lzma_ret decoder = lzma_alone_decoder(&stream, UINT64_MAX);
 
     if (decoder != LZMA_OK)
         return "";
@@ -100,7 +100,7 @@ std::string shiro::utils::crypto::lzma::decompress(std::string input) {
     size_t available = output.size();
 
     stream.next_in = reinterpret_cast<const uint8_t*>(input.data());
-    stream.avail_in = input.size();
+    stream.avail_in = input.size() * 4; // Dirty hack to make LZMA read whole file instead of compressed size * 2
     stream.next_out = reinterpret_cast<uint8_t*>(&output[0]);
     stream.avail_out = available;
 
@@ -122,13 +122,13 @@ std::string shiro::utils::crypto::lzma::decompress(std::string input) {
 
         if (stream.avail_out == 0) {
             amount += available - stream.avail_out;
-            output.resize(input.size() << 1);
+            output.resize(input.size() * 4 << 1);
             stream.next_out = reinterpret_cast<uint8_t*>(&output[0] + amount);
             stream.avail_out = available = output.size() - amount;
         }
     }
 
-    return "";
+    return output;
 }
 
 uint32_t shiro::utils::crypto::get_highest_bit(uint32_t bitwise) {

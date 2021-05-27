@@ -40,7 +40,7 @@ namespace shiro::tables {
 		object_struct(registration_date, sqlpp::integer);
 		object_struct(latest_activity, sqlpp::integer);
 		object_struct(followers, sqlpp::integer);
-		object_struct(roles, sqlpp::integer_unsigned);
+		object_struct(roles, sqlpp::bigint_unsigned);
 		object_struct(userpage, sqlpp::text);
 		object_struct(is_relax, sqlpp::boolean);
 	};
@@ -84,10 +84,10 @@ namespace shiro::tables {
 		object_struct(playtime_taiko, sqlpp::integer);
 		object_struct(playtime_ctb, sqlpp::integer);
 		object_struct(playtime_mania, sqlpp::integer);
-		object_struct(avg_accuracy_std, sqlpp::integer);
-		object_struct(avg_accuracy_taiko, sqlpp::integer);
-		object_struct(avg_accuracy_ctb, sqlpp::integer);
-		object_struct(avg_accuracy_mania, sqlpp::integer);
+		object_struct(avg_accuracy_std, sqlpp::floating_point);
+		object_struct(avg_accuracy_taiko, sqlpp::floating_point);
+		object_struct(avg_accuracy_ctb, sqlpp::floating_point);
+		object_struct(avg_accuracy_mania, sqlpp::floating_point);
 		object_struct(pp_std, sqlpp::integer);
 		object_struct(pp_taiko, sqlpp::integer);
 		object_struct(pp_ctb, sqlpp::integer);

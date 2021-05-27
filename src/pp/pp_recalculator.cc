@@ -48,7 +48,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users users_table {};
-    
+
     if (isRelax)
     {
         const tables::users_stats_relax users_stats_table {};
@@ -77,9 +77,6 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
             case utils::play_mode::fruits:
                 play_count = (int32_t)row.playcount_ctb;
                 break;
-            //case utils::play_mode::mania:
-            //    play_count = (int32_t)row.playcount_mania;
-            //    break;
             }
 
             // No need to recalculate users that don't have any scores
@@ -178,7 +175,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
 
     io::osu_writer writer;
     writer.announce(
-            "Global PP recalculation has begun for all scores in " + game_mode + ". ( + " + (isRelax ? "Relax" : "Classic") + ")"
+            "Global PP recalculation has begun for all scores in " + game_mode + " (" + (isRelax ? "Relax" : "Classic") + "). "
             "PP on scores may not match user overall pp amount. "
             "Global rank and user pp updates have been paused."
     );
