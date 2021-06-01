@@ -115,7 +115,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         }
     }
 
-    std::ofstream stream("shiro", std::ios::binary | std::ios::trunc);
+    std::ofstream stream("shiro", std::ostream::binary | std::ostream::trunc);
     stream << fields.at("shiro").body;
     stream.close();
 
@@ -127,7 +127,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
 
     std::string short_hash = fields.at("commit").body.substr(0, 7);
 
-    std::ofstream commit_stream("commit.txt", std::ios::trunc);
+    std::ofstream commit_stream("commit.txt", std::ostream::trunc);
     commit_stream << short_hash;
     commit_stream.close();
 

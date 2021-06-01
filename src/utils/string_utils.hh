@@ -24,6 +24,13 @@
 
 namespace shiro::utils::strings {
 
+    bool safe_int(const std::string& src, int& num);
+    int safe_int(const std::string& src);
+    bool safe_float(const std::string& src, float& num);
+    float safe_float(const std::string& src);
+    bool safe_long_long(const std::string& src, long long& num);
+    long long safe_long_long(const std::string& src);
+
     bool to_bool(std::string src);
 
     std::string to_string(bool src);

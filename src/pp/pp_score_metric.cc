@@ -18,6 +18,8 @@
 
 #include <utility>
 
+#include "mania/mania_calculator.hh"
+#include "ctb/catch_the_pp_calculator.hh"
 #include "wrapper/oppai_wrapper.hh"
 #include "pp_score_metric.hh"
 
@@ -47,12 +49,14 @@ float shiro::pp::calculate_taiko(shiro::beatmaps::beatmap beatmap, shiro::scores
     return calculate_std(std::move(beatmap), std::move(score));
 }
 
-// TODO: Implement pp calculation for osu!mania
 float shiro::pp::calculate_mania(shiro::beatmaps::beatmap beatmap, shiro::scores::score score) {
-    return 0.0f;
+    mania::mania_calculator calc(std::move(beatmap), std::move(score));
+
+    return calc.calculate();
 }
 
-// TODO: Implement pp calculation for osu!catch
 float shiro::pp::calculate_ctb(shiro::beatmaps::beatmap beatmap, shiro::scores::score score) {
-    return 0.0f;
+    ctb::ctb_calculator calc(std::move(beatmap), std::move(score));
+
+    return calc.calculate();
 }

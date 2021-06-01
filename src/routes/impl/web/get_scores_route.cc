@@ -145,12 +145,12 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
             if (scoreboard_type == 2 && top_score_user.mods != mods_list) {
                 res.append("\n");
             } else {
-                res.append(top_score_user.to_string(score_list));
+                res.append(top_score_user.to_string(score_list, isRelax));
             }
         }
 
         for (scores::score &submitted_score : score_list) {
-            res.append(submitted_score.to_string(score_list));
+            res.append(submitted_score.to_string(score_list, isRelax));
         }
     }
 

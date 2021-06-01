@@ -1021,7 +1021,6 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
         case utils::play_mode::mania:
             std::string reason = "Impossible mode and mod combination (osu!mania + Relax)";
             return { true, reason };
-            break;
         }
     }
     else

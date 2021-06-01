@@ -62,7 +62,7 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
         fs::remove(filename);
 
     // osu! requires raw replay in-game, to get full replay use /api/get_replay
-    std::ofstream stream(filename, std::ios::trunc | std::ofstream::binary);
+    std::ofstream stream(filename, std::ofstream::trunc | std::ofstream::binary);
     stream << replay;
     stream.close();
 
@@ -84,7 +84,7 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
 
         boost::iostreams::copy(output, compressed);
 
-        stream = std::ofstream(filename, std::ios::trunc | std::ostream::binary);
+        stream = std::ofstream(filename, std::ostream::trunc | std::ostream::binary);
         stream << compressed.str();
         stream.close();
 
@@ -101,7 +101,7 @@ std::string shiro::replays::get_replay(const shiro::scores::score &s) {
     uint32_t size = 0;
 
     if (fs::exists(filename)) {
-        std::ifstream stream = std::ifstream(filename, std::ifstream::binary | std::ifstream::in);
+        std::ifstream stream = std::ifstream(filename, std::ifstream::binary);
 
         std::stringstream original;
         std::stringstream decompressed;
@@ -118,7 +118,7 @@ std::string shiro::replays::get_replay(const shiro::scores::score &s) {
 
     } else {
         filename = dir / std::string(std::to_string(s.id) + ".osr");
-        std::ifstream stream = std::ifstream(filename, std::ifstream::binary | std::ifstream::in);
+        std::ifstream stream = std::ifstream(filename, std::ifstream::binary);
 
         result << stream.rdbuf();
 

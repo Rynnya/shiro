@@ -16,19 +16,88 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/lexical_cast.hpp>
-
+#include <algorithm>
 #include "string_utils.hh"
 
-bool shiro::utils::strings::to_bool(std::string src) {
-    try {
-        return boost::lexical_cast<bool>(src);
-    } catch (const boost::bad_lexical_cast &ex) {
-        std::transform(src.begin(), src.end(), src.begin(), ::tolower);
-        return src == "true";
-    }
+bool shiro::utils::strings::safe_int(const std::string& src, int& num)
+{
+    const char* ptr = src.c_str();
+    char* end_ptr;
+    const long ans = std::strtol(ptr, &end_ptr, 10);
+
+    if (ptr == end_ptr)
+        return false;
+
+    if (ans == INT_MAX)
+        return false; // Almost NEVER this happend
+
+    num = ans;
+    return true;
 }
 
-std::string shiro::utils::strings::to_string(bool src) {
+int shiro::utils::strings::safe_int(const std::string& src)
+{
+    int num;
+    if (safe_int(src, num))
+        return num;
+    return -1;
+}
+
+bool shiro::utils::strings::safe_float(const std::string& src, float& num)
+{
+    const char* ptr = src.c_str();
+    char* end_ptr;
+    const float ans = std::strtof(ptr, &end_ptr);
+
+    if (ptr == end_ptr)
+        return false;
+
+    if (ans == INFINITY)
+        return false;
+
+    num = ans;
+    return true;
+}
+
+float shiro::utils::strings::safe_float(const std::string& src)
+{
+    float num;
+    if (safe_float(src, num))
+        return num;
+    return -1;
+}
+
+bool shiro::utils::strings::safe_long_long(const std::string& src, long long& num)
+{
+    const char* ptr = src.c_str();
+    char* end_ptr;
+    const long long ans = std::strtoll(ptr, &end_ptr, 10);
+
+    if (ptr == end_ptr)
+        return false;
+
+    if (ans == LLONG_MAX)
+        return false; // Almost NEVER this happend
+
+    num = ans;
+    return true;
+}
+
+long long shiro::utils::strings::safe_long_long(const std::string& src)
+{
+    long long num;
+    if (safe_long_long(src, num))
+        return num;
+    return -1;
+}
+
+bool shiro::utils::strings::to_bool(std::string src)
+{
+    std::transform(src.begin(), src.end(), src.begin(), ::tolower);
+    return src == "true";
+}
+
+std::string shiro::utils::strings::to_string(bool src)
+{
     return src ? "true" : "false";
 }

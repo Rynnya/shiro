@@ -123,7 +123,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         response.code = 400;
         response.end("error: invalid");
 
-        LOG_F(WARNING, "Received invalid score submission, score metadata doesn't have 16 or more parts.");
+        LOG_F(WARNING, "Received invalid score submission, score metadata doesn't have 18 or more parts.");
         return;
     }
 
@@ -270,7 +270,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.isRelax);
     bool overwrite = true;
-
+    
+    // TODO: Make user-specific settings like Ripple
     // User has previous scores on this map, enable overwriting mode
     if (!previous_scores.empty()) {
         for (const scores::score &s : previous_scores) {

@@ -68,8 +68,9 @@ std::optional<std::string> shiro::beatmaps::helper::get_location(int32_t beatmap
         return std::nullopt;
     }
 
-    std::ofstream stream(filename);
+    std::ofstream stream(filename, std::ofstream::binary);
     stream << output;
+    stream.close();
 
     return filename.u8string();
 }

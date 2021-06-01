@@ -1,5 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
+ * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
