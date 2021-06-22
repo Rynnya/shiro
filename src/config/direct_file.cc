@@ -38,6 +38,11 @@ std::string shiro::config::direct::mirror_url = "https://mirror.shiro.host";
 // Provider 2: Beatconnect
 std::string shiro::config::direct::api_key;
 
+// Provider 3: Cheesegull
+std::string shiro::config::direct::search_url = "https://api.chimu.moe/cheesegull";
+std::string shiro::config::direct::download_url = "https://chimu.moe";
+uint32_t shiro::config::direct::beatmaps_amount = 50;
+
 void shiro::config::direct::parse() {
     if (config_file != nullptr)
         LOG_F(INFO, "Re-parsing direct.toml file...");
@@ -66,6 +71,11 @@ void shiro::config::direct::parse() {
             break;
         case 2:
             api_key = config_file->get_qualified_as<std::string>("beatconnect.api_key").value_or("");
+            break;
+        case 3:
+            search_url = config_file->get_qualified_as<std::string>("cheesegull.search_url").value_or("https://api.chimu.moe/cheesegull");
+            download_url = config_file->get_qualified_as<std::string>("cheesegull.download_url").value_or("https://chimu.moe");
+            beatmaps_amount = std::clamp(config_file->get_qualified_as<uint32_t>("cheesegull.beatmaps_amount").value_or(50), 1u, 100u);
             break;
         default:
             ABORT_F("Invalid direct mode provided in direct.toml: %i", provider);

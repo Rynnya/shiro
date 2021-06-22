@@ -21,6 +21,7 @@
 #include "../config/direct_file.hh"
 #include "../thirdparty/loguru.hh"
 #include "providers/beatconnect.hh"
+#include "providers/cheesegull.hh"
 #include "providers/emulation.hh"
 #include "direct_provider.hh"
 
@@ -38,6 +39,9 @@ void shiro::direct::init() {
             break;
         case 2: // Beatconnect
             provider = std::make_shared<beatconnect>();
+            break;
+        case 3: // Cheesegull
+            provider = std::make_shared<cheesegull>();
             break;
         default:
             LOG_F(ERROR, "Invalid direct mode has been provided in bancho.toml: %u.", config::direct::provider);

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -65,11 +66,13 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     switch (config::direct::provider) {
-        case 0: {
+        case 0: 
+        {
             // Never happens as this provider uses a shared memory region
             break;
         }
-        case 1: {
+        case 1: 
+        {
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "osu!");
 
             // osu! mirrors use self signed certificates that don't pass SSL peer certificate check
@@ -79,7 +82,8 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
 
             break;
         }
-        case 2: {
+        case 2: 
+        {
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
 
             static std::string header = "Token: " + config::direct::api_key;
@@ -92,7 +96,15 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
             break;
         }
-        default: {
+        case 3:
+        {
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 100);
+            break;
+        }
+        default: 
+        {
             // All valid cases are covered above
             break;
         }

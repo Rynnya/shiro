@@ -37,6 +37,11 @@ namespace shiro::config::direct {
     // Provider 2: Beatconnect
     extern std::string api_key;
 
+    // Provider 3: Cheesegull
+    extern std::string search_url;
+    extern std::string download_url;
+    extern uint32_t beatmaps_amount;
+
     void parse();
 
 }

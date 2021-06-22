@@ -8,7 +8,8 @@ enabled = true
 # provider 0 = Contact local Shirogane over a Shared Memory Region
 # provider 1 = Emulate a client request to direct via another Bancho server
 # provider 2 = Use the Beatconnect API (recommended)
-provider = 1
+# provider 3 = Use the Cheesegull (https://github.com/osuripple/cheesegull)
+provider = 3
 
 # This section is only active if provider is set to 0
 [shirogane]
@@ -16,9 +17,15 @@ shm = 195934910
 
 # This section is only active if provider is set to 1
 [emulate]
-base_url = "https://api.chimu.moe/cheesegull"
-mirror_url = "https://api.chimu.moe/cheesegull"
+base_url = "https://shiro.host"
+mirror_url = "https://mirror.shiro.host"
 
 # This section is only active if provider is set to 2
 [beatconnect]
 api_key = "Beatconnect API key"
+
+# This section is only active if provider is set to 3
+[cheesegull]
+search_url = "https://api.chimu.moe/cheesegull"
+download_url = "https://chimu.moe"
+beatmaps_amount = 50

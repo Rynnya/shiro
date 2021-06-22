@@ -98,7 +98,7 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars()
     for (fruit& _fruit : this->hit_objects)
     {
         this->hit_object_with_ticks.push_back(_fruit.to_tick());
-        if (2 & _fruit.type)
+        if ((2 & _fruit.type) > 0)
         {
             for (slider_tick& tick : _fruit.ticks)
                 this->hit_object_with_ticks.push_back(tick);
