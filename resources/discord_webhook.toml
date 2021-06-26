@@ -1,0 +1,9 @@
+# Discord Webhook configuration file for Shiro
+
+[webhook]
+enabled = true
+url = ""
+
+[webhook_user]
+override = true
+username = "Shiro"

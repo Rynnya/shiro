@@ -63,8 +63,10 @@ namespace shiro::users {
         bool init();
         void update(bool isRelax);
         void save_stats(bool toRelax);
+        void update_country(std::string country);
 
         std::string get_url();
+        std::string get_avatar_url();
 
         // Re-sends presence and stats to the user to refresh on client-side
         void refresh_stats();

@@ -31,7 +31,10 @@ void shiro::users::manager::login_user(std::shared_ptr<shiro::users::user> user)
         return;
 
     if (is_online(user))
+    {
         logout_user(user);
+        return;
+    }
 
     // Disallow other threads from both writing and reading
     std::unique_lock<std::shared_timed_mutex> lock(mutex);

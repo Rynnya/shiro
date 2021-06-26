@@ -198,6 +198,9 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         user->presence.country_id = location_info.country;
         user->presence.latitude = location_info.latitude;
         user->presence.longitude = location_info.longitude;
+
+        if (user->country == "XX")
+            user->update_country(shiro::geoloc::get_country_name(location_info.country));
     }
 
     user->presence.time_zone = time_zone;

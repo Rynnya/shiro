@@ -24,8 +24,9 @@
 
 static std::shared_ptr<cpptoml::table> config_file = nullptr;
 
-std::string shiro::config::ipc::backend_url = "https://c.shiro.host/";
-std::string shiro::config::ipc::frontend_url = "https://shiro.host/";
+std::string shiro::config::ipc::backend_url = "https://c.yukime.ml/";
+std::string shiro::config::ipc::frontend_url = "https://yukime.ml/";
+std::string shiro::config::ipc::avatar_url = "https://a.yukime.ml/";
 std::string shiro::config::ipc::beatmap_url = "https://osu.ppy.sh/b/";
 
 void shiro::config::ipc::parse() {
@@ -39,13 +40,15 @@ void shiro::config::ipc::parse() {
         ABORT_F("Failed to parse ipc.toml file: %s.", ex.what());
     }
 
-    backend_url = config_file->get_qualified_as<std::string>("meta.backend_url").value_or("https://c.shiro.host/");
-    frontend_url = config_file->get_qualified_as<std::string>("meta.frontend_url").value_or("https://shiro.host/");
+    backend_url = config_file->get_qualified_as<std::string>("meta.backend_url").value_or("https://c.yukime.ml/");
+    frontend_url = config_file->get_qualified_as<std::string>("meta.frontend_url").value_or("https://yukime.ml/");
+    avatar_url = config_file->get_qualified_as<std::string>("meta.avatar_url").value_or("https://a.yukime.ml/");
     beatmap_url = config_file->get_qualified_as<std::string>("meta.beatmap_url").value_or("https://osu.ppy.sh/b/");
 
     LOG_F(INFO, "Successfully parsed ipc.toml.");
 
     cli::cli_app.add_option("--ipc-backend-url", backend_url, "Url of the Bancho server (this instance)");
     cli::cli_app.add_option("--ipc-frontend-url", frontend_url, "Url of the frontend server");
+    cli::cli_app.add_option("--ipc-avatar-url", avatar_url, "Url of the avatar server");
     cli::cli_app.add_option("--ipc-beatmap-url", beatmap_url, "Url of the beatmap detail page on the frontend");
 }

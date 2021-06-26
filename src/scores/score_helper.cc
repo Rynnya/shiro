@@ -1107,3 +1107,43 @@ float shiro::scores::helper::calculate_accuracy(utils::play_mode mode, int32_t _
 
     return 0.0f;
 }
+
+std::string shiro::scores::helper::build_mods_list(int32_t mods)
+{
+    std::string modString = "+";
+
+    if (mods & (int32_t)shiro::utils::mods::no_fail)
+        modString += "NF";
+    if (mods & (int32_t)shiro::utils::mods::easy)
+        modString += "EZ";
+    if (mods & (int32_t)shiro::utils::mods::half_time)
+        modString += "HT";
+
+    if (mods & (int32_t)shiro::utils::mods::hidden)
+        modString += "HD";
+    if (mods & (int32_t)shiro::utils::mods::hard_rock)
+        modString += "HR";
+    if (mods & (int32_t)shiro::utils::mods::double_time)
+        modString += "DT";
+    if (mods & (int32_t)shiro::utils::mods::nightcore)
+        modString += "NC";
+    if (mods & (int32_t)shiro::utils::mods::flashlight)
+        modString += "FL";
+
+    if (mods & (int32_t)shiro::utils::mods::sudden_death)
+        modString += "SD";
+    if (mods & (int32_t)shiro::utils::mods::perfect)
+        modString += "PF";
+
+    if (mods & (int32_t)shiro::utils::mods::relax)
+        modString += "RX";
+    if (mods & (int32_t)shiro::utils::mods::auto_pilot)
+        modString += "AT";
+    if (mods & (int32_t)shiro::utils::mods::spun_out)
+        modString += "SO";
+
+    if (modString == "+")
+        modString = "No Mod";
+
+    return modString;
+}

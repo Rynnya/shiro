@@ -2,8 +2,9 @@
 
 [meta]
 # Urls defined here need to have a trailing slash (/) at the end.
-backend_url = "https://c.shiro.host/"
-frontend_url = "https://shiro.host/"
+backend_url = "https://c.yukime.ml/"
+frontend_url = "https://yukime.ml/"
+avatar_url = "https://a.yukime.ml/"
 # The url defined below should take you directly to the beatmap page if the beatmap id or the
 # beatmap set id is appended right after it's trailing slash (/) at the end.
 beatmap_url = "https://osu.ppy.sh/b/"

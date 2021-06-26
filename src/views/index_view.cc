@@ -22,11 +22,11 @@
 
 #include "../utils/filesystem.hh"
 #include "../shiro.hh"
-#include "index_page.hh"
 #include "index_view.hh"
 
+static bool ran_once = false;
+
 void shiro::views::index::replace_hash(std::string &view) {
-    static bool ran_once = false;
 
     if (!ran_once) {
         ran_once = true;
@@ -68,8 +68,18 @@ void shiro::views::index::replace_time(std::string &view) {
     boost::replace_all(view, "{{uptime}}", buffer);
 }
 
-std::string shiro::views::index::get_view() {
-    std::string view = std::string(reinterpret_cast<char*>(shiro_index_html), shiro_index_html_len);
+std::string shiro::views::index::get_view() 
+{
+    static std::string view;
+    if (!ran_once)
+    {
+        std::ifstream stream("shiro.html");
+
+        std::stringstream buffer;
+        buffer << stream.rdbuf();
+
+        view = buffer.str();
+    }
 
     // Templates are overrated anyway
     replace_hash(view);

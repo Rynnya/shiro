@@ -17,8 +17,8 @@ shm = 195934910
 
 # This section is only active if provider is set to 1
 [emulate]
-base_url = "https://shiro.host"
-mirror_url = "https://mirror.shiro.host"
+base_url = "https://yukime.ml"
+mirror_url = "https://mirror.yukime.ml"
 
 # This section is only active if provider is set to 2
 [beatconnect]

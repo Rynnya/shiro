@@ -66,7 +66,7 @@ namespace shiro::pp::ctb
             slider_type(slider_type), curve_points(curve_points), repeat(repeat), pixel_length(pixel_length),
             time_point(time_point), slider_multiplier(slider_multiplier), tick_distance(tick_distance)
         {
-            if ((2 & type) > 0)
+            if (2 & type)
             {
                 this->curve_points.push_front(std::make_pair(x, y));
                 this->duration = (int(time_point.raw_bpm) * (pixel_length / (slider_multiplier * time_point.spm)) / 100) * repeat;

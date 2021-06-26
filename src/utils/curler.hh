@@ -22,13 +22,18 @@
 #include <tuple>
 #include <string>
 
+#include "../thirdparty/json.hh"
+
 namespace shiro::utils::curl {
 
     // Returns a boolean indicating if the request was successful and the response as a string if it was successful.
     std::tuple<bool, std::string> get(const std::string &url);
 
-    // Same as get(url) but with support for direct modes (Emulation & Beatconnect)
+    // Same as get(url) but with support for direct modes (Emulation, Beatconnect, Cheesegull)
     std::tuple<bool, std::string> get_direct(const std::string &url);
+
+    // Used for Discord Webhook
+    bool post_message(const std::string &url, const nlohmann::json &message);
 
     std::string escape_url(const std::string &raw);
     std::string unescape_url(const std::string &raw);

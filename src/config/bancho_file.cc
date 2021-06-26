@@ -34,7 +34,7 @@ std::string shiro::config::bancho::api_key = "osu! API key";
 
 std::string shiro::config::bancho::alert = "Welcome to Shiro";
 std::string shiro::config::bancho::title_image = "https://i.ppy.sh/motd.png";
-std::string shiro::config::bancho::title_url = "https://shiro.host";
+std::string shiro::config::bancho::title_url = "https://yukime.ml";
 
 bool shiro::config::bancho::sentry_integration = true;
 
@@ -59,7 +59,7 @@ void shiro::config::bancho::parse() {
 
     alert = config_file->get_qualified_as<std::string>("motd.alert").value_or("Welcome to Shiro");
     title_image = config_file->get_qualified_as<std::string>("motd.title_image").value_or("https://i.ppy.sh/motd.png");
-    title_url = config_file->get_qualified_as<std::string>("motd.title_url").value_or("https://shiro.host");
+    title_url = config_file->get_qualified_as<std::string>("motd.title_url").value_or("https://yukime.ml");
 
     sentry_integration = config_file->get_qualified_as<bool>("integrations.sentry").value_or(true);
 

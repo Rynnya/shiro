@@ -25,6 +25,7 @@ namespace shiro::config::ipc {
 
     extern std::string backend_url;
     extern std::string frontend_url;
+    extern std::string avatar_url;
     extern std::string beatmap_url;
 
     void parse();

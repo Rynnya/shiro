@@ -2,8 +2,8 @@
 
 [database]
 address = "127.0.0.1"
-port = 3307
-database = "himitsu"
+port = 3306
+database = "yukime"
 username = "root"
 password = ""
 

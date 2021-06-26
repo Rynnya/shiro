@@ -100,7 +100,6 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
         {
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 100);
             break;
         }
         default: 
@@ -122,6 +121,43 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
 
     logging::sentry::http_request_out(url, "GET", status_code, output);
     return { false, output };
+}
+
+bool shiro::utils::curl::post_message(const std::string& url, const nlohmann::json& message)
+{
+    CURL* curl = curl_easy_init();
+    CURLcode status_code;
+
+    if (curl == nullptr)
+        return false;
+
+    std::string output;
+
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, internal_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+    std::string msg = message.dump();
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, msg.c_str());
+
+    struct curl_slist* chunk = nullptr;
+    chunk = curl_slist_append(chunk, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+
+    status_code = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+
+    if (status_code == CURLE_OK)
+        return true;
+
+    // Replace original url with fake to avoid leaks
+    logging::sentry::http_request_out("https://discord.com/api/webhooks/id/token", "POST", status_code, output);
+    return false;
 }
 
 std::string shiro::utils::curl::escape_url(const std::string &raw) {

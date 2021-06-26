@@ -32,8 +32,9 @@ int32_t shiro::config::direct::provider = 1;
 uint64_t shiro::config::direct::shm = 0x0;
 
 // Provider 1: Emulation
-std::string shiro::config::direct::base_url = "https://shiro.host";
-std::string shiro::config::direct::mirror_url = "https://mirror.shiro.host";
+// Yukime don't provide any mirror currently, but shiro.host also dead, so i replace it
+std::string shiro::config::direct::base_url = "https://yukime.ml";
+std::string shiro::config::direct::mirror_url = "https://mirror.yukime.ml";
 
 // Provider 2: Beatconnect
 std::string shiro::config::direct::api_key;
@@ -66,8 +67,8 @@ void shiro::config::direct::parse() {
             shm = config_file->get_qualified_as<uint64_t>("shirogane.shm").value_or(0x0);
             break;
         case 1:
-            base_url = config_file->get_qualified_as<std::string>("emulate.base_url").value_or("https://shiro.host");
-            mirror_url = config_file->get_qualified_as<std::string>("emulate.mirror_url").value_or("https://mirror.shiro.host");
+            base_url = config_file->get_qualified_as<std::string>("emulate.base_url").value_or("https://yukime.ml");
+            mirror_url = config_file->get_qualified_as<std::string>("emulate.mirror_url").value_or("https://mirror.yukime.ml");
             break;
         case 2:
             api_key = config_file->get_qualified_as<std::string>("beatconnect.api_key").value_or("");

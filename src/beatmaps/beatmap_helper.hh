@@ -23,6 +23,7 @@
 #include <optional>
 #include <string>
 
+#include "beatmap.hh"
 #include "beatmap_ranked_status.hh"
 
 namespace shiro::beatmaps::helper {
@@ -36,6 +37,9 @@ namespace shiro::beatmaps::helper {
     bool awards_pp(int32_t status_code);
 
     std::optional<std::string> get_location(int32_t beatmap_id, bool download = true);
+
+    float score_to_difficulty(beatmaps::beatmap beatmap, utils::play_mode mode = utils::play_mode::standard);
+    std::string build_difficulty_header(beatmaps::beatmap beatmap, utils::play_mode mode = utils::play_mode::standard);
 
 }
 

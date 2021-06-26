@@ -60,7 +60,6 @@ bool shiro::users::user::init() {
     this->presence.permissions = roles::manager::get_chat_color(this->roles);
     this->isRelax = row.is_relax;
 
-
     auto relationship_result = db(select(all_of(relationships_table)).from(relationships_table).where(relationships_table.origin == this->user_id and relationships_table.blocked == false));
 
     for (const auto &row : relationship_result) {
@@ -322,8 +321,27 @@ void shiro::users::user::save_stats(bool toRelax) {
     }
 }
 
+void shiro::users::user::update_country(std::string country)
+{
+    this->country = country;
+
+    std::ignore = std::async(std::launch::async, [&]()
+    {
+        sqlpp::mysql::connection db(db_connection->get_config());
+        const tables::users user_table{};
+
+        db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
+    });
+}
+
 std::string shiro::users::user::get_url() {
     static std::string url = config::ipc::frontend_url + "u/" + std::to_string(this->user_id);
+    return url;
+}
+
+std::string shiro::users::user::get_avatar_url() 
+{
+    static std::string url = config::ipc::avatar_url + std::to_string(this->user_id);
     return url;
 }
 

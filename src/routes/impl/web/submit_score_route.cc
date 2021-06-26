@@ -22,6 +22,7 @@
 
 #include "../../../beatmaps/beatmap.hh"
 #include "../../../beatmaps/beatmap_helper.hh"
+#include "../../../channels/discord_webhook.hh"
 #include "../../../config/score_submission_file.hh"
 #include "../../../database/tables/score_table.hh"
 #include "../../../logger/sentry_logger.hh"
@@ -369,7 +370,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, score.isRelax);
-    int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, scores::helper::fetch_all_scores(beatmap.beatmap_md5, 5));
+    int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, scores::helper::fetch_all_scores(beatmap.beatmap_md5, score.isRelax, 5));
 
     if (top_score.hash == score.hash && !user->hidden) {
         if (scoreboard_position == 1) {
@@ -383,6 +384,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             );
 
             utils::bot::respond(buffer, user, "#announce", false);
+            std::ignore = std::async(std::launch::async, shiro::channels::discord_webhook::send_top1_message, user, beatmap, score);
         }
     }
 

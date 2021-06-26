@@ -35,5 +35,5 @@ void shiro::handler::user_status::handle(shiro::io::osu_packet &in, shiro::io::o
     if (!changed_mode)
         return;
 
-    user->update((user->stats.current_mods & (uint32_t)utils::mods::relax) > 0);
+    user->update(user->stats.current_mods & (int32_t)utils::mods::relax);
 }

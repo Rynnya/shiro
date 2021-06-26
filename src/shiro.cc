@@ -24,12 +24,14 @@
 #include "bot/bot.hh"
 #include "channels/channel_manager.hh"
 #include "channels/console_osu_bridge.hh"
+#include "channels/discord_webhook.hh"
 #include "config/api_file.hh"
 #include "config/bancho_file.hh"
 #include "config/bot_file.hh"
 #include "config/cli_args.hh"
 #include "config/db_file.hh"
 #include "config/direct_file.hh"
+#include "config/discord_webhook_file.hh"
 #include "config/ipc_file.hh"
 #include "config/score_submission_file.hh"
 #include "direct/direct_provider.hh"
@@ -49,13 +51,14 @@
 #include "users/user_punishments.hh"
 #include "users/user_timeout.hh"
 #include "utils/crypto.hh"
+#include "utils/curler.hh"
 #include "shiro.hh"
 
 std::shared_ptr<shiro::database> shiro::db_connection = nullptr;
 std::shared_ptr<shiro::redis> shiro::redis_connection = nullptr;
 tsc::TaskScheduler shiro::scheduler;
 std::time_t shiro::start_time = std::time(nullptr);
-std::string shiro::commit = "78f8303";
+std::string shiro::commit = "42704f8";
 
 int shiro::init(int argc, char **argv) {
     logging::init(argc, argv);
@@ -77,11 +80,13 @@ int shiro::init(int argc, char **argv) {
     config::database::parse();
     config::direct::parse();
     config::ipc::parse();
+    config::discord_webhook::parse();
     config::score_submission::parse();
 
     beatmaps::helper::init();
     direct::init();
     geoloc::init();
+    channels::discord_webhook::init();
 
     db_connection = std::make_shared<database>(
             config::database::address, config::database::port, config::database::database,
@@ -140,6 +145,14 @@ void shiro::destroy() {
     geoloc::maxmind::destroy();
 
     scheduler.CancelAll();
+
+    using namespace shiro::channels;
+    if (shiro::config::discord_webhook::enabled)
+    {
+        nlohmann::json message = discord_webhook::create_basis();
+        message["embeds"].push_back(discord_webhook::create_embed("Shiro is shutting down... Bye!", "", (uint32_t)discord_webhook::colors::Blurple));
+        shiro::utils::curl::post_message(shiro::config::discord_webhook::url, message);
+    }
 
     LOG_F(INFO, "Thank you and goodbye.");
 }

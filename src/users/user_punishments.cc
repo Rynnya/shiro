@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../channels/discord_webhook.hh"
 #include "../config/ipc_file.hh"
 #include "../database/tables/punishments_table.hh"
 #include "../thirdparty/loguru.hh"
@@ -153,6 +154,8 @@ void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_
 
     LOG_F(INFO, "%s has been silenced for %i seconds for %s by %s.", username.c_str(), duration, reason.c_str(), origin_username.c_str());
 
+    shiro::channels::discord_webhook::send_silence_message(username, origin_username, reason, duration);
+
     if (user == nullptr)
         return;
 
@@ -199,6 +202,8 @@ void shiro::users::punishments::restrict(int32_t user_id, int32_t origin, const 
     std::string origin_username = manager::get_username_by_id(origin);
 
     LOG_F(INFO, "%s has been restricted for %s by %s.", username.c_str(), reason.c_str(), origin_username.c_str());
+
+    shiro::channels::discord_webhook::send_restrict_message(username, origin_username, reason);
 
     if (user == nullptr)
         return;
@@ -254,6 +259,8 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
     std::string origin_username = manager::get_username_by_id(origin);
 
     LOG_F(INFO, "%s has been banned for %s by %s.", username.c_str(), reason.c_str(), origin_username.c_str());
+
+    shiro::channels::discord_webhook::send_ban_message(username, origin_username, reason);
 
     if (user == nullptr)
         return;

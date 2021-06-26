@@ -58,9 +58,9 @@ shiro::pp::mania::mania_calculator::~mania_calculator()
 float shiro::pp::mania::mania_calculator::calculate()
 {
     double score_rate = 1;
-    if ((this->mods & (int32_t)shiro::utils::mods::easy) > 0) score_rate *= 0.5;
-    if ((this->mods & (int32_t)shiro::utils::mods::no_fail) > 0) score_rate *= 0.5;
-    if ((this->mods & (int32_t)shiro::utils::mods::half_time) > 0) score_rate *= 0.5;
+    if (this->mods & (int32_t)shiro::utils::mods::easy) score_rate *= 0.5;
+    if (this->mods & (int32_t)shiro::utils::mods::no_fail) score_rate *= 0.5;
+    if (this->mods & (int32_t)shiro::utils::mods::half_time) score_rate *= 0.5;
     double real_score = score / score_rate;
     if (real_score > 1000000)
         return 0;
@@ -85,8 +85,8 @@ float shiro::pp::mania::mania_calculator::calculate()
     double acc_value = std::max(0.0, 0.2 - ((hit300_window - 34) * 0.006667)) * strain_value * std::pow((std::max(0.0, real_score - 960000) / 40000), 1.1);
 
     double pp_multiplier = 0.8;
-    if ((this->mods & (int32_t)shiro::utils::mods::no_fail) > 0) pp_multiplier *= 0.9;
-    if ((this->mods & (int32_t)shiro::utils::mods::easy) > 0) pp_multiplier *= 0.5;
+    if (this->mods & (int32_t)shiro::utils::mods::no_fail) pp_multiplier *= 0.9;
+    if (this->mods & (int32_t)shiro::utils::mods::easy) pp_multiplier *= 0.5;
 
     return std::pow(std::pow(strain_value, 1.32) + std::pow(acc_value, 1.1), (1 / 1.1) * pp_multiplier);
 }
@@ -150,8 +150,8 @@ void shiro::pp::mania::mania_calculator::calculate_stars()
 {
     double time_scale = 1;
 
-    if ((this->mods & (int32_t)shiro::utils::mods::double_time) > 0) time_scale = 1.5;
-    if ((this->mods & (int32_t)shiro::utils::mods::half_time) > 0) time_scale = 0.75;
+    if (this->mods & (int32_t)shiro::utils::mods::double_time) time_scale = 1.5;
+    if (this->mods & (int32_t)shiro::utils::mods::half_time) time_scale = 0.75;
 
     double strain_step = 400 * time_scale;
     double weight_decay_base = 0.9;

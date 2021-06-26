@@ -68,17 +68,17 @@ float shiro::pp::ctb::ctb_calculator::calculate()
     if (this->ar < 8)
         pp *= 1 + 0.025 * (8 - this->ar);
 
-    if ((this->mods & (int32_t)shiro::utils::mods::hidden) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::hidden)
         pp *= 1.05 + 0.075 * (10 - std::min(10.0f, this->ar));
 
-    if ((this->mods & (int32_t)shiro::utils::mods::flashlight) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::flashlight)
         pp *= 1.35 * length_bonus;
 
     pp *= std::pow(this->accuracy, 5.5);
 
-    if ((this->mods & (int32_t)shiro::utils::mods::no_fail) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::no_fail)
         pp *= 0.9;
-    if ((this->mods & (int32_t)shiro::utils::mods::spun_out) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::spun_out)
         pp *= 0.95;
 
     return pp;
@@ -86,10 +86,11 @@ float shiro::pp::ctb::ctb_calculator::calculate()
 
 float shiro::pp::ctb::ctb_calculator::adjust_difficulty(float raw_value, float scale)
 {
-    if ((this->mods & (int32_t)shiro::utils::mods::easy) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::easy)
         raw_value = std::max(0.0f, raw_value / 2);
-    if ((this->mods & (int32_t)shiro::utils::mods::hard_rock) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::hard_rock)
         raw_value = std::min(10.0f, raw_value * scale);
+
     return raw_value;
 }
 
@@ -98,7 +99,7 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars()
     for (fruit& _fruit : this->hit_objects)
     {
         this->hit_object_with_ticks.push_back(_fruit.to_tick());
-        if ((2 & _fruit.type) > 0)
+        if (2 & _fruit.type)
         {
             for (slider_tick& tick : _fruit.ticks)
                 this->hit_object_with_ticks.push_back(tick);
@@ -107,9 +108,9 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars()
         }
     }
 
-    if ((this->mods & (int32_t)shiro::utils::mods::double_time) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::double_time)
         this->time_rate += 0.5;
-    if ((this->mods & (int32_t)shiro::utils::mods::half_time) > 0)
+    if (this->mods & (int32_t)shiro::utils::mods::half_time)
         this->time_rate -= 0.25;
 
     this->player_width = 305 / 1.6 * ((102.4 * (1 - 0.7 * (this->cs - 5) / 5)) / 128) * 0.7;
@@ -330,11 +331,11 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line)
     int time = std::atoi(split_object[2].c_str()); 
     int object_type = std::atoi(split_object[3].c_str());
 
-    if (!(((1 & object_type) > 0) || ((2 & object_type) > 0)))
+    if (!((1 & object_type) || (2 & object_type)))
         return;
 
     fruit hit_object;
-    if ((2 & object_type) > 0)
+    if (2 & object_type)
     {
         int repeat = 0;
         float pixel_length = 0;
@@ -397,7 +398,7 @@ shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_a
 int shiro::pp::ctb::fruit::get_combo()
 {
     int result = 1;
-    if ((2 & this->type) > 0)
+    if (2 & this->type)
     {
         result += this->ticks.size();
         result += this->repeat;

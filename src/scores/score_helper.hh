@@ -59,6 +59,7 @@ namespace shiro::scores::helper {
 
     float calculate_accuracy(utils::play_mode mode, int32_t _300, int32_t _100, int32_t _50, int32_t geki, int32_t katu, int32_t miss);
 
+    std::string build_mods_list(int32_t mods);
 }
 
 #endif //SHIRO_SCORE_HELPER_HH
