@@ -61,6 +61,7 @@ namespace shiro::scores {
 
         uint8_t play_mode = (uint8_t) utils::play_mode::standard;
         int32_t time = 0;
+        int32_t play_time = 0;
 
         std::string to_string(std::vector<score> &scores, bool isRelax);
 

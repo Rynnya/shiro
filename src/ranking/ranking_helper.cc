@@ -299,9 +299,9 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
             users_stats_table.pp_std,
             users_stats_table.pp_taiko,
             users_stats_table.pp_ctb,
-            users_stats_table.playcount_std,
-            users_stats_table.playcount_taiko,
-            users_stats_table.playcount_ctb
+            users_stats_table.play_count_std,
+            users_stats_table.play_count_taiko,
+            users_stats_table.play_count_ctb
         ).from(users_stats_table).unconditionally());
 
         if (result.empty())
@@ -322,19 +322,19 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
 
             switch (mode) {
             case utils::play_mode::standard:
-                if ((int32_t)row.playcount_std <= 0)
+                if ((int32_t)row.play_count_std <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_std));
                 break;
             case utils::play_mode::taiko:
-                if ((int32_t)row.playcount_taiko <= 0)
+                if ((int32_t)row.play_count_taiko <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_taiko));
                 break;
             case utils::play_mode::fruits:
-                if ((int32_t)row.playcount_ctb <= 0)
+                if ((int32_t)row.play_count_ctb <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_ctb));
@@ -351,10 +351,10 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
             users_stats_table.pp_taiko,
             users_stats_table.pp_ctb,
             users_stats_table.pp_mania,
-            users_stats_table.playcount_std,
-            users_stats_table.playcount_taiko,
-            users_stats_table.playcount_ctb,
-            users_stats_table.playcount_mania
+            users_stats_table.play_count_std,
+            users_stats_table.play_count_taiko,
+            users_stats_table.play_count_ctb,
+            users_stats_table.play_count_mania
         ).from(users_stats_table).unconditionally());
 
         if (result.empty())
@@ -375,25 +375,25 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
 
             switch (mode) {
             case utils::play_mode::standard:
-                if ((int32_t)row.playcount_std <= 0)
+                if ((int32_t)row.play_count_std <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_std));
                 break;
             case utils::play_mode::taiko:
-                if ((int32_t)row.playcount_taiko <= 0)
+                if ((int32_t)row.play_count_taiko <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_taiko));
                 break;
             case utils::play_mode::fruits:
-                if ((int32_t)row.playcount_ctb <= 0)
+                if ((int32_t)row.play_count_ctb <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_ctb));
                 break;
             case utils::play_mode::mania:
-                if ((int32_t)row.playcount_mania <= 0)
+                if ((int32_t)row.play_count_mania <= 0)
                     continue;
 
                 users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_mania));

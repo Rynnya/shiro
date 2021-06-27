@@ -90,8 +90,8 @@ bool shiro::beatmaps::beatmap::fetch_db() {
 	this->ranked_status = row.ranked_status;
 	this->ranked_status_freezed = row.ranked_status_freezed;
 	this->last_update = row.latest_update;
-	this->play_count = row.playcount;
-	this->pass_count = row.passcount;
+	this->play_count = row.play_count;
+	this->pass_count = row.pass_count;
 
 	return true;
 }
@@ -283,8 +283,8 @@ void shiro::beatmaps::beatmap::save() {
 		beatmaps_table.ranked_status = this->ranked_status,
 		beatmaps_table.ranked_status_freezed = this->ranked_status_freezed,
 		beatmaps_table.latest_update = this->last_update,
-		beatmaps_table.playcount = this->play_count,
-		beatmaps_table.passcount = this->pass_count
+		beatmaps_table.play_count = this->play_count,
+		beatmaps_table.pass_count = this->pass_count
 	));
 }
 
@@ -293,8 +293,8 @@ void shiro::beatmaps::beatmap::update_play_metadata() {
 	const tables::beatmaps beatmaps_table{};
 
 	db(update(beatmaps_table).set(
-		beatmaps_table.playcount = this->play_count,
-		beatmaps_table.passcount = this->pass_count
+		beatmaps_table.play_count = this->play_count,
+		beatmaps_table.pass_count = this->pass_count
 	).where(beatmaps_table.beatmap_md5 == this->beatmap_md5));
 }
 

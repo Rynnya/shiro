@@ -52,8 +52,8 @@ namespace shiro::tables {
         object_struct(count_normal, sqlpp::integer);
         object_struct(count_slider, sqlpp::integer);
         object_struct(count_spinner, sqlpp::integer);
-        object_struct(playcount, sqlpp::integer);
-        object_struct(passcount, sqlpp::integer);
+        object_struct(play_count, sqlpp::integer);
+        object_struct(pass_count, sqlpp::integer);
         object_struct(ranked_status, sqlpp::integer);
         object_struct(latest_update, sqlpp::bigint);
         object_struct(ranked_status_freezed, sqlpp::boolean);
@@ -84,8 +84,8 @@ namespace shiro::tables {
         beatmaps_objects::count_normal,
         beatmaps_objects::count_slider,
         beatmaps_objects::count_spinner,
-        beatmaps_objects::playcount,
-        beatmaps_objects::passcount,
+        beatmaps_objects::play_count,
+        beatmaps_objects::pass_count,
         beatmaps_objects::ranked_status,
         beatmaps_objects::latest_update,
         beatmaps_objects::ranked_status_freezed,

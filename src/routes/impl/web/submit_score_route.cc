@@ -40,6 +40,7 @@
 #include "../../../utils/crypto.hh"
 #include "../../../utils/multipart_parser.hh"
 #include "../../../utils/string_utils.hh"
+#include "../../../utils/time_utils.hh"
 #include "submit_score_route.hh"
 
 void shiro::routes::web::submit_score::handle(const crow::request &request, crow::response &response) {
@@ -206,6 +207,15 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         }
     }
 
+    int32_t failtime = 0;
+    bool failed = false;
+    if (fields.find("ft") != fields.end())
+    {
+        std::string fail = fields.at("ft").body;
+        failtime = std::atoi(fail.c_str());
+        failed = failtime > 0;
+    }
+
     if (score.play_mode > 3) {
         response.end("error: invalid");
 
@@ -254,6 +264,19 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     beatmap.play_count++;
     beatmap.update_play_metadata();
+
+    score.play_time = beatmap.hit_length;
+    if (failed)
+    {
+        int32_t time = beatmap.hit_length;
+        if (failtime / 1000 < beatmap.hit_length * 1.33)
+            time = failtime / 1000;
+
+        score.play_time = shiro::utils::time::adjusted_seconds(score.mods, time);
+    }
+
+    user->stats.play_time += score.play_time;
+    user->update_play_time(score.play_mode, score.isRelax);
 
     if (fields.find("replay-bin") == fields.end()) {
         response.code = 400;
@@ -347,6 +370,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             score_table.count_misses = score.count_misses,
             score_table.play_mode = score.play_mode,
             score_table.time = score.time,
+            score_table.play_time = score.play_time,
             score_table.is_relax = score.isRelax
     ));
 
@@ -359,7 +383,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     replays::save_replay(score, beatmap, fields.at("replay-bin").body);
 
     if (!scores::helper::is_ranked(score, beatmap)) {
-        user->save_stats(score.isRelax);
         response.end("ok" /*"error: disabled"*/);
         return;
     }

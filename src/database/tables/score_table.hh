@@ -49,6 +49,7 @@ namespace shiro::tables {
         object_struct(completed, sqlpp::boolean);
         object_struct(accuracy, sqlpp::floating_point);
         object_struct(pp, sqlpp::floating_point);
+        object_struct(play_time, sqlpp::integer);
         object_struct(times_watched, sqlpp::integer);
         object_struct(is_relax, sqlpp::boolean);
     };
@@ -74,6 +75,7 @@ namespace shiro::tables {
             scores_objects::completed,
             scores_objects::accuracy,
             scores_objects::pp,
+            scores_objects::play_time,
             scores_objects::times_watched,
             scores_objects::is_relax
     );

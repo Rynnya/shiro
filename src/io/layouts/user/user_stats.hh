@@ -42,6 +42,7 @@ namespace shiro::io::layouts {
         int32_t max_combo = 0;
         float accuracy = 0.0f; // Between 0 and 1 (divide by 100 I guess)
         int32_t play_count = 0;
+        int32_t play_time = 0;
         uint64_t total_score = 0;
 
         int32_t rank = 0;

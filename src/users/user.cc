@@ -79,8 +79,9 @@ bool shiro::users::user::init() {
             user_stats_table.avg_accuracy_std,
             user_stats_table.total_score_std,
             user_stats_table.ranked_score_std,
-            user_stats_table.playcount_std,
-            user_stats_table.rank_std
+            user_stats_table.play_count_std,
+            user_stats_table.rank_std,
+            user_stats_table.play_time_std
         ).from(user_stats_table).where(user_stats_table.id == this->user_id));
 
         const auto& row_stats = stats_result.front();
@@ -90,9 +91,10 @@ bool shiro::users::user::init() {
         this->stats.accuracy = row_stats.avg_accuracy_std;
         this->stats.total_score = row_stats.total_score_std;
         this->stats.ranked_score = row_stats.ranked_score_std;
-        this->stats.play_count = row_stats.playcount_std;
+        this->stats.play_count = row_stats.play_count_std;
         this->stats.rank = row_stats.rank_std;
         this->presence.rank = row_stats.rank_std;
+        this->stats.play_time = row_stats.play_time_std;
 
         return true;
     }
@@ -105,8 +107,9 @@ bool shiro::users::user::init() {
         user_stats_table.avg_accuracy_std,
         user_stats_table.total_score_std,
         user_stats_table.ranked_score_std,
-        user_stats_table.playcount_std,
-        user_stats_table.rank_std
+        user_stats_table.play_count_std,
+        user_stats_table.rank_std,
+        user_stats_table.play_time_std
     ).from(user_stats_table).where(user_stats_table.id == this->user_id));
 
     const auto& row_stats = stats_result.front();
@@ -116,9 +119,10 @@ bool shiro::users::user::init() {
     this->stats.accuracy = row_stats.avg_accuracy_std;
     this->stats.total_score = row_stats.total_score_std;
     this->stats.ranked_score = row_stats.ranked_score_std;
-    this->stats.play_count = row_stats.playcount_std;
+    this->stats.play_count = row_stats.play_count_std;
     this->stats.rank = row_stats.rank_std;
     this->presence.rank = row_stats.rank_std;
+    this->stats.play_time = row_stats.play_time_std;
 
     return true;
 }
@@ -143,31 +147,34 @@ void shiro::users::user::update(bool isRelax) {
             this->stats.pp = row.pp_std;
             this->stats.total_score = row.total_score_std;
             this->stats.ranked_score = row.ranked_score_std;
-            this->stats.play_count = row.playcount_std;
+            this->stats.play_count = row.play_count_std;
             this->stats.rank = row.rank_std;
             this->presence.rank = row.rank_std;
             this->stats.max_combo = row.max_combo_std;
             this->stats.accuracy = row.avg_accuracy_std;
+            this->stats.play_time = row.play_time_std;
         }
         else if (this->status.play_mode == (uint8_t)utils::play_mode::taiko) {
             this->stats.pp = row.pp_taiko;
             this->stats.total_score = row.total_score_taiko;
             this->stats.ranked_score = row.ranked_score_taiko;
-            this->stats.play_count = row.playcount_taiko;
+            this->stats.play_count = row.play_count_taiko;
             this->stats.rank = row.rank_taiko;
             this->presence.rank = row.rank_taiko;
             this->stats.max_combo = row.max_combo_taiko;
             this->stats.accuracy = row.avg_accuracy_taiko;
+            this->stats.play_time = row.play_time_taiko;
         }
         else if (this->status.play_mode == (uint8_t)utils::play_mode::fruits) {
             this->stats.pp = row.pp_ctb;
             this->stats.total_score = row.total_score_ctb;
             this->stats.ranked_score = row.ranked_score_ctb;
-            this->stats.play_count = row.playcount_ctb;
+            this->stats.play_count = row.play_count_ctb;
             this->stats.rank = row.rank_ctb;
             this->presence.rank = row.rank_ctb;
             this->stats.max_combo = row.max_combo_ctb;
             this->stats.accuracy = row.avg_accuracy_ctb;
+            this->stats.play_time = row.play_time_ctb;
         }
 
         this->isRelax = true;
@@ -186,41 +193,45 @@ void shiro::users::user::update(bool isRelax) {
         this->stats.pp = row.pp_std;
         this->stats.total_score = row.total_score_std;
         this->stats.ranked_score = row.ranked_score_std;
-        this->stats.play_count = row.playcount_std;
+        this->stats.play_count = row.play_count_std;
         this->stats.rank = row.rank_std;
         this->presence.rank = row.rank_std;
         this->stats.max_combo = row.max_combo_std;
         this->stats.accuracy = row.avg_accuracy_std;
+        this->stats.play_time = row.play_time_std;
     }
     else if (this->status.play_mode == (uint8_t)utils::play_mode::taiko) {
         this->stats.pp = row.pp_taiko;
         this->stats.total_score = row.total_score_taiko;
         this->stats.ranked_score = row.ranked_score_taiko;
-        this->stats.play_count = row.playcount_taiko;
+        this->stats.play_count = row.play_count_taiko;
         this->stats.rank = row.rank_taiko;
         this->presence.rank = row.rank_taiko;
         this->stats.max_combo = row.max_combo_taiko;
         this->stats.accuracy = row.avg_accuracy_taiko;
+        this->stats.play_time = row.play_time_taiko;
     }
     else if (this->status.play_mode == (uint8_t)utils::play_mode::fruits) {
         this->stats.pp = row.pp_ctb;
         this->stats.total_score = row.total_score_ctb;
         this->stats.ranked_score = row.ranked_score_ctb;
-        this->stats.play_count = row.playcount_ctb;
+        this->stats.play_count = row.play_count_ctb;
         this->stats.rank = row.rank_ctb;
         this->presence.rank = row.rank_ctb;
         this->stats.max_combo = row.max_combo_ctb;
         this->stats.accuracy = row.avg_accuracy_ctb;
+        this->stats.play_time = row.play_time_ctb;
     }
     else if (this->status.play_mode == (uint8_t)utils::play_mode::mania) {
         this->stats.pp = row.pp_mania;
         this->stats.total_score = row.total_score_mania;
         this->stats.ranked_score = row.ranked_score_mania;
-        this->stats.play_count = row.playcount_mania;
+        this->stats.play_count = row.play_count_mania;
         this->stats.rank = row.rank_mania;
         this->presence.rank = row.rank_mania;
         this->stats.max_combo = row.max_combo_mania;
         this->stats.accuracy = row.avg_accuracy_mania;
+        this->stats.play_time = row.play_time_mania;
     }
 
     this->isRelax = false;
@@ -238,10 +249,11 @@ void shiro::users::user::save_stats(bool toRelax) {
                 user_stats_table.pp_std = this->stats.pp,
                 user_stats_table.total_score_std = this->stats.total_score,
                 user_stats_table.ranked_score_std = this->stats.ranked_score,
-                user_stats_table.playcount_std = this->stats.play_count,
+                user_stats_table.play_count_std = this->stats.play_count,
                 user_stats_table.rank_std = this->stats.rank,
                 user_stats_table.max_combo_std = this->stats.max_combo,
-                user_stats_table.avg_accuracy_std = this->stats.accuracy
+                user_stats_table.avg_accuracy_std = this->stats.accuracy,
+                user_stats_table.play_time_std = this->stats.play_time
             ).where(user_stats_table.id == this->user_id));
             break;
         case (uint8_t)utils::play_mode::taiko:
@@ -249,10 +261,11 @@ void shiro::users::user::save_stats(bool toRelax) {
                 user_stats_table.pp_taiko = this->stats.pp,
                 user_stats_table.total_score_taiko = this->stats.total_score,
                 user_stats_table.ranked_score_taiko = this->stats.ranked_score,
-                user_stats_table.playcount_taiko = this->stats.play_count,
+                user_stats_table.play_count_taiko = this->stats.play_count,
                 user_stats_table.rank_taiko = this->stats.rank,
                 user_stats_table.max_combo_taiko = this->stats.max_combo,
-                user_stats_table.avg_accuracy_taiko = this->stats.accuracy
+                user_stats_table.avg_accuracy_taiko = this->stats.accuracy,
+                user_stats_table.play_time_taiko = this->stats.play_time
             ).where(user_stats_table.id == this->user_id));
             break;
         case (uint8_t)utils::play_mode::fruits:
@@ -260,10 +273,11 @@ void shiro::users::user::save_stats(bool toRelax) {
                 user_stats_table.pp_ctb = this->stats.pp,
                 user_stats_table.total_score_ctb = this->stats.total_score,
                 user_stats_table.ranked_score_ctb = this->stats.ranked_score,
-                user_stats_table.playcount_ctb = this->stats.play_count,
+                user_stats_table.play_count_ctb = this->stats.play_count,
                 user_stats_table.rank_ctb = this->stats.rank,
                 user_stats_table.max_combo_ctb = this->stats.max_combo,
-                user_stats_table.avg_accuracy_ctb = this->stats.accuracy
+                user_stats_table.avg_accuracy_ctb = this->stats.accuracy,
+                user_stats_table.play_time_ctb = this->stats.play_time
             ).where(user_stats_table.id == this->user_id));
             break;
         }
@@ -279,10 +293,11 @@ void shiro::users::user::save_stats(bool toRelax) {
             user_stats_table.pp_std = this->stats.pp,
             user_stats_table.total_score_std = this->stats.total_score,
             user_stats_table.ranked_score_std = this->stats.ranked_score,
-            user_stats_table.playcount_std = this->stats.play_count,
+            user_stats_table.play_count_std = this->stats.play_count,
             user_stats_table.rank_std = this->stats.rank,
             user_stats_table.max_combo_std = this->stats.max_combo,
-            user_stats_table.avg_accuracy_std = this->stats.accuracy
+            user_stats_table.avg_accuracy_std = this->stats.accuracy,
+            user_stats_table.play_time_std = this->stats.play_time
         ).where(user_stats_table.id == this->user_id));
         break;
     case (uint8_t)utils::play_mode::taiko:
@@ -290,10 +305,11 @@ void shiro::users::user::save_stats(bool toRelax) {
             user_stats_table.pp_taiko = this->stats.pp,
             user_stats_table.total_score_taiko = this->stats.total_score,
             user_stats_table.ranked_score_taiko = this->stats.ranked_score,
-            user_stats_table.playcount_taiko = this->stats.play_count,
+            user_stats_table.play_count_taiko = this->stats.play_count,
             user_stats_table.rank_taiko = this->stats.rank,
             user_stats_table.max_combo_taiko = this->stats.max_combo,
-            user_stats_table.avg_accuracy_taiko = this->stats.accuracy
+            user_stats_table.avg_accuracy_taiko = this->stats.accuracy,
+            user_stats_table.play_time_taiko = this->stats.play_time
         ).where(user_stats_table.id == this->user_id));
         break;
     case (uint8_t)utils::play_mode::fruits:
@@ -301,10 +317,11 @@ void shiro::users::user::save_stats(bool toRelax) {
             user_stats_table.pp_ctb = this->stats.pp,
             user_stats_table.total_score_ctb = this->stats.total_score,
             user_stats_table.ranked_score_ctb = this->stats.ranked_score,
-            user_stats_table.playcount_ctb = this->stats.play_count,
+            user_stats_table.play_count_ctb = this->stats.play_count,
             user_stats_table.rank_ctb = this->stats.rank,
             user_stats_table.max_combo_ctb = this->stats.max_combo,
-            user_stats_table.avg_accuracy_ctb = this->stats.accuracy
+            user_stats_table.avg_accuracy_ctb = this->stats.accuracy,
+            user_stats_table.play_time_ctb = this->stats.play_time
         ).where(user_stats_table.id == this->user_id));
         break;
     case (uint8_t)utils::play_mode::mania:
@@ -312,10 +329,11 @@ void shiro::users::user::save_stats(bool toRelax) {
             user_stats_table.pp_mania = this->stats.pp,
             user_stats_table.total_score_mania = this->stats.total_score,
             user_stats_table.ranked_score_mania = this->stats.ranked_score,
-            user_stats_table.playcount_mania = this->stats.play_count,
+            user_stats_table.play_count_mania = this->stats.play_count,
             user_stats_table.rank_mania = this->stats.rank,
             user_stats_table.max_combo_mania = this->stats.max_combo,
-            user_stats_table.avg_accuracy_mania = this->stats.accuracy
+            user_stats_table.avg_accuracy_mania = this->stats.accuracy,
+            user_stats_table.play_time_mania = this->stats.play_time
         ).where(user_stats_table.id == this->user_id));
         break;
     }
@@ -331,6 +349,53 @@ void shiro::users::user::update_country(std::string country)
         const tables::users user_table{};
 
         db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
+    });
+}
+
+void shiro::users::user::update_play_time(uint8_t mode, bool isRelax)
+{
+    std::ignore = std::async(std::launch::async, [&]()
+    {
+        sqlpp::mysql::connection db(db_connection->get_config());
+
+        if (isRelax)
+        {
+            const tables::users_stats_relax users_stats_table {};
+
+            switch (mode)
+            {
+                case 1:
+                    db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_taiko = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                    return;
+                case 2:
+                    db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_ctb = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                    return;
+                case 0:
+                default:
+                    db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_std = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                    return;
+            }
+        }
+
+        const tables::users_stats users_stats_table{};
+
+        switch (mode)
+        {
+            case 1:
+                db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_taiko = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                return;
+            case 2:
+                db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_ctb = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                return;
+            case 3:
+                db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_mania = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                return;
+            case 0:
+            default:
+                db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_std = this->stats.play_time).where(users_stats_table.id == this->user_id));
+                return;
+        }
+        
     });
 }
 

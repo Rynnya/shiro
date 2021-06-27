@@ -35,6 +35,8 @@ namespace shiro::utils::time {
     // Returns seconds of the parsed time string, e.g input: "15min" returns 900 (seconds)
     std::optional<uint32_t> parse_time_string(const std::string &input);
 
+    int32_t adjusted_seconds(int32_t mods, int32_t time);
+
 }
 
 #endif //SHIRO_TIME_UTILS_HH

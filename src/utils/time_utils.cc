@@ -19,6 +19,7 @@
 #include <boost/lexical_cast.hpp>
 #include <chrono>
 
+#include "mods.hh"
 #include "time_utils.hh"
 
 int64_t shiro::utils::time::unix_epoch_ticks = 621355968000000000;
@@ -97,4 +98,15 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
         return std::nullopt;
 
     return time * iterator->second;
+}
+
+int32_t shiro::utils::time::adjusted_seconds(int32_t mods, int32_t time)
+{
+    if (mods & (int32_t)shiro::utils::mods::double_time)
+        return time / 1.5;
+
+    if (mods & (int32_t)shiro::utils::mods::half_time)
+        return time / 0.75;
+
+    return time;
 }

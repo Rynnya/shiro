@@ -55,9 +55,9 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
         auto result = db(select(
             users_table.id,
             users_table.roles,
-            users_stats_table.playcount_std,
-            users_stats_table.playcount_taiko,
-            users_stats_table.playcount_ctb
+            users_stats_table.play_count_std,
+            users_stats_table.play_count_taiko,
+            users_stats_table.play_count_ctb
         ).from(users_table.join(users_stats_table).on(users_table.id == users_stats_table.id)).unconditionally());
 
         for (const auto& row : result) {
@@ -69,13 +69,13 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
 
             switch (mode) {
             case utils::play_mode::standard:
-                play_count = (int32_t)row.playcount_std;
+                play_count = (int32_t)row.play_count_std;
                 break;
             case utils::play_mode::taiko:
-                play_count = (int32_t)row.playcount_taiko;
+                play_count = (int32_t)row.play_count_taiko;
                 break;
             case utils::play_mode::fruits:
-                play_count = (int32_t)row.playcount_ctb;
+                play_count = (int32_t)row.play_count_ctb;
                 break;
             }
 
@@ -92,10 +92,10 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
         auto result = db(select(
             users_table.id,
             users_table.roles,
-            users_stats_table.playcount_std,
-            users_stats_table.playcount_taiko,
-            users_stats_table.playcount_ctb,
-            users_stats_table.playcount_mania
+            users_stats_table.play_count_std,
+            users_stats_table.play_count_taiko,
+            users_stats_table.play_count_ctb,
+            users_stats_table.play_count_mania
         ).from(users_table.join(users_stats_table).on(users_table.id == users_stats_table.id)).unconditionally());
 
         for (const auto& row : result) {
@@ -107,16 +107,16 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool isRelax, 
 
             switch (mode) {
             case utils::play_mode::standard:
-                play_count = (int32_t)row.playcount_std;
+                play_count = (int32_t)row.play_count_std;
                 break;
             case utils::play_mode::taiko:
-                play_count = (int32_t)row.playcount_taiko;
+                play_count = (int32_t)row.play_count_taiko;
                 break;
             case utils::play_mode::fruits:
-                play_count = (int32_t)row.playcount_ctb;
+                play_count = (int32_t)row.play_count_ctb;
                 break;
             case utils::play_mode::mania:
-                play_count = (int32_t)row.playcount_mania;
+                play_count = (int32_t)row.play_count_mania;
                 break;
             }
 
