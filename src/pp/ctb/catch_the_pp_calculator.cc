@@ -491,7 +491,6 @@ void shiro::pp::ctb::fruit::calculate_slider()
         point = _curve->point_at_distance(current_distance);
 
     this->end_ticks.push_back(slider_tick(point.first, point.second, this->time + this->duration));
-    delete _curve;
 }
 
 void shiro::pp::ctb::difficulty_object::calculate_strain(difficulty_object last, float time_rate)
