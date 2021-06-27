@@ -343,41 +343,19 @@ void shiro::users::user::update_country(std::string country)
 {
     this->country = country;
 
-    std::ignore = std::async(std::launch::async, [&]()
-    {
-        sqlpp::mysql::connection db(db_connection->get_config());
-        const tables::users user_table{};
+    sqlpp::mysql::connection db(db_connection->get_config());
+    const tables::users user_table{};
 
-        db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
-    });
+    db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
 }
 
 void shiro::users::user::update_play_time(uint8_t mode, bool isRelax)
 {
-    std::ignore = std::async(std::launch::async, [&]()
+    sqlpp::mysql::connection db(db_connection->get_config());
+
+    if (isRelax)
     {
-        sqlpp::mysql::connection db(db_connection->get_config());
-
-        if (isRelax)
-        {
-            const tables::users_stats_relax users_stats_table {};
-
-            switch (mode)
-            {
-                case 1:
-                    db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_taiko = this->stats.play_time).where(users_stats_table.id == this->user_id));
-                    return;
-                case 2:
-                    db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_ctb = this->stats.play_time).where(users_stats_table.id == this->user_id));
-                    return;
-                case 0:
-                default:
-                    db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_std = this->stats.play_time).where(users_stats_table.id == this->user_id));
-                    return;
-            }
-        }
-
-        const tables::users_stats users_stats_table{};
+        const tables::users_stats_relax users_stats_table{};
 
         switch (mode)
         {
@@ -387,16 +365,32 @@ void shiro::users::user::update_play_time(uint8_t mode, bool isRelax)
             case 2:
                 db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_ctb = this->stats.play_time).where(users_stats_table.id == this->user_id));
                 return;
-            case 3:
-                db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_mania = this->stats.play_time).where(users_stats_table.id == this->user_id));
-                return;
             case 0:
             default:
                 db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_std = this->stats.play_time).where(users_stats_table.id == this->user_id));
                 return;
         }
-        
-    });
+    }
+
+    const tables::users_stats users_stats_table{};
+
+    switch (mode)
+    {
+        case 1:
+            db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_taiko = this->stats.play_time).where(users_stats_table.id == this->user_id));
+            return;
+        case 2:
+            db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_ctb = this->stats.play_time).where(users_stats_table.id == this->user_id));
+            return;
+        case 3:
+            db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_mania = this->stats.play_time).where(users_stats_table.id == this->user_id));
+            return;
+        case 0:
+        default:
+            db(sqlpp::update(users_stats_table).set(users_stats_table.play_time_std = this->stats.play_time).where(users_stats_table.id == this->user_id));
+            return;
+    }
+
 }
 
 std::string shiro::users::user::get_url() {

@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <future>
 #include <locale>
 
 #include "../beatmaps/beatmap_helper.hh"
@@ -52,7 +51,7 @@ void shiro::channels::discord_webhook::init()
 	shiro::config::discord_webhook::enabled = false;
 }
 
-void shiro::channels::discord_webhook::send_message(const std::string &message)
+void shiro::channels::discord_webhook::send_message(const std::string& message)
 {
 	if (!shiro::config::discord_webhook::enabled)
 		return;
@@ -60,7 +59,7 @@ void shiro::channels::discord_webhook::send_message(const std::string &message)
 	nlohmann::json msg = create_basis();
 	msg["content"] = message;
 
-	std::ignore = std::async(std::launch::async, shiro::utils::curl::post_message, shiro::config::discord_webhook::url, msg);
+	std::thread(shiro::utils::curl::post_message, shiro::config::discord_webhook::url, msg).detach();
 }
 
 void shiro::channels::discord_webhook::send_message(const nlohmann::json& message)
@@ -68,7 +67,7 @@ void shiro::channels::discord_webhook::send_message(const nlohmann::json& messag
 	if (!shiro::config::discord_webhook::enabled)
 		return;
 
-	std::ignore = std::async(std::launch::async, shiro::utils::curl::post_message, shiro::config::discord_webhook::url, message);
+	std::thread(shiro::utils::curl::post_message, shiro::config::discord_webhook::url, message).detach();
 }
 
 nlohmann::json shiro::channels::discord_webhook::create_basis()
@@ -103,8 +102,8 @@ std::string shiro::channels::discord_webhook::get_rank_emote(std::string rank)
 	static std::unordered_map<std::string, std::string> ranks =
 	{
 		{ "XH", "<:XH:749286824471429160>" },
-		{ "SH", "<:SH:749286835682934794>" },
-		{ "X",  "<:X:749286850509930526>"  },
+		{ "SH", "<:X:749286850509930526>"  },
+		{ "X",  "<:SH:749286835682934794>" },
 		{ "S",  "<:S:749286860093784165>"  },
 		{ "A",  "<:A:749286872663982191>"  },
 		{ "B",  "<:B:749286881954627644>"  },
@@ -175,22 +174,20 @@ void shiro::channels::discord_webhook::send_top1_message(std::shared_ptr<shiro::
 	char buffer_stats[1024];
 
 	utils::play_mode mode = (utils::play_mode)score.play_mode;
-	std::snprintf(buffer, sizeof(buffer), "x%d/%d", score.max_combo, beatmap.max_combo);
-	std::string combo = buffer;
-	std::snprintf(buffer, sizeof(buffer), "[%d/%d/%d/%d]", score.count_300, score.count_100, score.count_50, score.count_misses);
-	std::string hit_points = buffer;
+	std::snprintf(buffer, sizeof(buffer), "x%d/%d | [%d/%d/%d/%d]", 
+		score.max_combo, beatmap.max_combo, score.count_300, score.count_100, score.count_50, score.count_misses);
 
 	std::snprintf(
 		buffer_stats, sizeof(buffer_stats),
 		u8"\u25B8 Achieved by [**__%s__**](%s) | Map by %s\n" \
 		u8"\u25B8 **%.2f** :star: | **%d bpm** | **%d:%02d**\n" \
 		u8"\u25B8 %s | **%s**\n" \
-		u8"\u25B8 %s | %s\n" \
+		u8"\u25B8 %s\n" \
 		u8"\u25B8 %s | **%.2f%%** | **%.2fpp**",
 		user->presence.username.c_str(), user->get_url().c_str(), beatmap.creator.c_str(), 
 		beatmaps::helper::score_to_difficulty(beatmap, mode), beatmap.bpm, beatmap.hit_length / 60, beatmap.hit_length % 60, 
 		beatmaps::helper::build_difficulty_header(beatmap, mode).c_str(), scores::helper::build_mods_list(score.mods).c_str(),
-		combo.c_str(), hit_points.c_str(),
+		buffer,
 		get_rank_emote(score.rank).c_str(), score.accuracy, score.pp
 	);
 	std::snprintf(

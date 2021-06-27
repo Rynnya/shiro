@@ -407,7 +407,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             );
 
             utils::bot::respond(buffer, user, "#announce", false);
-            std::ignore = std::async(std::launch::async, shiro::channels::discord_webhook::send_top1_message, user, beatmap, score);
+            std::thread(shiro::channels::discord_webhook::send_top1_message, user, beatmap, score).detach();
         }
     }
 
