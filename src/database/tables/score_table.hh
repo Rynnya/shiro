@@ -54,6 +54,15 @@ namespace shiro::tables {
         object_struct(is_relax, sqlpp::boolean);
     };
 
+    struct scores_first_objects
+    {
+        object_struct(score_id, sqlpp::integer);
+        object_struct(user_id, sqlpp::integer);
+        object_struct(beatmap_md5, sqlpp::varchar);
+        object_struct(play_mode, sqlpp::integer);
+        object_struct(is_relax, sqlpp::boolean);
+    };
+
     database_table(scores,
             scores_objects::id,
             scores_objects::hash,
@@ -78,6 +87,14 @@ namespace shiro::tables {
             scores_objects::play_time,
             scores_objects::times_watched,
             scores_objects::is_relax
+    );
+
+    database_table(scores_first,
+        scores_first_objects::score_id,
+        scores_first_objects::user_id,
+        scores_first_objects::beatmap_md5,
+        scores_first_objects::play_mode,
+        scores_first_objects::is_relax
     );
 
     namespace migrations::scores {

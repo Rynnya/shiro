@@ -253,6 +253,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     user->update(score.isRelax);
 
     user->stats.play_count++;
+    user->stats.total_hits += score.count_300 + score.count_100 + score.count_50;
 
     beatmaps::beatmap beatmap;
     beatmap.beatmap_md5 = score.beatmap_md5;
@@ -276,7 +277,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     user->stats.play_time += score.play_time;
-    user->update_play_time(score.play_mode, score.isRelax);
 
     if (fields.find("replay-bin") == fields.end()) {
         response.code = 400;
@@ -302,7 +302,10 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             double factor_score;
             double factor_iterator;
 
-            if (config::score_submission::overwrite_factor == "score") {
+            if (score.isRelax) { // In relax only pp
+                factor_score = score.pp;
+                factor_iterator = s.pp;
+            } else if (config::score_submission::overwrite_factor == "score") {
                 factor_score = score.total_score;
                 factor_iterator = s.total_score;
             } else if (config::score_submission::overwrite_factor == "accuracy") {
@@ -375,20 +378,21 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     ));
 
     if (overwrite)
+    {
         user->stats.total_score += score.total_score;
+        user->update_counts(score.rank, score.isRelax);
 
-    if (overwrite && score.max_combo > user->stats.max_combo)
-        user->stats.max_combo = score.max_combo;
+        if (score.max_combo > user->stats.max_combo)
+            user->stats.max_combo = score.max_combo;
+    }   
 
     replays::save_replay(score, beatmap, fields.at("replay-bin").body);
 
-    if (!scores::helper::is_ranked(score, beatmap)) {
-        response.end("ok" /*"error: disabled"*/);
-        return;
-    }
-
-    if (!score.passed) {
-        response.end("ok");
+    if (!score.passed || !scores::helper::is_ranked(score, beatmap))
+    {
+        // We need save stats to keep play_time, counts and total_hits
+        user->save_stats(score.isRelax);
+        response.end("ok" /*"error: disabled" for ranked*/);
         return;
     }
 
@@ -407,7 +411,35 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             );
 
             utils::bot::respond(buffer, user, "#announce", false);
-            std::thread(shiro::channels::discord_webhook::send_top1_message, user, beatmap, score).detach();
+
+            std::thread([](sqlpp::mysql::connection db, std::shared_ptr<users::user> user, beatmaps::beatmap beatmap, scores::score score)
+            {
+                shiro::channels::discord_webhook::send_top1_message(user, beatmap, score);
+
+                const tables::scores_first scores_first_table {};
+                auto exist = db(sqlpp::select(scores_first_table.beatmap_md5).from(scores_first_table).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5).limit(1u));
+                if (exist.empty())
+                {
+                    db(sqlpp::insert_into(scores_first_table).set(
+                        scores_first_table.score_id = score.id,
+                        scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
+                        scores_first_table.user_id = score.user_id,
+                        scores_first_table.play_mode = score.play_mode,
+                        scores_first_table.is_relax = score.isRelax
+                    ));
+                    return;
+                }
+
+                // One result exist, we need to pop it
+                exist.pop_front();
+                db(sqlpp::update(scores_first_table).set(
+                    scores_first_table.score_id = score.id,
+                    scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
+                    scores_first_table.user_id = score.user_id,
+                    scores_first_table.play_mode = score.play_mode,
+                    scores_first_table.is_relax = score.isRelax
+                ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
+            }, std::move(db), user, beatmap, score).detach();
         }
     }
 
