@@ -97,7 +97,7 @@ int shiro::init(int argc, char **argv) {
 
     redis_connection = std::make_shared<redis>(
             config::database::redis_address,
-            config::database::port,
+            config::database::redis_port,
             config::database::redis_password
     );
     redis_connection->connect();
