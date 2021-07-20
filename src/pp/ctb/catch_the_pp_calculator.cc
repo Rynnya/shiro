@@ -130,19 +130,18 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars()
 
 void shiro::pp::ctb::ctb_calculator::update_hyperdash_distance()
 {
-    int last_direction = 0;
-    int direction = 0;
-    int i = 0;
+    int32_t last_direction = 0;
+    int32_t direction = 0;
     float player_width_half = this->player_width / 2 * 0.8;
     float last = player_width_half;
 
-    difficulty_object current = this->difficulty_objects[0];
-    difficulty_object next = this->difficulty_objects[1];
+    difficulty_object current;
+    difficulty_object next;
 
-    for (; i < this->difficulty_objects.size() - 1; i++)
+    for (int32_t i = 0; i < this->difficulty_objects.size() - 1; i++)
     {
-        current = this->difficulty_objects[0];
-        next = this->difficulty_objects[1];
+        current = this->difficulty_objects[i];
+        next = this->difficulty_objects[i + 1];
 
         if (next.object.x > current.object.x)
             direction = 1;
@@ -151,10 +150,7 @@ void shiro::pp::ctb::ctb_calculator::update_hyperdash_distance()
 
         float time_to_next = next.object.time - current.object.time - 4.166667;
         float distance_to_next = std::abs(next.object.x - current.object.x);
-        if (last_direction == direction)
-            distance_to_next -= last;
-        else
-            distance_to_next -= player_width_half;
+        distance_to_next -= last_direction == direction ? last : player_width_half;
 
         if (time_to_next < distance_to_next)
         {
@@ -174,9 +170,9 @@ void shiro::pp::ctb::ctb_calculator::update_hyperdash_distance()
 void shiro::pp::ctb::ctb_calculator::calculate_strain_values()
 {
     difficulty_object current = this->difficulty_objects[0];
-    difficulty_object next = this->difficulty_objects[1];
+    difficulty_object next;
 
-    int index = 1;
+    int32_t index = 1;
     while (index < this->difficulty_objects.size())
     {
         next = this->difficulty_objects[index];
@@ -291,16 +287,18 @@ void shiro::pp::ctb::ctb_calculator::parse_file(std::string filename)
 
 void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line)
 {
+    using namespace shiro::utils::strings;
     std::vector<std::string> timing_point_split;
     boost::split(timing_point_split, line, boost::is_any_of(","));
 
-    int timing_point_time = std::atoi(timing_point_split[0].c_str());
+    int32_t timing_point_time = 0;
+    safe_int(timing_point_split[0], timing_point_time);
 
     std::string timing_point_focus = timing_point_split[1];
 
-    int timing_point_type = 0;
+    int32_t timing_point_type = 0;
     if (timing_point_split.size() >= 7)
-        shiro::utils::strings::safe_int(timing_point_split[6], timing_point_type);
+        safe_int(timing_point_split[6], timing_point_type);
 
     if (timing_point_type == 0 && timing_point_focus[0] != '-')
         timing_point_focus = "-100";
@@ -308,7 +306,7 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line)
     if (timing_point_focus[0] == '-')
     {
         float temp = -1;
-        shiro::utils::strings::safe_float(timing_point_focus, temp);
+        safe_float(timing_point_focus, temp);
         this->timing_points.push_back(timing_point(timing_point_time, -100 / temp, temp, 100, 600));
     }
     else
@@ -317,7 +315,7 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line)
             timing_point_time = 0;
 
         float temp = 1;
-        shiro::utils::strings::safe_float(timing_point_focus, temp);
+        safe_float(timing_point_focus, temp);
         this->timing_points.push_back(timing_point(timing_point_time, 1, -100, 60000 / temp, temp));
     }
 }
@@ -328,8 +326,8 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line)
     std::vector<std::string> split_object;
     boost::split(split_object, line, boost::is_any_of(","));
 
-    int time = std::atoi(split_object[2].c_str()); 
-    int object_type = std::atoi(split_object[3].c_str());
+    double time = safe_float(split_object[2]);
+    int32_t object_type = safe_int(split_object[3]);
 
     if (!((1 & object_type) || (2 & object_type)))
         return;
@@ -337,7 +335,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line)
     fruit hit_object;
     if (2 & object_type)
     {
-        int repeat = 0;
+        int32_t repeat = 0;
         float pixel_length = 0;
 
         timing_point time_point = get_point_by_time_all(time);
@@ -350,7 +348,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line)
         std::deque<std::pair<float, float>> curve_points;
         boost::split(curve_split, split_object[5], boost::is_any_of("|"));
 
-        for (int i = 0; i < curve_split.size(); i++)
+        for (int32_t i = 0; i < curve_split.size(); i++)
         {
             std::vector<std::string> vector_split;
             boost::split(vector_split, curve_split[i], boost::is_any_of(":"));
@@ -387,7 +385,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line)
 
 shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_all(double time)
 {
-    for (int i = 0; i < this->timing_points.size(); i++)
+    for (int32_t i = 0; i < this->timing_points.size(); i++)
     {
         if (this->timing_points[i].timestamp == time)
             return this->timing_points[i];
@@ -395,9 +393,9 @@ shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_a
     return timing_point();
 }
 
-int shiro::pp::ctb::fruit::get_combo()
+int32_t shiro::pp::ctb::fruit::get_combo()
 {
-    int result = 1;
+    int32_t result = 1;
     if (2 & this->type)
     {
         result += this->ticks.size();
@@ -449,11 +447,11 @@ void shiro::pp::ctb::fruit::calculate_slider()
         current_distance += this->tick_distance;
     }
 
-    int repeat_id = 1;
+    int32_t repeat_id = 1;
     std::vector<slider_tick> repeat_bonus_ticks;
     while (repeat_id < this->repeat)
     {
-        int dist = (1 & repeat_id) * this->pixel_length;
+        int32_t dist = (1 & repeat_id) * this->pixel_length;
         float time_offset = (this->duration / this->repeat) * repeat_id;
 
         std::pair<float, float> point;
@@ -474,7 +472,7 @@ void shiro::pp::ctb::fruit::calculate_slider()
         else
             normalize_time_value = this->time;
 
-        for (slider_tick tick : repeat_ticks)
+        for (slider_tick& tick : repeat_ticks)
             tick.time = this->time + time_offset + std::abs(tick.time - normalize_time_value);
 
         repeat_bonus_ticks.insert(repeat_bonus_ticks.end(), repeat_ticks.begin(), repeat_ticks.end());

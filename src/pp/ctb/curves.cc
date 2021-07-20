@@ -39,8 +39,8 @@ void shiro::pp::ctb::Bezier::setup()
     if (this->points.size() != 0)
         return;
 
-    std::deque<std::pair<float, float>> sub_points = {};
-    for (int i = 0; i < this->curve_points.size(); i++)
+    std::vector<std::pair<float, float>> sub_points = {};
+    for (int32_t i = 0; i < this->curve_points.size(); i++)
     {
         if (i == this->curve_points.size() - 1)
         {
@@ -58,12 +58,12 @@ void shiro::pp::ctb::Bezier::setup()
     }
 }
 
-void shiro::pp::ctb::Bezier::bezier(std::deque<std::pair<float, float>> points)
+void shiro::pp::ctb::Bezier::bezier(std::vector<std::pair<float, float>> points)
 {
-    int order = points.size();
+    int32_t order = points.size();
     float step = 0.25 / constants::SLIDER_QUALITY / order;
     float i = 0;
-    int n = order - 1;
+    int32_t n = order - 1;
 
     float x, y;
 
@@ -72,7 +72,7 @@ void shiro::pp::ctb::Bezier::bezier(std::deque<std::pair<float, float>> points)
         x = 0;
         y = 0;
 
-        for (int p = 0; p < n + 1; p++)
+        for (int32_t p = 0; p < n + 1; p++)
         {
             float a = cpn(p, n) * std::pow(1 - p, n - p) * std::pow(i, p);
             x += a * points[i].first;
@@ -84,14 +84,14 @@ void shiro::pp::ctb::Bezier::bezier(std::deque<std::pair<float, float>> points)
     }
 }
 
-float shiro::pp::ctb::Bezier::cpn(int p, int n)
+float shiro::pp::ctb::Bezier::cpn(int32_t p, int32_t n)
 {
     if (p < 0 || p > n)
         return 0;
 
     p = std::min(p, n - p);
     float out = 1;
-    for (int i = 1; i < p + 1; i++)
+    for (int32_t i = 1; i < p + 1; i++)
         out = out * (n - p + i) / i;
 
     return out;
@@ -115,7 +115,7 @@ void shiro::pp::ctb::Catmull::setup()
     if (this->points.size() != 0)
         return;
 
-    int x = 0;
+    int32_t x = 0;
     float t = 0;
     std::pair<float, float> v1, v2, v3, v4;
     for (; x < this->order - 1; x++)

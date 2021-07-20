@@ -27,7 +27,7 @@ std::pair<float, float> shiro::pp::ctb::math::point_at_distance(std::deque<std::
     float x, y;
     float current_distance = 0;
     float new_distance = 0;
-    int i = 0;
+    int32_t i = 0;
 
     if (arr.size() < 2)
         return std::make_pair(0, 0);
@@ -80,7 +80,7 @@ std::pair<float, float> shiro::pp::ctb::math::point_on_line(std::pair<float, flo
 float shiro::pp::ctb::math::distance_from_points(std::deque<std::pair<float, float>> arr)
 {
     float distance = 0;
-    for (int i = 1; i < arr.size(); i++)
+    for (int32_t i = 1; i < arr.size(); i++)
     {
         float x_ = arr[i].first - arr[i - 1].first;
         float y_ = arr[i].second - arr[i - 1].second;

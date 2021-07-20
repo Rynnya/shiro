@@ -59,9 +59,9 @@ namespace shiro::pp::ctb
     {
     public:
         fruit() {};
-        fruit(float x, float y, float time, int type, 
-            std::string slider_type = "", std::deque<std::pair<float, float>> curve_points = {}, int repeat = 1, int pixel_length = 0,
-            timing_point time_point = timing_point(), float slider_multiplier = 0, int tick_distance = 1) :
+        fruit(float x, float y, float time, int32_t type,
+            std::string slider_type = "", std::deque<std::pair<float, float>> curve_points = {}, int32_t repeat = 1, int32_t pixel_length = 0,
+            timing_point time_point = timing_point(), float slider_multiplier = 0, int32_t tick_distance = 1) :
             x(x), y(y), time(time), type(type),
             slider_type(slider_type), curve_points(curve_points), repeat(repeat), pixel_length(pixel_length),
             time_point(time_point), slider_multiplier(slider_multiplier), tick_distance(tick_distance)
@@ -69,7 +69,7 @@ namespace shiro::pp::ctb
             if (2 & type)
             {
                 this->curve_points.push_front(std::make_pair(x, y));
-                this->duration = (int(time_point.raw_bpm) * (pixel_length / (slider_multiplier * time_point.spm)) / 100) * repeat;
+                this->duration = (int32_t(time_point.raw_bpm) * (pixel_length / (slider_multiplier * time_point.spm)) / 100) * repeat;
 
                 this->calculate_slider();
             }
@@ -85,12 +85,12 @@ namespace shiro::pp::ctb
         float x = 0;
         float y = 0;
         float time = 0;
-        int type = 0;
+        int32_t type = 0;
 
         // Sliders
         std::string slider_type = "";
         std::deque<std::pair<float, float>> curve_points = {};
-        int repeat = 1;
+        int32_t repeat = 1;
         float pixel_length = 0;
         timing_point time_point = timing_point();
         float slider_multiplier = 0;
@@ -117,7 +117,7 @@ namespace shiro::pp::ctb
         float offset = 0;
         float last_movement = 0;
         slider_tick object;
-        int error_margin = constants::ABSOLUTE_PLAYER_POSITIONING_ERROR;
+        int32_t error_margin = constants::ABSOLUTE_PLAYER_POSITIONING_ERROR;
         float player_width = 0;
         float scaled_position = object.x * (constants::NORMALIZED_HITOBJECT_RADIUS / player_width);
         float hyperdash_distance = 0;
@@ -147,7 +147,7 @@ namespace shiro::pp::ctb
     {
     private:
         // Map based variables
-        int version = 0;
+        int32_t version = 0;
         float star_rate = 0;
         float cs = 0;
         float ar = 0;
@@ -155,14 +155,14 @@ namespace shiro::pp::ctb
         float hp = 0;
         float slider_multiplier = 0;
         float slider_tick_rate = 0;
-        int max_combo = 0;
+        int32_t max_combo = 0;
         float time_rate = 1;
         float player_width = 0;
 
         // Score based variables
-        int mods = 0;
-        int miss_count = 0;
-        int combo = 0;
+        int32_t mods = 0;
+        int32_t miss_count = 0;
+        int32_t combo = 0;
         float accuracy = 0;
 
         std::vector<timing_point> timing_points;

@@ -79,15 +79,18 @@ float shiro::beatmaps::helper::score_to_difficulty(beatmaps::beatmap beatmap, ut
 {
     switch (mode)
     {
-    case utils::play_mode::taiko:
-        return beatmap.difficulty_taiko;
-    case utils::play_mode::fruits:
-        return beatmap.difficulty_ctb;
-    case utils::play_mode::mania:
-        return beatmap.difficulty_mania;
-    case utils::play_mode::standard:
-    default:
-        return beatmap.difficulty_std;
+        case utils::play_mode::taiko:
+            return beatmap.difficulty_taiko;
+
+        case utils::play_mode::fruits:
+            return beatmap.difficulty_ctb;
+
+        case utils::play_mode::mania:
+            return beatmap.difficulty_mania;
+
+        case utils::play_mode::standard:
+        default:
+            return beatmap.difficulty_std;
     }
 }
 
@@ -96,17 +99,17 @@ std::string shiro::beatmaps::helper::build_difficulty_header(beatmaps::beatmap b
     char buffer[64];
     switch (mode)
     {
-    case utils::play_mode::taiko:
-        std::snprintf(buffer, sizeof(buffer), "OD %.1f | HP %.1f", beatmap.od, beatmap.hp);
-        break;
-    case utils::play_mode::mania:
-        std::snprintf(buffer, sizeof(buffer), "Keys %.1f | OD %.1f | HP %.1f", beatmap.cs, beatmap.od, beatmap.hp);
-        break;
-    case utils::play_mode::fruits:
-    case utils::play_mode::standard:
-    default:
-        std::snprintf(buffer, sizeof(buffer), "CS %.1f | AR %.1f | OD %.1f | HP %.1f", beatmap.cs, beatmap.ar, beatmap.od, beatmap.hp);
-        break;
+        case utils::play_mode::taiko:
+            std::snprintf(buffer, sizeof(buffer), "OD %.1f | HP %.1f", beatmap.od, beatmap.hp);
+            break;
+        case utils::play_mode::mania:
+            std::snprintf(buffer, sizeof(buffer), "Keys %.1f | OD %.1f | HP %.1f", beatmap.cs, beatmap.od, beatmap.hp);
+            break;
+        case utils::play_mode::fruits:
+        case utils::play_mode::standard:
+        default:
+            std::snprintf(buffer, sizeof(buffer), "CS %.1f | AR %.1f | OD %.1f | HP %.1f", beatmap.cs, beatmap.ar, beatmap.od, beatmap.hp);
+            break;
     }
 
     return std::string(buffer);

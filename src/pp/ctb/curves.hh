@@ -46,15 +46,15 @@ namespace shiro::pp::ctb
         };
 
         std::deque<std::pair<float, float>> curve_points = {};
-        int order = curve_points.size();
+        int32_t order = curve_points.size();
         std::deque<std::pair<float, float>> points = {};
 
         std::pair<float, float> point_at_distance(float distance) override;
 
     private:
         void setup() override;
-        void bezier(std::deque<std::pair<float, float>> points);
-        float cpn(int p, int n);
+        void bezier(std::vector<std::pair<float, float>> points);
+        float cpn(int32_t p, int32_t n);
     };
 
     class Catmull : public curve
@@ -66,7 +66,7 @@ namespace shiro::pp::ctb
         };
 
         std::deque<std::pair<float, float>> curve_points = {};
-        int order = curve_points.size();
+        int32_t order = curve_points.size();
         float step = 2.5 / constants::SLIDER_QUALITY;
         std::deque<std::pair<float, float>> points = {};
 

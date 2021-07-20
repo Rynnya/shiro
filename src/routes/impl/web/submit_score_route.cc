@@ -243,7 +243,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     // Score has already been submitted
     if (!db_result.empty()) {
-        response.end("error: dup");
+        response.end("ok" /*"error: dup"*/);
 
         LOG_F(WARNING, "%s resubmitted a previously submitted score.", user->presence.username.c_str());
         return;

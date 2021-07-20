@@ -257,6 +257,10 @@ void shiro::beatmaps::beatmap::save() {
 	sqlpp::mysql::connection db(db_connection->get_config());
 	const tables::beatmaps beatmaps_table{};
 
+	auto result = db(sqlpp::select(beatmaps_table.id).from(beatmaps_table).where(beatmaps_table.beatmap_md5 == this->beatmap_md5).limit(1u));
+	if (!result.empty())
+		return;
+
 	db(insert_into(beatmaps_table).set(
 		beatmaps_table.beatmap_id = this->beatmap_id,
 		beatmaps_table.beatmapset_id = this->beatmapset_id,

@@ -29,7 +29,7 @@ namespace shiro::pp::mania
     {
     public:
         note() {};
-        note(double key, int start, int end, double ind_strain) :
+        note(double key, int32_t start, int32_t end, double ind_strain) :
             contains_data(true),
             key(key),
             start_t(start),
@@ -38,8 +38,8 @@ namespace shiro::pp::mania
         {};
 
         double key = 0;
-        int start_t = 0;
-        int end_t = 0;
+        int32_t start_t = 0;
+        int32_t end_t = 0;
         double overall_strain = 1;
         double individual_strain = 0;
         bool contains_data = false;
@@ -78,14 +78,14 @@ namespace shiro::pp::mania
     private:
         float od = 0;
         float stars = 0;
-        int mods = 0;
-        int keys = 0;
-        int score = 0;
+        int32_t mods = 0;
+        int32_t keys = 0;
+        int32_t score = 0;
         std::vector<note> notes;
 
         void calculate_stars();
         void parse_file(std::string filename);
-        void parse_note(std::string line, int keys);
+        void parse_note(std::string line, int32_t keys);
 
     public:
         mania_calculator(beatmaps::beatmap beatmap, scores::score score);

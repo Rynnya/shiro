@@ -42,7 +42,7 @@ namespace shiro::pp::ctb
         static std::pair<float, float> point_at_distance(std::deque<std::pair<float, float>> arr, float distance);
         static std::pair<float, float> point_on_line(std::pair<float, float> p0, std::pair<float, float> p1, float length);
         static float distance_from_points(std::deque<std::pair<float, float>> arr);
-        template <typename T> static int sign(T val) { return (T(0) < val) - (val < T(0)); }
+        template <typename T> static int32_t sign(T val) { return (T(0) < val) - (val < T(0)); }
     };
 }
 

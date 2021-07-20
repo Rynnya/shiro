@@ -29,6 +29,7 @@ namespace shiro {
     class redis {
     private:
         std::shared_ptr<cpp_redis::client> client = nullptr;
+        std::shared_ptr<cpp_redis::subscriber> sub = nullptr;
 
         std::string address;
         uint32_t port;

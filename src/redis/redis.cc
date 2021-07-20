@@ -31,10 +31,15 @@ void shiro::redis::connect() {
         return;
 
     this->client = std::make_shared<cpp_redis::client>();
-    this->client->connect();
+    this->sub = std::make_shared<cpp_redis::subscriber>();
+    this->client->connect(this->address, this->port);
+    this->sub->connect(this->address, this->port);
 
     if (!this->password.empty())
+    {
         this->client->auth(this->password);
+        this->sub->auth(this->password); // TODO: Sub might be useful in future when i continue upgrading this project, but now... meh
+    }
 
     if (!is_connected())
         ABORT_F("Unable to connect to Redis instance.");
@@ -55,6 +60,7 @@ void shiro::redis::disconnect() {
         return;
 
     this->client->disconnect();
+    this->sub->disconnect();
 
     LOG_F(INFO, "Successfully disconnected from Redis.");
 }
@@ -69,6 +75,8 @@ void shiro::redis::setup() {
     this->client->set("shiro.shutdown", "0");
 
     this->client->sync_commit();
+
+    // TODO: Here might be subscribe to channels, i think username change and some other stuff
 }
 
 bool shiro::redis::is_connected() {

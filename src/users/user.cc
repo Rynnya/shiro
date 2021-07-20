@@ -449,13 +449,13 @@ void shiro::users::user::update_counts(std::string rank, bool isRelax)
 }
 
 std::string shiro::users::user::get_url() {
-    static std::string url = config::ipc::frontend_url + "u/" + std::to_string(this->user_id);
+    std::string url = config::ipc::frontend_url + "u/" + std::to_string(this->user_id);
     return url;
 }
 
 std::string shiro::users::user::get_avatar_url() 
 {
-    static std::string url = config::ipc::avatar_url + std::to_string(this->user_id);
+    std::string url = config::ipc::avatar_url + std::to_string(this->user_id);
     return url;
 }
 

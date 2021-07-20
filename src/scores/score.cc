@@ -37,7 +37,7 @@ std::string shiro::scores::score::to_string(std::vector<score> &scores, bool isR
 
     stream << this->id << "|";
     stream << user->presence.username << "|";
-    stream << (isRelax ? static_cast<int>(this->pp) : this->total_score) << "|";
+    stream << (isRelax && this->pp > 0 ? static_cast<int32_t>(this->pp) : this->total_score) << "|";
     stream << this->max_combo << "|";
     stream << this->count_50 << "|";
     stream << this->count_100 << "|";

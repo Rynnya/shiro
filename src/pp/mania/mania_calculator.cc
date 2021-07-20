@@ -20,6 +20,7 @@
 #include <regex>
 #include <fstream>
 
+#include "../../utils/string_utils.hh"
 #include "../../beatmaps/beatmap_helper.hh"
 #include "../../utils/mods.hh"
 #include "mania_calculator.hh"
@@ -122,27 +123,23 @@ void shiro::pp::mania::mania_calculator::parse_file(std::string filename)
     }
 }
 
-void shiro::pp::mania::mania_calculator::parse_note(std::string line, int keys)
+void shiro::pp::mania::mania_calculator::parse_note(std::string line, int32_t keys)
 {
     std::smatch matches;
 
     if (std::regex_search(line, matches, note_regex))
     {
-        try
-        {
-            int x = std::stoi(matches[1]);
-            int start_t = std::stoi(matches[2]);
-            int end_t = -1;
-            int key = std::floor(x * keys / 512);
+        int32_t x = std::stoi(matches[1]);
+        int32_t start_t = std::stoi(matches[2]);
+        int32_t end_t = -1;
+        int32_t key = std::floor(x * keys / 512);
 
-            if (matches[3] != std::string())
-                end_t = std::stoi(matches[3]);
+        if (matches[3] != "")
+            end_t = shiro::utils::strings::safe_int(matches[3]);
 
-            end_t = (end_t == -1 ? start_t : end_t);
+        end_t = (end_t == -1 ? start_t : end_t);
 
-            this->notes.push_back(note(key, start_t, end_t, 0));
-        }
-        catch (const std::exception& ex) { /* Skip, we cannot do anything about it */ }
+        this->notes.push_back(note(key, start_t, end_t, 0));
     }
 }
 
@@ -159,9 +156,9 @@ void shiro::pp::mania::mania_calculator::calculate_stars()
     double overall_decay_base = 0.3;
     double star_scaling_factor = 0.018;
 
-    int notes_size = this->notes.size();
+    int32_t notes_size = this->notes.size();
     std::vector<double> held_until(notes_size, 0);
-    for (int i = 0; i < notes_size; i++)
+    for (int32_t i = 0; i < notes_size; i++)
         held_until[i] = this->notes[i].end_t;
 
     note previous_note;
@@ -178,9 +175,9 @@ void shiro::pp::mania::mania_calculator::calculate_stars()
         double individual_decay = std::pow(individual_decay_base, time_elapsed);
         double overall_decay = std::pow(overall_decay_base, time_elapsed);
         double hold_factor = 1;
-        int hold_addition = 0;
+        int32_t hold_addition = 0;
 
-        for (int i = 0; i < this->keys; i++)
+        for (int32_t i = 0; i < this->keys; i++)
         {
             if (_note.start_t < held_until[i] && _note.end_t > held_until[i])
                 hold_addition = 1;
