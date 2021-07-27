@@ -35,7 +35,7 @@ void shiro::geoloc::init() {
     localhost_ip = output;
 }
 
-std::optional<shiro::geoloc::location_info> shiro::geoloc::get_location(std::string ip_address) {
+shiro::geoloc::location_info shiro::geoloc::get_location(std::string ip_address) {
     // The IP address is localhost, set it to our external localhost IP
     if (ip_address == "127.0.0.1" || ip_address.empty())
         ip_address = localhost_ip;

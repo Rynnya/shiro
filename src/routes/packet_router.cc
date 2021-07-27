@@ -83,7 +83,8 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
         case io::packet_id::in_spectate_frames:
             handler::spectating::frames::handle(in, out, user);
             break;
-        case io::packet_id::in_error_report:break;
+        case io::packet_id::in_error_report:
+            break;
         case io::packet_id::in_cant_spectate:
             handler::spectating::cant_spectate::handle(in, out, user);
             break;
@@ -151,7 +152,8 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
         case io::packet_id::in_channel_join:
             handler::chat::join::handle(in, out, user);
             break;
-        case io::packet_id::in_beatmap_info_request:break;
+        case io::packet_id::in_beatmap_info_request:
+            break;
         case io::packet_id::in_match_transfer_host:
             handler::multiplayer::room::change_host::handle(in, out, user);
             break;
@@ -167,9 +169,10 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
         case io::packet_id::in_channel_leave:
             handler::chat::leave::handle(in, out, user);
             break;
-        case io::packet_id::in_receive_updates:break;
-        case io::packet_id::in_set_irc_away_message:
+        case io::packet_id::in_receive_updates:
             // TODO
+            break;
+        case io::packet_id::in_set_irc_away_message:
             break;
         case io::packet_id::in_user_stats_request:
             handler::stats::request_all::handle(in, out, user);
@@ -180,7 +183,8 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
         case io::packet_id::in_match_change_password:
             handler::multiplayer::room::change_password::handle(in, out, user);
             break;
-        case io::packet_id::in_special_match_info_request:break;
+        case io::packet_id::in_special_match_info_request:
+            break;
         case io::packet_id::in_user_presence_request:
             handler::presence::request::handle(in, out, user);
             break;
@@ -188,7 +192,6 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             handler::presence::request_all::handle(in, out, user);
             break;
         case io::packet_id::in_user_toggle_block_non_friend_pm:
-            // TODO
             break;
         case io::packet_id::in_special_join_match_channel:
             // TODO

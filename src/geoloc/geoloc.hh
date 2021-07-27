@@ -30,7 +30,7 @@ namespace shiro::geoloc {
 
     void init();
 
-    std::optional<location_info> get_location(std::string ip_address);
+    location_info get_location(std::string ip_address);
 
 }
 

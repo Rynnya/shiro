@@ -20,7 +20,7 @@
 #include <algorithm>
 #include "string_utils.hh"
 
-bool shiro::utils::strings::safe_int(const std::string& src, int& num)
+bool shiro::utils::strings::safe_int(const std::string& src, int32_t& num)
 {
     const char* ptr = src.c_str();
     char* end_ptr;
@@ -36,9 +36,9 @@ bool shiro::utils::strings::safe_int(const std::string& src, int& num)
     return true;
 }
 
-int shiro::utils::strings::safe_int(const std::string& src)
+int32_t shiro::utils::strings::safe_int(const std::string& src)
 {
-    int num;
+    int32_t num;
     if (safe_int(src, num))
         return num;
     return -1;
@@ -68,7 +68,7 @@ float shiro::utils::strings::safe_float(const std::string& src)
     return -1;
 }
 
-bool shiro::utils::strings::safe_long_long(const std::string& src, long long& num)
+bool shiro::utils::strings::safe_long_long(const std::string& src, int64_t& num)
 {
     const char* ptr = src.c_str();
     char* end_ptr;
@@ -84,9 +84,9 @@ bool shiro::utils::strings::safe_long_long(const std::string& src, long long& nu
     return true;
 }
 
-long long shiro::utils::strings::safe_long_long(const std::string& src)
+int64_t shiro::utils::strings::safe_long_long(const std::string& src)
 {
-    long long num;
+    int64_t num;
     if (safe_long_long(src, num))
         return num;
     return -1;

@@ -21,6 +21,7 @@
 #include "../thirdparty/loguru.hh"
 #include "country_ids.hh"
 
+/* TODO: Update this list */
 std::unordered_map<std::string, uint8_t> shiro::geoloc::country_ids = {
     { "BL", 0 },
     { "AD", 3 },

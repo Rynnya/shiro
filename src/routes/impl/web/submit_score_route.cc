@@ -172,19 +172,26 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.beatmap_md5 = score_metadata.at(0);
     score.hash = score_metadata.at(2);
 
-    try {
-        score.count_300 = boost::lexical_cast<int32_t>(score_metadata.at(3));
-        score.count_100 = boost::lexical_cast<int32_t>(score_metadata.at(4));
-        score.count_50 = boost::lexical_cast<int32_t>(score_metadata.at(5));
-        score.count_gekis = boost::lexical_cast<int32_t>(score_metadata.at(6));
-        score.count_katus = boost::lexical_cast<int32_t>(score_metadata.at(7));
-        score.count_misses = boost::lexical_cast<int32_t>(score_metadata.at(8));
-        score.total_score = boost::lexical_cast<int64_t>(score_metadata.at(9));
-        score.max_combo = boost::lexical_cast<int32_t>(score_metadata.at(10));
-        score.mods = boost::lexical_cast<int32_t>(score_metadata.at(13));
-        score.play_mode = static_cast<uint8_t>(boost::lexical_cast<int32_t>(score_metadata.at(15)));
-    } catch (const boost::bad_lexical_cast &ex) {
-        logging::sentry::exception(ex);
+    /* This way might be faster than lexical_cast, but provides less information why this thing crashed... */
+    /* If you have any problems - please revent commit (or replace this implementation) to catch real exception */
+
+    bool parse_result = true;
+    int32_t play_mode = 0;
+    parse_result &= utils::strings::safe_int(score_metadata.at(3), score.count_300);
+    parse_result &= utils::strings::safe_int(score_metadata.at(4), score.count_100);
+    parse_result &= utils::strings::safe_int(score_metadata.at(5), score.count_50);
+    parse_result &= utils::strings::safe_int(score_metadata.at(6), score.count_gekis);
+    parse_result &= utils::strings::safe_int(score_metadata.at(7), score.count_katus);
+    parse_result &= utils::strings::safe_int(score_metadata.at(8), score.count_misses);
+    parse_result &= utils::strings::safe_long_long(score_metadata.at(9), score.total_score);
+    parse_result &= utils::strings::safe_int(score_metadata.at(10), score.max_combo);
+    parse_result &= utils::strings::safe_int(score_metadata.at(13), score.mods);
+    parse_result &= utils::strings::safe_int(score_metadata.at(15), play_mode);
+    score.play_mode = static_cast<int8_t>(play_mode);
+
+    if (!parse_result)
+    {
+        logging::sentry::exception(std::invalid_argument("Score submission arguments was invalid."));
 
         response.code = 500;
         response.end();
@@ -193,14 +200,16 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
-    try {
-        game_version = boost::lexical_cast<int32_t>(score_metadata.at(17));
-    } catch (const boost::bad_lexical_cast &ex) {
-        LOG_F(WARNING, "Unable to convert %s to game version: %s.", score_metadata.at(17).c_str(), ex.what());
-        logging::sentry::exception(ex);
+    parse_result &= utils::strings::safe_int(score_metadata.at(17), game_version);
+
+    if (!parse_result)
+    {
+        logging::sentry::exception(std::invalid_argument("Cannot convert game version into int32_t."));
+        LOG_F(WARNING, "Unable to convert %s to game version.", score_metadata.at(17).c_str());
 
         // Give the client a chance to resubmit so the player doesn't get restricted for a fail on our side.
-        if (config::score_submission::restrict_mismatching_client_version) {
+        if (config::score_submission::restrict_mismatching_client_version)
+        {
             response.code = 500;
             response.end();
             return;
@@ -216,7 +225,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         failed = failtime > 0;
     }
 
-    if (score.play_mode > 3) {
+    if (score.play_mode > 3)
+    {
         response.end("error: invalid");
 
         LOG_F(WARNING, "%s submitted a score with a invalid play mode.", user->presence.username.c_str());
@@ -230,7 +240,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.rank = score_metadata.at(12);
     score.fc = utils::strings::to_bool(score_metadata.at(11));
     score.passed = utils::strings::to_bool(score_metadata.at(14));
-    score.isRelax = (score.mods & (uint32_t)utils::mods::relax) > 0;
+    score.isRelax = score.mods & (uint32_t)utils::mods::relax;
     score.time = seconds.count();
 
     score.accuracy = scores::helper::calculate_accuracy(
@@ -242,6 +252,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     auto db_result = db(select(all_of(score_table)).from(score_table).where(score_table.hash == score.hash).limit(1u));
 
     // Score has already been submitted
+    // TODO: finally fix 'sending statistics...' on client, and duplication scores
     if (!db_result.empty()) {
         response.end("ok" /*"error: dup"*/);
 
@@ -391,6 +402,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (!score.passed || !scores::helper::is_ranked(score, beatmap))
     {
         // We need save stats to keep play_time, counts and total_hits
+        // TODO: Same here (line 255)
         user->save_stats(score.isRelax);
         response.end("ok" /*"error: disabled" for ranked*/);
         return;
@@ -439,7 +451,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                     scores_first_table.play_mode = score.play_mode,
                     scores_first_table.is_relax = score.isRelax
                 ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
-            }, std::move(db), user, beatmap, score).detach();
+            }, std::move(db) /* We don't manipulate with database anymore */, user, beatmap, score).detach();
         }
     }
 

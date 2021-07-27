@@ -190,18 +190,14 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         logging::sentry::exception(ex);
     }
 
-    std::optional<geoloc::location_info> info = geoloc::get_location(request.get_ip_address());
+    geoloc::location_info location_info = geoloc::get_location(request.get_ip_address());
 
-    if (info.has_value()) {
-        geoloc::location_info location_info = info.value();
+    user->presence.country_id = location_info.country;
+    user->presence.latitude = location_info.latitude;
+    user->presence.longitude = location_info.longitude;
 
-        user->presence.country_id = location_info.country;
-        user->presence.latitude = location_info.latitude;
-        user->presence.longitude = location_info.longitude;
-
-        if (user->country == "XX")
-            user->update_country(shiro::geoloc::get_country_name(location_info.country));
-    }
+    if (user->country == "XX")
+        user->update_country(shiro::geoloc::get_country_name(location_info.country));
 
     user->presence.time_zone = time_zone;
 
@@ -222,6 +218,9 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
     if (!title_image.empty() || !title_url.empty())
         writer.title_update(title_image + "|" + title_url);
+
+    if (request.raw_url.find("ppy.sh") != std::string::npos)
+        utils::bot::respond("Seems like you still use old type of connection. Please, read about (-devserver)[" + config::bancho::title_url + "] on our site.", user, config::bot::name, true);
 
     writer.friend_list(user->friends);
 
@@ -247,9 +246,9 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
     if (users::punishments::is_restricted(user->user_id)) {
         utils::bot::respond(
-                "[" + user->get_url() + " Your account has been restricted]. "
+                "(Your account has been restricted)[" + user->get_url() + "]. "
                 "Because of that, your profile has been hidden from the public. "
-                "If you believe this is a mistake, [" + config::ipc::frontend_url + "support contact support] "
+                "If you believe this is a mistake, (support contact support)[" + config::ipc::frontend_url + "] "
                 "to have your account status reviewed.",
                 user, config::bot::name, true
         );
