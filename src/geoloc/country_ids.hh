@@ -30,7 +30,6 @@ namespace shiro::geoloc {
     extern std::unordered_map<std::string, uint8_t> country_ids;
 
     uint8_t get_country_id(const std::string &country_code);
-    std::string get_country_name(uint8_t country_id);
 
 }
 

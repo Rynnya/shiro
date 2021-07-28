@@ -43,5 +43,5 @@ shiro::geoloc::location_info shiro::geoloc::get_location(std::string ip_address)
     auto [country, latitude, longitude] = maxmind::locate(ip_address);
     uint8_t country_id = get_country_id(country);
 
-    return location_info(country_id, latitude, longitude);
+    return location_info(country_id, country, latitude, longitude);
 }

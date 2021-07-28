@@ -29,11 +29,13 @@ namespace shiro::geoloc {
     class location_info {
     public:
         uint8_t country = 0;
+        std::string country_str = "XX";
         float latitude = 0.0f;
         float longitude = 0.0f;
 
-        explicit location_info(uint8_t country, float latitude, float longitude)
+        explicit location_info(uint8_t country, std::string country_str, float latitude, float longitude)
                 : country(country)
+                , country_str(country_str)
                 , latitude(latitude)
                 , longitude(longitude) {
             // Initializer in initializer list
