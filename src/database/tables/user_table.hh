@@ -28,7 +28,8 @@
 
 namespace shiro::tables {
 
-	struct users_objects {
+	struct users_objects
+	{
 		object_struct(id, sqlpp::integer);
 		object_struct(username, sqlpp::varchar);
 		object_struct(safe_username, sqlpp::varchar);
@@ -108,6 +109,19 @@ namespace shiro::tables {
 		object_struct(count_X_mania, sqlpp::integer);
 		object_struct(count_SH_mania, sqlpp::integer);
 		object_struct(count_XH_mania, sqlpp::integer);
+	};
+
+	struct users_preferences_objects
+	{
+		object_struct(id, sqlpp::integer);
+		object_struct(scoreboard_display_classic, sqlpp::boolean);
+		object_struct(scoreboard_display_relax, sqlpp::boolean);
+		object_struct(auto_last_classic, sqlpp::integer);
+		object_struct(auto_last_relax, sqlpp::integer);
+		object_struct(score_overwrite_std, sqlpp::boolean);
+		object_struct(score_overwrite_taiko, sqlpp::boolean);
+		object_struct(score_overwrite_ctb, sqlpp::boolean);
+		object_struct(score_overwrite_mania, sqlpp::boolean);
 	};
 
 	database_table(users,
@@ -238,6 +252,18 @@ namespace shiro::tables {
 		users_stats_objects::count_SH_ctb,
 		users_stats_objects::count_X_ctb,
 		users_stats_objects::count_XH_ctb
+	);
+
+	database_table(users_preferences,
+		users_preferences_objects::id,
+		users_preferences_objects::scoreboard_display_classic,
+		users_preferences_objects::scoreboard_display_relax,
+		users_preferences_objects::auto_last_classic,
+		users_preferences_objects::auto_last_relax,
+		users_preferences_objects::score_overwrite_std,
+		users_preferences_objects::score_overwrite_taiko,
+		users_preferences_objects::score_overwrite_ctb,
+		users_preferences_objects::score_overwrite_mania
 	);
 
 	namespace migrations::users {

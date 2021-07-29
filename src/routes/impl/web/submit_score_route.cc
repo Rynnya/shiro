@@ -50,7 +50,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     const std::string &user_agent = request.get_header_value("user-agent");
 
     if (user_agent.empty() || user_agent != "osu!") {
-        response.code = 403;
         response.end();
 
         LOG_F(WARNING, "Received score submission from %s without osu! user agent.", request.get_ip_address().c_str());
@@ -60,7 +59,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     const std::string &content_type = request.get_header_value("content-type");
 
     if (content_type.empty()) {
-        response.code = 400;
         response.end("error: invalid");
 
         LOG_F(ERROR, "Received score submission without content type.");
@@ -76,7 +74,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     std::string key = "h89f2-890h2h89b34g-h80g134n90133";
 
     if (fields.find("pass") == fields.end()) {
-        response.code = 403;
         response.end("error: pass");
 
         LOG_F(WARNING, "Received score submission without password.");
@@ -84,7 +81,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     if (fields.find("iv") == fields.end()) {
-        response.code = 400;
         response.end("error: invalid");
 
         LOG_F(WARNING, "Received score without initialization vector.");
@@ -92,7 +88,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     if (fields.find("score") == fields.end()) {
-        response.code = 400;
         response.end("error: invalid");
 
         LOG_F(WARNING, "Received score without score data.");
@@ -109,7 +104,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     );
 
     if (decrypted.empty()) {
-        response.code = 400;
         response.end("error: invalid");
 
         LOG_F(WARNING, "Received score without score metadata.");
@@ -122,7 +116,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     boost::split(score_metadata, result, boost::is_any_of(":"));
 
     if (score_metadata.size() < 18) {
-        response.code = 400;
         response.end("error: invalid");
 
         LOG_F(WARNING, "Received invalid score submission, score metadata doesn't have 18 or more parts.");
@@ -135,14 +128,13 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     // This only occurs when the server restarted and osu submitted before being re-logged in
     if (user == nullptr) {
-        response.code = 403;
+        response.end();
 
         LOG_F(WARNING, "Received score submission from offline user.");
         return;
     }
 
     if (!user->check_password(fields.at("pass").body)) {
-        response.code = 403;
         response.end("error: pass");
 
         LOG_F(WARNING, "Received score submission from %s with incorrect password.", user->presence.username.c_str());
@@ -150,7 +142,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     if (users::punishments::is_banned(user->user_id)) {
-        response.code = 403;
         response.end("error: no");
 
         LOG_F(WARNING, "Received score submission from %s while user is banned.", user->presence.username.c_str());
@@ -193,8 +184,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     {
         logging::sentry::exception(std::invalid_argument("Score submission arguments was invalid."));
 
-        response.code = 500;
-        response.end();
+        response.end("error: invalid");
 
         LOG_F(WARNING, "Received score submission from %s with invalid types.", user->presence.username.c_str());
         return;
@@ -210,8 +200,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         // Give the client a chance to resubmit so the player doesn't get restricted for a fail on our side.
         if (config::score_submission::restrict_mismatching_client_version)
         {
-            response.code = 500;
-            response.end();
+            response.end("error: invalid");
             return;
         }
     }
@@ -252,9 +241,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     auto db_result = db(select(all_of(score_table)).from(score_table).where(score_table.hash == score.hash).limit(1u));
 
     // Score has already been submitted
-    // TODO: finally fix 'sending statistics...' on client, and duplication scores
     if (!db_result.empty()) {
-        response.end("ok" /*"error: dup"*/);
+        response.end("error: dup");
 
         LOG_F(WARNING, "%s resubmitted a previously submitted score.", user->presence.username.c_str());
         return;
@@ -264,7 +252,10 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     user->update(score.isRelax);
 
     user->stats.play_count++;
-    user->stats.total_hits += score.count_300 + score.count_100 + score.count_50;
+    user->stats.total_hits
+        += static_cast<int64_t>(score.count_300)
+        +  static_cast<int64_t>(score.count_100)
+        +  static_cast<int64_t>(score.count_50);
 
     beatmaps::beatmap beatmap;
     beatmap.beatmap_md5 = score.beatmap_md5;
@@ -303,37 +294,37 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(beatmap.ranked_status)))
         score.pp = pp::calculate(beatmap, score);
 
+    shiro::users::preferences preferences(user->user_id);
     std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.isRelax);
-    bool overwrite = true;
+    bool overwrite = score.passed;
     
-    // TODO: Make user-specific settings like Ripple
-    // User has previous scores on this map, enable overwriting mode
-    if (!previous_scores.empty()) {
-        for (const scores::score &s : previous_scores) {
+    // User has previous scores on this map and this also pass, enable overwriting mode
+    if (!previous_scores.empty() && overwrite)
+    {
+        for (const scores::score &s : previous_scores)
+        {
             double factor_score;
             double factor_iterator;
 
-            if (score.isRelax) { // In relax only pp
-                factor_score = score.pp;
-                factor_iterator = s.pp;
-            } else if (config::score_submission::overwrite_factor == "score") {
-                factor_score = score.total_score;
-                factor_iterator = s.total_score;
-            } else if (config::score_submission::overwrite_factor == "accuracy") {
-                factor_score = score.accuracy;
-                factor_iterator = s.accuracy;
-            } else { // pp
+            // In relax only pp
+            if (score.isRelax && !preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
+            {
                 factor_score = score.pp;
                 factor_iterator = s.pp;
             }
+            else
+            {
+                factor_score = score.total_score;
+                factor_iterator = s.total_score;
+            }
 
             if (factor_iterator > factor_score)
+            {
                 overwrite = false;
+                break;
+            }
         }
     }
-
-    if (!score.passed)
-        overwrite = false;
 
     // Auto restriction for weird things enabled in score_submission.toml
     auto [flagged, reason] = scores::helper::is_flagged(score, beatmap);
@@ -401,10 +392,10 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     if (!score.passed || !scores::helper::is_ranked(score, beatmap))
     {
-        // We need save stats to keep play_time, counts and total_hits
-        // TODO: Same here (line 255)
+        // We need save stats to keep play_time, counts and total_hits, also fixes 'sending statistics...' bug
         user->save_stats(score.isRelax);
-        response.end("ok" /*"error: disabled" for ranked*/);
+        display->set_scoreboard_position(0);
+        response.end(display->build());
         return;
     }
 

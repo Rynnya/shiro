@@ -23,6 +23,7 @@
 #include "../database/tables/user_table.hh"
 #include "../permissions/role_manager.hh"
 #include "../thirdparty/loguru.hh"
+#include "../users/user_manager.hh"
 #include "../utils/crypto.hh"
 #include "../utils/play_mode.hh"
 #include "../shiro.hh"
@@ -473,4 +474,45 @@ bool shiro::users::user::check_password(const std::string &password) {
         return false;
 
     return utils::crypto::pbkdf2_hmac_sha512::hash(password, this->salt) == this->password;
+}
+
+shiro::users::preferences::preferences(int32_t id)
+{
+    sqlpp::mysql::connection db(db_connection->get_config());
+    const tables::users_preferences users_preferences_table{};
+
+    auto result = db(sqlpp::select(sqlpp::all_of(users_preferences_table)).from(users_preferences_table).where(users_preferences_table.id == id));
+    if (result.empty())
+        return;
+
+    auto& data = result.front();
+    this->display_classic = data.scoreboard_display_classic;
+    this->display_relax = data.scoreboard_display_relax;
+    this->auto_classic = data.auto_last_classic;
+    this->auto_relax = data.auto_last_relax;
+    this->score_ow_std = data.score_overwrite_std;
+    this->score_ow_taiko = data.score_overwrite_taiko;
+    this->score_ow_ctb = data.score_overwrite_ctb;
+    this->score_ow_mania = data.score_overwrite_mania;
+}
+
+shiro::users::preferences::preferences(std::string& username)
+{
+    preferences(shiro::users::manager::get_id_by_username(username));
+}
+
+bool shiro::users::preferences::is_overwrite(shiro::utils::play_mode mode)
+{
+    switch (mode)
+    {
+        default:
+        case shiro::utils::play_mode::standard:
+            return this->score_ow_std;
+        case shiro::utils::play_mode::taiko:
+            return this->score_ow_taiko;
+        case shiro::utils::play_mode::fruits:
+            return this->score_ow_ctb;
+        case shiro::utils::play_mode::mania:
+            return this->score_ow_mania;
+    }
 }

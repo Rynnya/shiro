@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -26,9 +27,27 @@
 #include "../io/layouts/user/user_stats.hh"
 #include "../io/layouts/user/user_status.hh"
 #include "../io/queue.hh"
+#include "../utils/play_mode.hh"
 #include "../shiro.hh"
 
 namespace shiro::users {
+
+    class preferences
+    {
+    public:
+        bool display_classic = false;
+        bool display_relax = false;
+        int8_t auto_classic = 0;
+        int8_t auto_relax = 0;
+        bool score_ow_std = false;
+        bool score_ow_taiko = false;
+        bool score_ow_ctb = false;
+        bool score_ow_mania = false;
+
+        preferences(int32_t id);
+        preferences(std::string &username);
+        bool is_overwrite(shiro::utils::play_mode mode);
+    };
 
     class user {
     public:
