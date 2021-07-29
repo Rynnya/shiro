@@ -97,7 +97,7 @@ std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_m
             int32_t id = match.multi_slot_id.at(i);
             uint8_t status = match.multi_slot_status.at(i);
 
-            if (id != -1 || status != (uint8_t) utils::slot_status::open)
+            if (id != -1 || status != static_cast<uint8_t>(utils::slot_status::open))
                 continue;
 
             index = i;
@@ -106,10 +106,10 @@ std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_m
         if (index == 0xBADCAFE)
             return std::nullopt;
 
-        uint8_t team = (uint8_t) (utils::is_team(match.multi_team_type) ? index % 2 + 1 : 0);
+        uint8_t team = static_cast<uint8_t>(utils::is_team(match.multi_team_type) ? index % 2 + 1 : 0);
 
         match.multi_slot_id.at(index) = user->user_id;
-        match.multi_slot_status.at(index) = (uint8_t) utils::slot_status::not_ready;
+        match.multi_slot_status.at(index) = static_cast<uint8_t>(utils::slot_status::not_ready);
         match.multi_slot_team.at(index) = team;
         match.multi_slot_mods.at(index) = match.active_mods;
 
@@ -150,8 +150,8 @@ bool shiro::multiplayer::match_manager::leave_match(std::shared_ptr<shiro::users
 
         uint8_t &slot_status = match.multi_slot_status.at(index);
 
-        if (slot_status != (uint8_t) utils::slot_status::locked)
-            slot_status = (uint8_t) utils::slot_status::open;
+        if (slot_status != static_cast<uint8_t>(utils::slot_status::locked))
+            slot_status = static_cast<uint8_t>(utils::slot_status::open);
 
         // If the parting player is the host, assign the first player which has the ability to be host
         if (match.host_id == user->user_id) {

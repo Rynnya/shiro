@@ -37,5 +37,5 @@ void shiro::io::layouts::user_status::unmarshal(shiro::io::buffer &data) {
 }
 
 int32_t shiro::io::layouts::user_status::get_size() {
-    return (int32_t) this->marshal().get_size();
+    return static_cast<int32_t>(this->marshal().get_size());
 }

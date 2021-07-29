@@ -45,9 +45,9 @@ void shiro::handler::multiplayer::room::lock_slot::handle(shiro::io::osu_packet 
 
         uint8_t &slot_status = match.multi_slot_status.at(slot_id);
 
-        bool should_lock = slot_status == (uint8_t) utils::slot_status::open ||
-                           slot_status & (uint8_t) utils::has_player_status;
-        slot_status = should_lock ? (uint8_t) utils::slot_status::locked : (uint8_t) utils::slot_status::open;
+        bool should_lock = slot_status == static_cast<uint8_t>(utils::slot_status::open) ||
+                           slot_status & static_cast<uint8_t>(utils::has_player_status);
+        slot_status = static_cast<uint8_t>(should_lock ? utils::slot_status::locked : utils::slot_status::open);
 
         match.send_update(true);
         return true;

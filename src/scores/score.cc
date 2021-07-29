@@ -25,7 +25,7 @@
 #include "score.hh"
 #include "score_helper.hh"
 
-std::string shiro::scores::score::to_string(std::vector<score> &scores, bool isRelax) {
+std::string shiro::scores::score::to_string(std::vector<score> &scores, bool is_relax) {
     std::stringstream stream;
     std::shared_ptr<users::user> user = users::manager::get_user_by_id(this->user_id);
 
@@ -37,7 +37,7 @@ std::string shiro::scores::score::to_string(std::vector<score> &scores, bool isR
 
     stream << this->id << "|";
     stream << user->presence.username << "|";
-    stream << (isRelax && this->pp > 0 ? static_cast<int32_t>(this->pp) : this->total_score) << "|";
+    stream << (is_relax && this->pp > 0 ? static_cast<int32_t>(this->pp) : this->total_score) << "|";
     stream << this->max_combo << "|";
     stream << this->count_50 << "|";
     stream << this->count_100 << "|";

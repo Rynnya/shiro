@@ -200,7 +200,7 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             // TODO
             break;
         default:
-            LOG_F(WARNING, "Packet %i was sent for incoming packet handling while being outbound.", (uint16_t) packet_id);
+            LOG_F(WARNING, "Packet %i was sent for incoming packet handling while being outbound.", static_cast<uint16_t>(packet_id));
             return;
     }
 

@@ -30,15 +30,15 @@ void shiro::handler::multiplayer::room::change_mods::handle(shiro::io::osu_packe
 
         if (match.multi_special_modes == 1) { // Free Mod
             if (match.host_id == user->user_id) {
-                if (mods & (uint32_t) utils::mods::double_time) {
-                    match.active_mods = (uint32_t) utils::mods::double_time;
+                if (mods & static_cast<uint32_t>(utils::mods::double_time)) {
+                    match.active_mods = static_cast<uint32_t>(utils::mods::double_time);
 
-                    if (mods & (uint32_t) utils::mods::nightcore)
-                        match.active_mods |= (uint32_t) utils::mods::nightcore;
-                } else if (mods & (uint32_t) utils::mods::half_time) {
-                    match.active_mods = (uint32_t) utils::mods::half_time;
+                    if (mods & static_cast<uint32_t>(utils::mods::nightcore))
+                        match.active_mods |= static_cast<uint32_t>(utils::mods::nightcore);
+                } else if (mods & static_cast<uint32_t>(utils::mods::half_time)) {
+                    match.active_mods = static_cast<uint32_t>(utils::mods::half_time);
                 } else {
-                    match.active_mods = (uint32_t) utils::mods::none;
+                    match.active_mods = static_cast<uint32_t>(utils::mods::none);
                 }
             }
 

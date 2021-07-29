@@ -80,19 +80,19 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     beatmap.fetch();
 
-    int32_t mods_list = (int32_t) utils::mods::none;
+    int32_t mods_list = static_cast<int32_t>(utils::mods::none);
 
     const tables::users users_table {};
     sqlpp::mysql::connection db(db_connection->get_config());
     auto result = db(sqlpp::select(users_table.is_relax).from(users_table).where(users_table.id == user->user_id));
     const auto& row = result.front();
-    bool isRelax = row.is_relax;
+    bool is_relax = row.is_relax;
 
     std::vector<scores::score> score_list;
 
     switch (scoreboard_type) {
         case 1: {
-            score_list = scores::helper::fetch_all_scores(md5sum, isRelax);
+            score_list = scores::helper::fetch_all_scores(md5sum, is_relax);
             break;
         }
         case 2: {
@@ -106,7 +106,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
             try {
                 mods_list = boost::lexical_cast<int32_t>(mods);
-                isRelax = isRelax && (mods_list & (uint32_t)utils::mods::relax) > 0;
+                is_relax |= (mods_list & static_cast<uint32_t>(utils::mods::relax)) > 0;
             } catch (const boost::bad_lexical_cast &ex) {
                 LOG_F(ERROR, "Unable to convert sent values to mods: %s.", ex.what());
                 logging::sentry::exception(ex);
@@ -116,15 +116,15 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
                 return;
             }
 
-            score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, isRelax);
+            score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, is_relax);
             break;
         }
         case 3: {
-            score_list = scores::helper::fetch_friend_scores(md5sum, user, isRelax);
+            score_list = scores::helper::fetch_friend_scores(md5sum, user, is_relax);
             break;
         }
         case 4: {
-            score_list = scores::helper::fetch_country_scores(md5sum, geoloc::get_country_id(user->country), isRelax);
+            score_list = scores::helper::fetch_country_scores(md5sum, geoloc::get_country_id(user->country), is_relax);
             break;
         }
         default: {
@@ -137,7 +137,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
     std::string res = beatmap.build_header(score_list);
 
     if (beatmaps::helper::has_leaderboard(beatmaps::helper::fix_beatmap_status(beatmap.ranked_status))) {
-        scores::score top_score_user = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, isRelax);
+        scores::score top_score_user = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, is_relax);
 
         if (top_score_user.id == -1) {
             res.append("\n");
@@ -145,12 +145,12 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
             if (scoreboard_type == 2 && top_score_user.mods != mods_list) {
                 res.append("\n");
             } else {
-                res.append(top_score_user.to_string(score_list, isRelax));
+                res.append(top_score_user.to_string(score_list, is_relax));
             }
         }
 
         for (scores::score &submitted_score : score_list) {
-            res.append(submitted_score.to_string(score_list, isRelax));
+            res.append(submitted_score.to_string(score_list, is_relax));
         }
     }
 

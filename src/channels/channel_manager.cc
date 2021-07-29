@@ -39,7 +39,7 @@ void shiro::channels::manager::init() {
 
     insert_if_not_exists("#announce", "", true, false, true, 0);
     insert_if_not_exists("#lobby", "", false, true, false, 0);
-    insert_if_not_exists("#console", "", true, false, true, (uint64_t) permissions::perms::channel_console);
+    insert_if_not_exists("#console", "", true, false, true, static_cast<uint64_t>(permissions::perms::channel_console));
 
     auto result = db(select(all_of(channel_table)).from(channel_table).unconditionally());
 
@@ -53,7 +53,7 @@ void shiro::channels::manager::init() {
         std::string name = row.name;
 
         if (name.at(0) != '#') {
-            LOG_F(WARNING, "Channel name of channel id %i doesn't start with #, fixing (%s -> %s).", (int32_t) row.id, name.c_str(), ("#" + name).c_str());
+            LOG_F(WARNING, "Channel name of channel id %lli doesn't start with #, fixing (%s -> %s).", row.id.value(), name.c_str(), ("#" + name).c_str());
             name.insert(0, "#");
 
             db(update(channel_table).set(

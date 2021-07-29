@@ -29,7 +29,7 @@ bool shiro::commands::clients(std::deque<std::string> &args, std::shared_ptr<shi
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_clients)) {
-        utils::bot::respond("Permission denied. (" + std::to_string((uint64_t) permissions::perms::cmd_clients) + ")", user, channel, true);
+        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<int64_t>(permissions::perms::cmd_clients)) + ")", user, channel, true);
         return false;
     }
 

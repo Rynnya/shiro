@@ -60,40 +60,40 @@ namespace shiro::utils {
 
     };
 
-    constexpr uint32_t key_mods = (uint32_t) mods::key_1 |
-            (uint32_t) mods::key_2 |
-            (uint32_t) mods::key_3 |
-            (uint32_t) mods::key_4 |
-            (uint32_t) mods::key_5 |
-            (uint32_t) mods::key_6 |
-            (uint32_t) mods::key_7 |
-            (uint32_t) mods::key_8 |
-            (uint32_t) mods::key_9 |
-            (uint32_t) mods::key_coop;
+    constexpr uint32_t key_mods = static_cast<uint32_t>(mods::key_1) |
+            static_cast<uint32_t>(mods::key_2) |
+            static_cast<uint32_t>(mods::key_3) |
+            static_cast<uint32_t>(mods::key_4) |
+            static_cast<uint32_t>(mods::key_5) |
+            static_cast<uint32_t>(mods::key_6) |
+            static_cast<uint32_t>(mods::key_7) |
+            static_cast<uint32_t>(mods::key_8) |
+            static_cast<uint32_t>(mods::key_9) |
+            static_cast<uint32_t>(mods::key_coop);
 
-    constexpr uint32_t unranked_key_mods = (uint32_t) mods::key_1 |
-            (uint32_t) mods::key_2 |
-            (uint32_t) mods::key_3 |
-            (uint32_t) mods::key_9 |
-            (uint32_t) mods::key_coop;
+    constexpr uint32_t unranked_key_mods = static_cast<uint32_t>(mods::key_1) |
+            static_cast<uint32_t>(mods::key_2) |
+            static_cast<uint32_t>(mods::key_3) |
+            static_cast<uint32_t>(mods::key_9) |
+            static_cast<uint32_t>(mods::key_coop);
 
-    constexpr uint32_t free_mods = (uint32_t) mods::no_fail |
-            (uint32_t) mods::easy |
-            (uint32_t) mods::hidden |
-            (uint32_t) mods::hard_rock |
-            (uint32_t) mods::sudden_death |
-            (uint32_t) mods::flashlight |
-            (uint32_t) mods::fade_in |
-            (uint32_t) mods::relax |
-            (uint32_t) mods::auto_pilot |
-            (uint32_t) mods::spun_out |
+    constexpr uint32_t free_mods = static_cast<uint32_t>(mods::no_fail) |
+            static_cast<uint32_t>(mods::easy) |
+            static_cast<uint32_t>(mods::hidden) |
+            static_cast<uint32_t>(mods::hard_rock) |
+            static_cast<uint32_t>(mods::sudden_death) |
+            static_cast<uint32_t>(mods::flashlight) |
+            static_cast<uint32_t>(mods::fade_in) |
+            static_cast<uint32_t>(mods::relax) |
+            static_cast<uint32_t>(mods::auto_pilot) |
+            static_cast<uint32_t>(mods::spun_out) |
             key_mods;
 
-    constexpr uint32_t score_increase_mods = (uint32_t) mods::hidden |
-            (uint32_t) mods::hard_rock |
-            (uint32_t) mods::double_time |
-            (uint32_t) mods::flashlight |
-            (uint32_t) mods::fade_in;
+    constexpr uint32_t score_increase_mods = static_cast<uint32_t>(mods::hidden) |
+            static_cast<uint32_t>(mods::hard_rock) |
+            static_cast<uint32_t>(mods::double_time) |
+            static_cast<uint32_t>(mods::flashlight) |
+            static_cast<uint32_t>(mods::fade_in);
 
 }
 

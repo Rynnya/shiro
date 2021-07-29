@@ -24,7 +24,7 @@
 #include "pp_score_metric.hh"
 
 float shiro::pp::calculate(shiro::beatmaps::beatmap beatmap, shiro::scores::score score) {
-    switch ((utils::play_mode) score.play_mode) {
+    switch (static_cast<utils::play_mode>(score.play_mode)) {
         case utils::play_mode::standard:
             return calculate_std(std::move(beatmap), std::move(score));
         case utils::play_mode::taiko:

@@ -55,8 +55,8 @@ namespace shiro::io::layouts {
         int32_t rank = 0;
         int16_t pp = 0;
 
-        void recalculate_accuracy(bool isRelax);
-        void recalculate_pp(bool isRelax);
+        void recalculate_accuracy(bool is_relax);
+        void recalculate_pp(bool is_relax);
 
         buffer marshal() override;
         void unmarshal(shiro::io::buffer &buffer) override;

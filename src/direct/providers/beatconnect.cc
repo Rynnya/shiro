@@ -61,10 +61,10 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
     }
 
     std::stringstream out;
-    out << (int32_t) json_result["max_page"] << std::endl;
+    out << json_result["max_page"].get<int32_t>() << std::endl;
 
     for (auto &map_json : json_result["beatmaps"]) {
-        std::string beatmap_id = std::to_string((int32_t) map_json["id"]);
+        std::string beatmap_id = std::to_string(map_json["id"].get<int32_t>());
         std::string last_updated = "-";
 
         if (map_json["last_updated"].is_string())
@@ -102,7 +102,7 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
                 difficulties << minutes << "m";
 
             difficulties << seconds << "s)" << "@";
-            difficulties << (int32_t) diff_json["mode_int"] << ",";
+            difficulties << diff_json["mode_int"].get<int32_t>() << ",";
         }
 
         std::string all_difficulties = difficulties.str();
@@ -184,7 +184,7 @@ void shiro::direct::beatconnect::sanitize_mode(std::string &value) {
         return;
     }
 
-    value = utils::play_mode_to_string((utils::play_mode) mode, false);
+    value = utils::play_mode_to_string(static_cast<utils::play_mode>(mode), false);
 }
 
 void shiro::direct::beatconnect::sanitize_status(std::string &value) {

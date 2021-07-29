@@ -74,10 +74,10 @@ void shiro::handler::multiplayer::room::change_settings::handle(shiro::io::osu_p
                 if (global_match.multi_slot_id.at(i) == -1)
                     continue;
 
-                if (global_match.multi_slot_status.at(i) != (uint8_t) utils::slot_status::ready)
+                if (global_match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::ready))
                     continue;
 
-                global_match.multi_slot_status.at(i) = (uint8_t) utils::slot_status::not_ready;
+                global_match.multi_slot_status.at(i) = static_cast<uint8_t>(utils::slot_status::not_ready);
             }
         }
 

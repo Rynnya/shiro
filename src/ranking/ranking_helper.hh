@@ -28,13 +28,13 @@
 
 namespace shiro::ranking::helper {
 
-    int32_t get_leaderboard_position(uint8_t mode, std::string username, bool isRelax);
+    int32_t get_leaderboard_position(uint8_t mode, std::string username, bool is_relax);
 
-    std::string get_leaderboard_user(uint8_t mode, int32_t pos, bool isRelax);
+    std::string get_leaderboard_user(uint8_t mode, int32_t pos, bool is_relax);
 
-    int16_t get_pp_for_user(uint8_t mode, std::string username, bool isRelax);
+    int16_t get_pp_for_user(uint8_t mode, std::string username, bool is_relax);
 
-    void recalculate_ranks(const utils::play_mode &mode, bool isRelax);
+    void recalculate_ranks(const utils::play_mode &mode, bool is_relax);
 
 }
 

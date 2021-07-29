@@ -32,7 +32,7 @@ namespace shiro::beatmaps {
         int32_t id = 0;
         int32_t beatmap_id = 0;
         int32_t beatmapset_id = 0;
-        uint8_t play_mode = (uint8_t) utils::play_mode::standard;
+        uint8_t play_mode = static_cast<uint8_t>(utils::play_mode::standard);
 
         std::string beatmap_md5 = "";
         std::string artist = "";

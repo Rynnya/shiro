@@ -56,5 +56,5 @@ void shiro::io::layouts::user_presence::unmarshal(shiro::io::buffer &buffer) {
 }
 
 int32_t shiro::io::layouts::user_presence::get_size() {
-    return (int32_t) this->marshal().get_size();
+    return static_cast<int32_t>(this->marshal().get_size());
 }

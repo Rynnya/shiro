@@ -44,6 +44,7 @@ namespace shiro::users {
         bool score_ow_ctb = false;
         bool score_ow_mania = false;
 
+        preferences() = default;
         preferences(int32_t id);
         preferences(std::string &username);
         bool is_overwrite(shiro::utils::play_mode mode);
@@ -64,7 +65,7 @@ namespace shiro::users {
         std::string hwid = ""; // SHA256
         std::chrono::seconds last_ping = 0s;
         bool hidden = false; // If the client is hidden, e.g. restricted
-        bool isRelax = false; // If user currently playing with relax or his last score was with relax
+        bool is_relax = false; // If user currently playing with relax or his last score was with relax
 
         std::string client_version = ""; // Full client version string sent on login (b20160403.6)
         int32_t client_build = 20131216; // Fixed client build version (20160403)
@@ -80,10 +81,10 @@ namespace shiro::users {
         explicit user(const std::string &username);
 
         bool init();
-        void update(bool isRelax);
-        void save_stats(bool toRelax);
+        void update(bool is_relax);
+        void save_stats(bool to_relax);
         void update_country(std::string country);
-        void update_counts(std::string rank, bool isRelax);
+        void update_counts(std::string rank);
 
         std::string get_url();
         std::string get_avatar_url();

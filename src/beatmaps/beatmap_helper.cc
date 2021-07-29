@@ -31,24 +31,24 @@ void shiro::beatmaps::helper::init() {
 }
 
 int32_t shiro::beatmaps::helper::fix_beatmap_status(int32_t status_code) {
-    if (status_code == (int32_t) status::needs_update)
-        return (int32_t) status::ranked;
+    if (status_code == static_cast<int32_t>(status::needs_update))
+        return static_cast<int32_t>(status::ranked);
 
-    if (status_code == (int32_t) status::qualified)
-        return (int32_t) status::loved;
+    if (status_code == static_cast<int32_t>(status::qualified))
+        return static_cast<int32_t>(status::loved);
 
     return status_code;
 }
 
 bool shiro::beatmaps::helper::has_leaderboard(int32_t status_code) {
-    return status_code == (int32_t) status::ranked ||
-           status_code == (int32_t) status::loved ||
-           status_code == (int32_t) status::qualified ||
-           status_code == (int32_t) status::approved;
+    return status_code == static_cast<int32_t>(status::ranked) ||
+           status_code == static_cast<int32_t>(status::loved) ||
+           status_code == static_cast<int32_t>(status::qualified) ||
+           status_code == static_cast<int32_t>(status::approved);
 }
 
 bool shiro::beatmaps::helper::awards_pp(int32_t status_code) {
-    return status_code == (int32_t) status::ranked;
+    return status_code == static_cast<int32_t>(status::ranked);
 }
 
 std::optional<std::string> shiro::beatmaps::helper::get_location(int32_t beatmap_id, bool download) {

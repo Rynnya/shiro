@@ -54,7 +54,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received invalid login request from %s: Login body has wrong length (%lu != 4).", request.get_ip_address().c_str(), lines.size());
+        LOG_F(WARNING, "Received invalid login request from %s: Login body has wrong length (%llu != 4).", request.get_ip_address().c_str(), lines.size());
         return;
     }
 
@@ -79,7 +79,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     std::shared_ptr<users::user> user = std::make_shared<users::user>(username);
 
     if (!user->init()) {
-        writer.login_reply((int32_t) utils::login_responses::invalid_credentials);
+        writer.login_reply(static_cast<int32_t>(utils::login_responses::invalid_credentials));
 
         response.end(writer.serialize());
 
@@ -88,7 +88,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (!user->check_password(password_md5)) {
-        writer.login_reply((int32_t) utils::login_responses::invalid_credentials);
+        writer.login_reply(static_cast<int32_t>(utils::login_responses::invalid_credentials));
 
         response.end(writer.serialize());
 
@@ -97,7 +97,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (users::punishments::is_banned(user->user_id)) {
-        writer.login_reply((int32_t) utils::login_responses::user_banned);
+        writer.login_reply(static_cast<int32_t>(utils::login_responses::user_banned));
 
         response.end(writer.serialize());
 
@@ -106,7 +106,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (user->roles == 0xF00DDEAD) {
-        writer.login_reply((int32_t) utils::login_responses::verification_required);
+        writer.login_reply(static_cast<int32_t>(utils::login_responses::verification_required));
 
         response.end(writer.serialize());
 
@@ -139,7 +139,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         logging::sentry::exception(ex);
 
         if (config::score_submission::restrict_mismatching_client_version) {
-            writer.login_reply((int32_t) utils::login_responses::server_error);
+            writer.login_reply(static_cast<int32_t>(utils::login_responses::server_error));
 
             response.end(writer.serialize());
             return;
@@ -149,7 +149,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         logging::sentry::exception(ex);
 
         if (config::score_submission::restrict_mismatching_client_version) {
-            writer.login_reply((int32_t) utils::login_responses::server_error);
+            writer.login_reply(static_cast<int32_t>(utils::login_responses::server_error));
 
             response.end(writer.serialize());
             return;
@@ -160,9 +160,9 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
     // The osu!stable client disallows certain actions for some very low user id's. In order to circumstance
     // this, disallow users with an user id of less than 10 (except if they're bots) to login.
-    if (user->user_id < 10 && user->client_type != (uint32_t) utils::clients::osu_client::aschente) {
+    if (user->user_id < 10 && user->client_type != +utils::clients::osu_client::aschente) {
         writer.announce("Your account has an invalid user id assigned (" + std::to_string(user->user_id) + " < 10).");
-        writer.login_reply((int32_t) utils::login_responses::invalid_credentials);
+        writer.login_reply(static_cast<int32_t>(utils::login_responses::invalid_credentials));
 
         response.end(writer.serialize());
 
@@ -184,7 +184,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
     try {
         int32_t parsed_time_zone = boost::lexical_cast<int32_t>(utc_offset);
-        time_zone = (uint8_t) parsed_time_zone + 24;
+        time_zone = static_cast<uint8_t>(parsed_time_zone + 24);
     } catch (const boost::bad_lexical_cast &ex) {
         LOG_F(WARNING, "Unable to cast %s to int32_t (uint8_t): %s.", utc_offset.c_str(), ex.what());
         logging::sentry::exception(ex);
@@ -244,7 +244,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         global_writer.user_silenced(user->user_id);
     }
 
-    if (users::punishments::is_restricted(user->user_id)) {
+    if (user->hidden) {
         utils::bot::respond(
                 "(Your account has been restricted)[" + user->get_url() + "]. "
                 "Because of that, your profile has been hidden from the public. "
@@ -254,7 +254,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         );
     }
 
-    users::manager::iterate([user, &writer, &global_writer](std::shared_ptr<users::user> online_user) {
+    users::manager::iterate([user, &writer, &global_writer](std::shared_ptr<users::user>& online_user) {
         if (online_user == user)
             return;
 

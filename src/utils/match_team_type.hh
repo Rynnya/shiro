@@ -32,7 +32,7 @@ namespace shiro::utils {
     };
 
     inline bool is_team(uint8_t type) {
-        return type == (uint8_t) match_team_type::team_vs || type == (uint8_t) match_team_type::tag_team_vs;
+        return type == static_cast<uint8_t>(match_team_type::team_vs) || type == static_cast<uint8_t>(match_team_type::tag_team_vs);
     }
 
 }

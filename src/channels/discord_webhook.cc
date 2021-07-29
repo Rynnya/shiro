@@ -39,7 +39,7 @@ void shiro::channels::discord_webhook::init()
 	}
 
 	nlohmann::json msg = create_basis();
-	msg["embeds"].push_back(create_embed(shiro::config::discord_webhook::name + " is now running!", "", (uint32_t)colors::Blurple));
+	msg["embeds"].push_back(create_embed(shiro::config::discord_webhook::name + " is now running!", "", static_cast<uint32_t>(colors::Blurple)));
 
 	if (shiro::utils::curl::post_message(shiro::config::discord_webhook::url, msg))
 	{
@@ -124,7 +124,7 @@ void shiro::channels::discord_webhook::send_restrict_message(std::string usernam
 	nlohmann::json embed = create_embed(
 		"User " + username + " has been restricted",
 		"Reason: " + reason,
-		(uint32_t)colors::Error
+		static_cast<uint32_t>(colors::Error)
 	);
 	embed["footer"]["text"] = "Restricted by " + origin_username;
 	message["embeds"].push_back(embed);
@@ -140,7 +140,7 @@ void shiro::channels::discord_webhook::send_ban_message(std::string username, st
 	nlohmann::json embed = create_embed(
 		"User " + username + " has been banned",
 		"Reason: " + reason,
-		(uint32_t)colors::Error
+		static_cast<uint32_t>(colors::Error)
 	);
 	embed["footer"]["text"] = "Banned by " + origin_username;
 	message["embeds"].push_back(embed);
@@ -156,7 +156,7 @@ void shiro::channels::discord_webhook::send_silence_message(std::string username
 	nlohmann::json embed = create_embed(
 		"User " + username + " has been silenced for " + std::to_string(duration) + " seconds",
 		"Reason: " + reason,
-		(uint32_t)colors::Error
+		static_cast<uint32_t>(colors::Error)
 	);
 	embed["footer"]["text"] = "Silenced by " + origin_username;
 	message["embeds"].push_back(embed);
@@ -173,7 +173,7 @@ void shiro::channels::discord_webhook::send_top1_message(std::shared_ptr<shiro::
 	char buffer_title[256];
 	char buffer_stats[1024];
 
-	utils::play_mode mode = (utils::play_mode)score.play_mode;
+	utils::play_mode mode = static_cast<utils::play_mode>(score.play_mode);
 	std::snprintf(buffer, sizeof(buffer), "x%d/%d | [%d/%d/%d/%d]", 
 		score.max_combo, beatmap.max_combo, score.count_300, score.count_100, score.count_50, score.count_misses);
 
@@ -201,7 +201,7 @@ void shiro::channels::discord_webhook::send_top1_message(std::shared_ptr<shiro::
 	embed["author"]["url"] = beatmap.get_url();
 	embed["author"]["icon_url"] = user->get_avatar_url();
 	embed["description"] = buffer_stats;
-	embed["color"] = (uint32_t)colors::Ellysa;
+	embed["color"] = static_cast<uint32_t>(colors::Ellysa);
 
 	message["embeds"].push_back(embed);
 

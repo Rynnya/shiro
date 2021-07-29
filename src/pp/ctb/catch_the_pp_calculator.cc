@@ -68,17 +68,17 @@ float shiro::pp::ctb::ctb_calculator::calculate()
     if (this->ar < 8)
         pp *= 1 + 0.025 * (8 - this->ar);
 
-    if (this->mods & (int32_t)shiro::utils::mods::hidden)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::hidden))
         pp *= 1.05 + 0.075 * (10 - std::min(10.0f, this->ar));
 
-    if (this->mods & (int32_t)shiro::utils::mods::flashlight)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::flashlight))
         pp *= 1.35 * length_bonus;
 
     pp *= std::pow(this->accuracy, 5.5);
 
-    if (this->mods & (int32_t)shiro::utils::mods::no_fail)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::no_fail))
         pp *= 0.9;
-    if (this->mods & (int32_t)shiro::utils::mods::spun_out)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::spun_out))
         pp *= 0.95;
 
     return pp;
@@ -86,9 +86,9 @@ float shiro::pp::ctb::ctb_calculator::calculate()
 
 float shiro::pp::ctb::ctb_calculator::adjust_difficulty(float raw_value, float scale)
 {
-    if (this->mods & (int32_t)shiro::utils::mods::easy)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::easy))
         raw_value = std::max(0.0f, raw_value / 2);
-    if (this->mods & (int32_t)shiro::utils::mods::hard_rock)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::hard_rock))
         raw_value = std::min(10.0f, raw_value * scale);
 
     return raw_value;
@@ -108,9 +108,9 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars()
         }
     }
 
-    if (this->mods & (int32_t)shiro::utils::mods::double_time)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::double_time))
         this->time_rate += 0.5;
-    if (this->mods & (int32_t)shiro::utils::mods::half_time)
+    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::half_time))
         this->time_rate -= 0.25;
 
     this->player_width = 305 / 1.6 * ((102.4 * (1 - 0.7 * (this->cs - 5) / 5)) / 128) * 0.7;
@@ -119,10 +119,8 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars()
         this->difficulty_objects.push_back(difficulty_object(tick, this->player_width * 0.4));
 
     update_hyperdash_distance();
-    std::sort(this->difficulty_objects.begin(), this->difficulty_objects.end(), [](difficulty_object diff1, difficulty_object diff2)
-        {
-            return diff1.object.time < diff2.object.time;
-        });
+    std::sort(this->difficulty_objects.begin(), this->difficulty_objects.end(), 
+        [](difficulty_object diff1, difficulty_object diff2) { return diff1.object.time < diff2.object.time;});
 
     calculate_strain_values();
     this->star_rate = std::sqrt(calculate_difficulty()) * constants::STAR_SCALING_FACTOR;
@@ -514,7 +512,7 @@ void shiro::pp::ctb::difficulty_object::calculate_strain(difficulty_object last,
         if (std::abs(last.last_movement) > 0.1 && ctb::math::sign(this->last_movement) != ctb::math::sign(last.last_movement))
         {
             float bonus = constants::DIRECTION_CHANGE_BONUS / sqrt_time;
-            float bonus_factor = std::min((float)this->error_margin, std::abs(this->last_movement)) / this->error_margin;
+            float bonus_factor = std::min(static_cast<float>(this->error_margin), std::abs(this->last_movement)) / this->error_margin;
 
             addition += bonus * bonus_factor;
 

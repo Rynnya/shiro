@@ -95,7 +95,7 @@ int64_t shiro::utils::strings::safe_long_long(const std::string& src)
 bool shiro::utils::strings::to_bool(std::string src)
 {
     std::transform(src.begin(), src.end(), src.begin(), ::tolower);
-    return src == "true";
+    return src == "true" || src == "1";
 }
 
 std::string shiro::utils::strings::to_string(bool src)

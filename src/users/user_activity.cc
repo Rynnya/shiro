@@ -42,10 +42,10 @@ void shiro::users::activity::init() {
     });
 }
 
-bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mode, bool isRelax) {
+bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mode, bool is_relax) {
     using days = std::chrono::duration<int32_t, std::ratio<86400>>;
 
-    std::optional<scores::score> score = scores::helper::get_latest_score(id, mode, isRelax);
+    std::optional<scores::score> score = scores::helper::get_latest_score(id, mode, is_relax);
 
     if (!score.has_value())
         return false;

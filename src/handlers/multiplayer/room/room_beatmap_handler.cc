@@ -29,7 +29,7 @@ void shiro::handler::multiplayer::room::beatmap::handle_has_beatmap(shiro::io::o
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 
-        match.multi_slot_status.at(index) = (uint8_t) utils::slot_status::not_ready;
+        match.multi_slot_status.at(index) = static_cast<uint8_t>(utils::slot_status::not_ready);
 
         match.send_update(false);
         return true;
@@ -45,7 +45,7 @@ void shiro::handler::multiplayer::room::beatmap::handle_no_beatmap(shiro::io::os
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 
-        match.multi_slot_status.at(index) = (uint8_t) utils::slot_status::no_map;
+        match.multi_slot_status.at(index) = static_cast<uint8_t>(utils::slot_status::no_map);
 
         match.send_update(false);
         return true;

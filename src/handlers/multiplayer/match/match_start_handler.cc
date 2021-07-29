@@ -40,7 +40,7 @@ void shiro::handler::multiplayer::match::start::handle(shiro::io::osu_packet &in
             if (match.multi_slot_id.at(i) == -1)
                 continue;
 
-            match.multi_slot_status.at(i) = (uint8_t) utils::slot_status::playing;
+            match.multi_slot_status.at(i) = static_cast<uint8_t>(utils::slot_status::playing);
 
             std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(match.multi_slot_id.at(i));
 

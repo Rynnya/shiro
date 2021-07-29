@@ -22,28 +22,29 @@
 #include "../../permissions/role_manager.hh"
 #include "../../pp/pp_recalculator.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "recalculate_ranks.hh"
 
 bool shiro::commands::recalculate(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
     if (!roles::manager::has_permission(user, permissions::perms::cmd_recalculate)) {
-        utils::bot::respond("Permission denied. (" + std::to_string((uint64_t) permissions::perms::cmd_recalculate) + ")", user, channel, true);
+        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<int64_t>(permissions::perms::cmd_recalculate)) + ")", user, channel, true);
         return false;
     }
 
-    utils::play_mode mode = (utils::play_mode) user->stats.play_mode;
-    bool isRelax = false;
+    utils::play_mode mode = static_cast<utils::play_mode>(user->stats.play_mode);
+    bool is_relax = false;
 
-    if (!args.empty()) {
+    if (args.size() >= 2) {
         try {
-            mode = (utils::play_mode) boost::lexical_cast<int32_t>(args.at(0));
-            isRelax = boost::lexical_cast<bool>(args.at(1));
+            mode = static_cast<utils::play_mode>(boost::lexical_cast<int32_t>(args.at(0)));
+            is_relax = utils::strings::to_bool(args.at(1));
         } catch (boost::bad_lexical_cast &ex) {
             utils::bot::respond("Unable to parse provided game mode or relax into integer and boolean.", std::move(user), std::move(channel), true);
             return false;
         }
     }
 
-    pp::recalculator::begin(mode, isRelax);
+    pp::recalculator::begin(mode, is_relax);
 
     utils::bot::respond("Success! PP recalculating will begin now for all users.", std::move(user), std::move(channel));
     return true;

@@ -28,12 +28,12 @@
 #include "../utils/mods.hh"
 #include "score_helper.hh"
 
-shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool isRelax) {
+shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == isRelax)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == is_relax)
     );
 
     if (result.empty())
@@ -59,7 +59,7 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -90,12 +90,12 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
     return scores.at(0);
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::string beatmap_md5sum, bool isRelax, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::string beatmap_md5sum, bool is_relax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
     );
 
     if (result.empty())
@@ -129,7 +129,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -178,12 +178,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(std::string beatmap_md5sum, uint8_t country, bool isRelax, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(std::string beatmap_md5sum, uint8_t country, bool is_relax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
     );
 
     if (result.empty())
@@ -217,7 +217,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -279,12 +279,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, bool isRelax, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, bool is_relax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
     );
 
     if (result.empty())
@@ -318,7 +318,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -370,12 +370,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool isRelax, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == isRelax)
+        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
     );
 
     if (result.empty())
@@ -409,7 +409,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -474,12 +474,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool isRelax, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table).where(
-            score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == isRelax
+            score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == is_relax
     ).limit(limit));
 
     if (result.empty())
@@ -513,7 +513,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -544,12 +544,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(int32_t user_id, bool isRelax, size_t limit) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(int32_t user_id, bool is_relax, size_t limit) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.user_id == user_id and score_table.is_relax == isRelax).limit(limit)
+        .where(score_table.user_id == user_id and score_table.is_relax == is_relax).limit(limit)
     );
 
     if (result.empty())
@@ -575,7 +575,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
 
         s.fc = row.full_combo;
         s.passed = row.completed;
-        s.isRelax = isRelax;
+        s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -597,12 +597,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
     return scores;
 }
 
-std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro::utils::play_mode mode, int32_t user_id, bool isRelax) {
+std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro::utils::play_mode mode, int32_t user_id, bool is_relax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.user_id == user_id and score_table.play_mode == (uint8_t) mode and score_table.is_relax == isRelax)
+        .where(score_table.user_id == user_id and score_table.play_mode == static_cast<uint8_t>(mode) and score_table.is_relax == is_relax)
     );
 
     if (result.empty())
@@ -628,6 +628,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
 
         s.fc = row.full_combo;
         s.passed = row.completed;
+        s.is_relax = row.is_relax;
 
         s.count_300 = row.count_300;
         s.count_100 = row.count_100;
@@ -682,14 +683,14 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
     return scores;
 }
 
-std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int32_t user_id, const utils::play_mode &mode, bool isRelax) {
+std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int32_t user_id, const utils::play_mode &mode, bool is_relax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table).where(
             score_table.user_id == user_id and
-            score_table.play_mode == (uint8_t) mode and
-            score_table.is_relax == isRelax
+            score_table.play_mode == static_cast<uint8_t>(mode) and
+            score_table.is_relax == is_relax
     ).order_by(score_table.time.desc()).limit(1u));
 
     if (result.empty())
@@ -715,7 +716,7 @@ std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int3
 
     s.fc = row.full_combo;
     s.passed = row.completed;
-    s.isRelax = isRelax;
+    s.is_relax = is_relax;
 
     s.count_300 = row.count_300;
     s.count_100 = row.count_100;
@@ -757,7 +758,7 @@ shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
 
     s.fc = row.full_combo;
     s.passed = row.completed;
-    s.isRelax = row.is_relax;
+    s.is_relax = row.is_relax;
 
     s.count_300 = row.count_300;
     s.count_100 = row.count_100;
@@ -791,7 +792,7 @@ bool shiro::scores::helper::is_ranked(const shiro::scores::score &score, const s
     bool ranked = true;
     int32_t mods = score.mods;
 
-    switch ((utils::play_mode) score.play_mode) {
+    switch (static_cast<utils::play_mode>(score.play_mode)) {
         case utils::play_mode::standard:
             ranked &= config::score_submission::std_ranked;
             break;
@@ -806,101 +807,101 @@ bool shiro::scores::helper::is_ranked(const shiro::scores::score &score, const s
             break;
     }
 
-    if (mods & (int32_t) utils::mods::none)
+    if (mods & static_cast<int32_t>(utils::mods::none))
         ranked &= config::score_submission::nomod_ranked;
 
-    if (mods & (int32_t) utils::mods::no_fail)
+    if (mods & static_cast<int32_t>(utils::mods::no_fail))
         ranked &= config::score_submission::no_fail_ranked;
 
-    if (mods & (int32_t) utils::mods::easy)
+    if (mods & static_cast<int32_t>(utils::mods::easy))
         ranked &= config::score_submission::easy_ranked;
 
-    if (mods & (int32_t) utils::mods::touch_device)
+    if (mods & static_cast<int32_t>(utils::mods::touch_device))
         ranked &= config::score_submission::touch_device_ranked;
 
-    if (mods & (int32_t) utils::mods::hidden)
+    if (mods & static_cast<int32_t>(utils::mods::hidden))
         ranked &= config::score_submission::hidden_ranked;
 
-    if (mods & (int32_t) utils::mods::hard_rock)
+    if (mods & static_cast<int32_t>(utils::mods::hard_rock))
         ranked &= config::score_submission::hard_rock_ranked;
 
-    if (mods & (int32_t) utils::mods::sudden_death)
+    if (mods & static_cast<int32_t>(utils::mods::sudden_death))
         ranked &= config::score_submission::sudden_death_ranked;
 
-    if (mods & (int32_t) utils::mods::double_time)
+    if (mods & static_cast<int32_t>(utils::mods::double_time))
         ranked &= config::score_submission::double_time_ranked;
 
-    if (mods & (int32_t) utils::mods::relax)
+    if (mods & static_cast<int32_t>(utils::mods::relax))
         ranked &= config::score_submission::relax_ranked;
 
-    if (mods & (int32_t) utils::mods::half_time)
+    if (mods & static_cast<int32_t>(utils::mods::half_time))
         ranked &= config::score_submission::half_time_ranked;
 
-    if (mods & (int32_t) utils::mods::nightcore)
+    if (mods & static_cast<int32_t>(utils::mods::nightcore))
         ranked &= config::score_submission::nightcore_ranked;
 
-    if (mods & (int32_t) utils::mods::flashlight)
+    if (mods & static_cast<int32_t>(utils::mods::flashlight))
         ranked &= config::score_submission::flashlight_ranked;
 
-    if (mods & (int32_t) utils::mods::auto_play)
+    if (mods & static_cast<int32_t>(utils::mods::auto_play))
         ranked &= config::score_submission::auto_play_ranked;
 
-    if (mods & (int32_t) utils::mods::spun_out)
+    if (mods & static_cast<int32_t>(utils::mods::spun_out))
         ranked &= config::score_submission::spun_out_ranked;
 
-    if (mods & (int32_t) utils::mods::auto_pilot)
+    if (mods & static_cast<int32_t>(utils::mods::auto_pilot))
         ranked &= config::score_submission::auto_pilot_ranked;
 
-    if (mods & (int32_t) utils::mods::perfect)
+    if (mods & static_cast<int32_t>(utils::mods::perfect))
         ranked &= config::score_submission::perfect_ranked;
 
     // Special mods
 
-    if (mods & (int32_t) utils::mods::fade_in)
+    if (mods & static_cast<int32_t>(utils::mods::fade_in))
         ranked &= config::score_submission::fade_in_ranked;
 
-    if (mods & (int32_t) utils::mods::random)
+    if (mods & static_cast<int32_t>(utils::mods::random))
         ranked &= config::score_submission::random_ranked;
 
-    if (mods & (int32_t) utils::mods::cinema)
+    if (mods & static_cast<int32_t>(utils::mods::cinema))
         ranked &= config::score_submission::cinema_ranked;
 
-    if (mods & (int32_t) utils::mods::target)
+    if (mods & static_cast<int32_t>(utils::mods::target))
         ranked &= config::score_submission::target_ranked;
 
-    if (mods & (int32_t) utils::mods::score_v2)
+    if (mods & static_cast<int32_t>(utils::mods::score_v2))
         ranked &= config::score_submission::score_v2_ranked;
 
     // Keys
 
-    if (mods & (int32_t) utils::mods::key_1)
+    if (mods & static_cast<int32_t>(utils::mods::key_1))
         ranked &= config::score_submission::key_1_ranked;
 
-    if (mods & (int32_t) utils::mods::key_2)
+    if (mods & static_cast<int32_t>(utils::mods::key_2))
         ranked &= config::score_submission::key_2_ranked;
 
-    if (mods & (int32_t) utils::mods::key_3)
+    if (mods & static_cast<int32_t>(utils::mods::key_3))
         ranked &= config::score_submission::key_3_ranked;
 
-    if (mods & (int32_t) utils::mods::key_4)
+    if (mods & static_cast<int32_t>(utils::mods::key_4))
         ranked &= config::score_submission::key_4_ranked;
 
-    if (mods & (int32_t) utils::mods::key_5)
+    if (mods & static_cast<int32_t>(utils::mods::key_5))
         ranked &= config::score_submission::key_5_ranked;
 
-    if (mods & (int32_t) utils::mods::key_6)
+    if (mods & static_cast<int32_t>(utils::mods::key_6))
         ranked &= config::score_submission::key_6_ranked;
 
-    if (mods & (int32_t) utils::mods::key_7)
+    if (mods & static_cast<int32_t>(utils::mods::key_7))
         ranked &= config::score_submission::key_7_ranked;
 
-    if (mods & (int32_t) utils::mods::key_8)
+    if (mods & static_cast<int32_t>(utils::mods::key_8))
         ranked &= config::score_submission::key_8_ranked;
 
-    if (mods & (int32_t) utils::mods::key_9)
+    if (mods & static_cast<int32_t>(utils::mods::key_9))
         ranked &= config::score_submission::key_9_ranked;
 
-    if (mods & (int32_t) utils::mods::key_coop)
+    if (mods & static_cast<int32_t>(utils::mods::key_coop))
         ranked &= config::score_submission::key_coop_ranked;
 
     if (beatmap.id != 0)
@@ -945,50 +946,50 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
     if (config::score_submission::restrict_impossible_mods) {
         int32_t mods = score.mods;
 
-        if (mods & (int32_t) utils::mods::easy && mods & (int32_t) utils::mods::hard_rock)
+        if (mods & static_cast<int32_t>(utils::mods::easy) && mods & static_cast<int32_t>(utils::mods::hard_rock))
             return { true, "Impossible mod combination (EZ + HR)" };
 
-        if (mods & (int32_t) utils::mods::no_fail && mods & (int32_t) utils::mods::sudden_death)
+        if (mods & static_cast<int32_t>(utils::mods::no_fail) && mods & static_cast<int32_t>(utils::mods::sudden_death))
             return { true, "Impossible mod combination (NF + SD)" };
 
-        if (mods & (int32_t) utils::mods::no_fail && mods & (int32_t) utils::mods::perfect)
+        if (mods & static_cast<int32_t>(utils::mods::no_fail) && mods & static_cast<int32_t>(utils::mods::perfect))
             return { true, "Impossible mod combination (NF + PF)" };
 
-        if (mods & (int32_t) utils::mods::half_time && mods & (int32_t) utils::mods::double_time)
+        if (mods & static_cast<int32_t>(utils::mods::half_time) && mods & static_cast<int32_t>(utils::mods::double_time))
             return { true, "Impossible mod combination (HT + DT)" };
 
-        if (mods & (int32_t) utils::mods::sudden_death && mods & (int32_t) utils::mods::relax)
+        if (mods & static_cast<int32_t>(utils::mods::sudden_death) && mods & static_cast<int32_t>(utils::mods::relax))
             return { true, "Impossible mod combination (SD + RX)" };
 
-        if (mods & (int32_t) utils::mods::sudden_death && mods & (int32_t) utils::mods::auto_pilot)
+        if (mods & static_cast<int32_t>(utils::mods::sudden_death) && mods & static_cast<int32_t>(utils::mods::auto_pilot))
             return { true, "Impossible mod combination (SD + AP)" };
 
-        if (mods & (int32_t) utils::mods::sudden_death && mods & (int32_t) utils::mods::auto_play)
+        if (mods & static_cast<int32_t>(utils::mods::sudden_death) && mods & static_cast<int32_t>(utils::mods::auto_play))
             return { true, "Impossible mod combination (SD + AUTO)" };
 
-        if (mods & (int32_t) utils::mods::relax && mods & (int32_t) utils::mods::no_fail)
+        if (mods & static_cast<int32_t>(utils::mods::relax) && mods & static_cast<int32_t>(utils::mods::no_fail))
             return { true, "Impossible mod combination (RX + NF)" };
 
-        if (mods & (int32_t) utils::mods::relax && mods & (int32_t) utils::mods::auto_pilot)
+        if (mods & static_cast<int32_t>(utils::mods::relax) && mods & static_cast<int32_t>(utils::mods::auto_pilot))
             return { true, "Impossible mod combination (RX + AP)" };
 
-        if (mods & (int32_t) utils::mods::relax && mods & (int32_t) utils::mods::auto_play)
+        if (mods & static_cast<int32_t>(utils::mods::relax) && mods & static_cast<int32_t>(utils::mods::auto_play))
             return { true, "Impossible mod combination (RX + AUTO)" };
 
-        if (mods & (int32_t) utils::mods::auto_pilot && mods & (int32_t) utils::mods::no_fail)
+        if (mods & static_cast<int32_t>(utils::mods::auto_pilot) && mods & static_cast<int32_t>(utils::mods::no_fail))
             return { true, "Impossible mod combination (AP + NF)" };
 
-        if (mods & (int32_t) utils::mods::auto_pilot && mods & (int32_t) utils::mods::spun_out)
+        if (mods & static_cast<int32_t>(utils::mods::auto_pilot) && mods & static_cast<int32_t>(utils::mods::spun_out))
             return { true, "Impossible mod combination (AP + SO)" };
 
-        if (mods & (int32_t) utils::mods::auto_pilot && mods & (int32_t) utils::mods::auto_play)
+        if (mods & static_cast<int32_t>(utils::mods::auto_pilot) && mods & static_cast<int32_t>(utils::mods::auto_play))
             return { true, "Impossible mod combination (AP + AUTO)" };
 
-        if (mods & (int32_t) utils::mods::spun_out && mods & (int32_t) utils::mods::auto_play)
+        if (mods & static_cast<int32_t>(utils::mods::spun_out) && mods & static_cast<int32_t>(utils::mods::auto_play))
             return { true, "Impossible mod combination (SO + AUTO)" };
     }
 
-    bool impossible_combo = score.play_mode == (uint8_t) utils::play_mode::standard &&
+    bool impossible_combo = score.play_mode == static_cast<uint8_t>(utils::play_mode::standard) &&
             beatmap.max_combo > 0 &&
             score.max_combo > beatmap.max_combo;
 
@@ -997,9 +998,9 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
         return { true, reason };
     }
 
-    if (score.isRelax)
+    if (score.is_relax)
     {
-        switch ((utils::play_mode)score.play_mode) {
+        switch (static_cast<utils::play_mode>(score.play_mode)) {
         case utils::play_mode::standard:
             if (config::score_submission::auto_restrict_pp_std_relax > -1 && score.pp > config::score_submission::auto_restrict_pp_std_relax) {
                 std::string reason = "High pp gain (osu!std - Relax, " + std::to_string(score.pp) + "pp > " + std::to_string(config::score_submission::auto_restrict_pp_std) + "pp)";
@@ -1025,7 +1026,7 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
     }
     else
     {
-        switch ((utils::play_mode)score.play_mode) {
+        switch (static_cast<utils::play_mode>(score.play_mode)) {
         case utils::play_mode::standard:
             if (config::score_submission::auto_restrict_pp_std > -1 && score.pp > config::score_submission::auto_restrict_pp_std) {
                 std::string reason = "High pp gain (osu!std, " + std::to_string(score.pp) + "pp > " + std::to_string(config::score_submission::auto_restrict_pp_std) + "pp)";
@@ -1112,34 +1113,34 @@ std::string shiro::scores::helper::build_mods_list(int32_t mods)
 {
     std::string modString = "+";
 
-    if (mods & (int32_t)shiro::utils::mods::no_fail)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::no_fail))
         modString += "NF";
-    if (mods & (int32_t)shiro::utils::mods::easy)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::easy))
         modString += "EZ";
-    if (mods & (int32_t)shiro::utils::mods::half_time)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::half_time))
         modString += "HT";
 
-    if (mods & (int32_t)shiro::utils::mods::hidden)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::hidden))
         modString += "HD";
-    if (mods & (int32_t)shiro::utils::mods::hard_rock)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::hard_rock))
         modString += "HR";
-    if (mods & (int32_t)shiro::utils::mods::double_time)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::double_time))
         modString += "DT";
-    if (mods & (int32_t)shiro::utils::mods::nightcore)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::nightcore))
         modString += "NC";
-    if (mods & (int32_t)shiro::utils::mods::flashlight)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::flashlight))
         modString += "FL";
 
-    if (mods & (int32_t)shiro::utils::mods::sudden_death)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::sudden_death))
         modString += "SD";
-    if (mods & (int32_t)shiro::utils::mods::perfect)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::perfect))
         modString += "PF";
 
-    if (mods & (int32_t)shiro::utils::mods::relax)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::relax))
         modString += "RX";
-    if (mods & (int32_t)shiro::utils::mods::auto_pilot)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::auto_pilot))
         modString += "AT";
-    if (mods & (int32_t)shiro::utils::mods::spun_out)
+    if (mods & static_cast<int32_t>(shiro::utils::mods::spun_out))
         modString += "SO";
 
     if (modString == "+")

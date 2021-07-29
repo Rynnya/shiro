@@ -49,7 +49,7 @@ namespace shiro::io::layouts {
         int32_t beatmap_id = 0;
 
         bool in_progress = false;
-        int32_t active_mods = (int32_t) utils::mods::none;
+        int32_t active_mods = static_cast<int32_t>(utils::mods::none);
         int32_t host_id = 0;
 
         uint8_t game_mode = 0;

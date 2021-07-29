@@ -35,14 +35,13 @@ namespace shiro::utils {
 
     };
 
-    constexpr uint8_t has_player_status = (uint8_t) slot_status::not_ready |
-            (uint8_t) slot_status::ready |
-            (uint8_t) slot_status::no_map |
-            (uint8_t) slot_status::playing |
-            (uint8_t) slot_status::complete;
+    constexpr uint8_t has_player_status = static_cast<uint8_t>(slot_status::not_ready) |
+            static_cast<uint8_t>(slot_status::ready) |
+            static_cast<uint8_t>(slot_status::no_map) |
+            static_cast<uint8_t>(slot_status::playing) |
+            static_cast<uint8_t>(slot_status::complete);
 
-    constexpr uint8_t has_playing_status = (uint8_t) slot_status::playing |
-                                          (uint8_t) slot_status::complete;
+    constexpr uint8_t has_playing_status = static_cast<uint8_t>(slot_status::playing) | static_cast<uint8_t>(slot_status::complete);
 
 }
 

@@ -229,13 +229,13 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.rank = score_metadata.at(12);
     score.fc = utils::strings::to_bool(score_metadata.at(11));
     score.passed = utils::strings::to_bool(score_metadata.at(14));
-    score.isRelax = score.mods & (uint32_t)utils::mods::relax;
+    score.is_relax = score.mods & static_cast<uint32_t>(utils::mods::relax);
     score.time = seconds.count();
 
     score.accuracy = scores::helper::calculate_accuracy(
-            (utils::play_mode) score.play_mode,
-            score.count_300, score.count_100, score.count_50,
-            score.count_gekis, score.count_katus, score.count_misses
+        static_cast<utils::play_mode>(score.play_mode),
+        score.count_300, score.count_100, score.count_50,
+        score.count_gekis, score.count_katus, score.count_misses
     );
 
     auto db_result = db(select(all_of(score_table)).from(score_table).where(score_table.hash == score.hash).limit(1u));
@@ -249,7 +249,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     // Switch between Relax and Classic
-    user->update(score.isRelax);
+    user->update(score.is_relax);
 
     user->stats.play_count++;
     user->stats.total_hits
@@ -295,7 +295,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         score.pp = pp::calculate(beatmap, score);
 
     shiro::users::preferences preferences(user->user_id);
-    std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.isRelax);
+    std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.is_relax);
     bool overwrite = score.passed;
 
     // User has previous scores on this map and this also pass, enable overwriting mode
@@ -307,7 +307,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             double factor_iterator;
 
             // In relax only pp
-            if (score.isRelax || !preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
+            if (score.is_relax || !preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
             {
                 factor_score = score.pp;
                 factor_iterator = s.pp;
@@ -376,13 +376,13 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             score_table.play_mode = score.play_mode,
             score_table.time = score.time,
             score_table.play_time = score.play_time,
-            score_table.is_relax = score.isRelax
+            score_table.is_relax = score.is_relax
     ));
 
     if (overwrite)
     {
         user->stats.total_score += score.total_score;
-        user->update_counts(score.rank, score.isRelax);
+        user->update_counts(score.rank);
 
         if (score.max_combo > user->stats.max_combo)
             user->stats.max_combo = score.max_combo;
@@ -393,14 +393,14 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (!score.passed || !scores::helper::is_ranked(score, beatmap))
     {
         // We need save stats to keep play_time, counts and total_hits, also fixes 'sending statistics...' bug
-        user->save_stats(score.isRelax);
+        user->save_stats(score.is_relax);
         display->set_scoreboard_position(0);
         response.end(display->build());
         return;
     }
 
-    scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, score.isRelax);
-    int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, scores::helper::fetch_all_scores(beatmap.beatmap_md5, score.isRelax, 5));
+    scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, score.is_relax);
+    int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, scores::helper::fetch_all_scores(beatmap.beatmap_md5, score.is_relax, 5));
 
     if (top_score.hash == score.hash && !user->hidden) {
         if (scoreboard_position == 1) {
@@ -410,12 +410,12 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                     "[%s %s] achieved rank #1 on [%s %s] (%s)",
                     user->get_url().c_str(), user->presence.username.c_str(),
                     beatmap.get_url().c_str(), beatmap.song_name.c_str(),
-                    utils::play_mode_to_string((utils::play_mode) score.play_mode).c_str()
+                    utils::play_mode_to_string(static_cast<utils::play_mode>(score.play_mode)).c_str()
             );
 
             utils::bot::respond(buffer, user, "#announce", false);
 
-            std::thread([](sqlpp::mysql::connection db, std::shared_ptr<users::user> user, beatmaps::beatmap beatmap, scores::score score)
+            std::thread([](sqlpp::mysql::connection& db, const std::shared_ptr<users::user>& user, const beatmaps::beatmap& beatmap, const scores::score& score)
             {
                 shiro::channels::discord_webhook::send_top1_message(user, beatmap, score);
 
@@ -428,7 +428,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                         scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
                         scores_first_table.user_id = score.user_id,
                         scores_first_table.play_mode = score.play_mode,
-                        scores_first_table.is_relax = score.isRelax
+                        scores_first_table.is_relax = score.is_relax
                     ));
                     return;
                 }
@@ -440,7 +440,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                     scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
                     scores_first_table.user_id = score.user_id,
                     scores_first_table.play_mode = score.play_mode,
-                    scores_first_table.is_relax = score.isRelax
+                    scores_first_table.is_relax = score.is_relax
                 ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
             }, std::move(db) /* We don't manipulate with database anymore */, user, beatmap, score).detach();
         }
@@ -451,13 +451,13 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (overwrite)
         user->stats.ranked_score += score.total_score;
 
-    user->stats.recalculate_pp(score.isRelax);
-    user->stats.recalculate_accuracy(score.isRelax);
+    user->stats.recalculate_pp(score.is_relax);
+    user->stats.recalculate_accuracy(score.is_relax);
 
-    user->save_stats(score.isRelax);
+    user->save_stats(score.is_relax);
 
     if (overwrite && !user->hidden)
-        ranking::helper::recalculate_ranks((utils::play_mode) score.play_mode, score.isRelax);
+        ranking::helper::recalculate_ranks(static_cast<utils::play_mode>(score.play_mode), score.is_relax);
 
     response.end(display->build());
 }

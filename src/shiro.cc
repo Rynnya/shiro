@@ -58,7 +58,7 @@ std::shared_ptr<shiro::database> shiro::db_connection = nullptr;
 std::shared_ptr<shiro::redis> shiro::redis_connection = nullptr;
 tsc::TaskScheduler shiro::scheduler;
 std::time_t shiro::start_time = std::time(nullptr);
-std::string shiro::commit = "42704f8";
+std::string shiro::commit = "60a2885";
 
 int shiro::init(int argc, char **argv) {
     logging::init(argc, argv);
@@ -150,7 +150,7 @@ void shiro::destroy() {
     if (shiro::config::discord_webhook::enabled)
     {
         nlohmann::json message = discord_webhook::create_basis();
-        message["embeds"].push_back(discord_webhook::create_embed("Shiro is shutting down... Bye!", "", (uint32_t)discord_webhook::colors::Blurple));
+        message["embeds"].push_back(discord_webhook::create_embed("Shiro is shutting down... Bye!", "", static_cast<uint32_t>(discord_webhook::colors::Blurple)));
         shiro::utils::curl::post_message(shiro::config::discord_webhook::url, message);
     }
 

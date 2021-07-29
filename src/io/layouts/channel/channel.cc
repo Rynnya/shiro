@@ -53,7 +53,7 @@ void shiro::io::layouts::channel::unmarshal(shiro::io::buffer &buffer) {
 }
 
 int32_t shiro::io::layouts::channel::get_size() {
-    return (int32_t) this->marshal().get_size();
+    return static_cast<int32_t>(this->marshal().get_size());
 }
 
 bool shiro::io::layouts::channel::operator==(const shiro::io::layouts::channel &other_channel) const {

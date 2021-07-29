@@ -37,7 +37,7 @@ void shiro::handler::multiplayer::match::player_failed::handle(shiro::io::osu_pa
         writer.match_player_failed(match.multi_slot_id.at(index));
 
         for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
-            if (match.multi_slot_status.at(i) != (uint8_t)utils::slot_status::playing)
+            if (match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::playing))
                 continue;
 
             std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(match.multi_slot_id.at(i));

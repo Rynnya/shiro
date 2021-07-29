@@ -33,7 +33,7 @@ shiro::scores::table_display::table_display(std::shared_ptr<users::user> user, b
 }
 
 void shiro::scores::table_display::init() {
-    scores::score old_top_score = helper::fetch_top_score_user(this->beatmap.beatmap_md5, this->user, this->user->isRelax);
+    scores::score old_top_score = helper::fetch_top_score_user(this->beatmap.beatmap_md5, this->user, this->user->is_relax);
     this->old_top_score = old_top_score;
     this->old_scoreboard_pos = helper::get_scoreboard_position(old_top_score, helper::fetch_all_scores(this->beatmap.beatmap_md5, 5));
 
@@ -51,7 +51,7 @@ void shiro::scores::table_display::set_scoreboard_position(int32_t position) {
 }
 
 std::string shiro::scores::table_display::build_present() {
-    std::time_t time = (uint32_t) this->beatmap.last_update;
+    std::time_t time = this->beatmap.last_update;
     struct std::tm *tm = std::gmtime(&time);
 
     push("beatmapId", this->beatmap.beatmap_id);
@@ -99,7 +99,7 @@ std::string shiro::scores::table_display::build_present() {
 }
 
 std::string shiro::scores::table_display::build_legacy() {
-    std::time_t time = (uint32_t) this->beatmap.last_update;
+    std::time_t time = this->beatmap.last_update;
     struct std::tm *tm = std::gmtime(&time);
 
     push("beatmapId", this->beatmap.beatmap_id);
@@ -108,8 +108,8 @@ std::string shiro::scores::table_display::build_legacy() {
     push("beatmapPasscount", this->beatmap.pass_count);
     push("approvedDate", std::put_time(tm, "%F %X"), true);
 
-    std::string user_above = ranking::helper::get_leaderboard_user(this->user->stats.play_mode, this->user->stats.rank - 1, this->user->isRelax);
-    int16_t user_above_pp = ranking::helper::get_pp_for_user(this->user->stats.play_mode, user_above, this->user->isRelax);
+    std::string user_above = ranking::helper::get_leaderboard_user(this->user->stats.play_mode, this->user->stats.rank - 1, this->user->is_relax);
+    int16_t user_above_pp = ranking::helper::get_pp_for_user(this->user->stats.play_mode, user_above, this->user->is_relax);
 
     int32_t to_next_rank = user_above_pp - this->user->stats.pp;
 

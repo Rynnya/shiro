@@ -35,7 +35,7 @@
 
 void shiro::beatmaps::beatmap::fetch(bool force_peppster) {
 	if (this->beatmapset_id == -1) {
-		this->ranked_status = (int32_t)status::unsubmitted;
+		this->ranked_status = static_cast<int32_t>(status::unsubmitted);
 		return;
 	}
 
@@ -45,7 +45,7 @@ void shiro::beatmaps::beatmap::fetch(bool force_peppster) {
 	}
 
 	if (!fetch_api())
-		this->ranked_status = (int32_t)status::unknown;
+		this->ranked_status = static_cast<int32_t>(status::unknown);
 }
 
 bool shiro::beatmaps::beatmap::fetch_db() {
@@ -104,7 +104,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 		if (!success) {
 			LOG_F(ERROR, "Unable to connect to osu! api: %s.", output.c_str());
 
-			this->ranked_status = (int32_t)status::unknown;
+			this->ranked_status = static_cast<int32_t>(status::unknown);
 			return false;
 		}
 
@@ -117,7 +117,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 			LOG_F(ERROR, "Unable to parse json response from osu! api: %s.", ex.what());
 			logging::sentry::exception(ex);
 
-			this->ranked_status = (int32_t)status::unknown;
+			this->ranked_status = static_cast<int32_t>(status::unknown);
 			return false;
 		}
 
@@ -129,7 +129,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 				LOG_F(ERROR, "Unable to cast response of osu! API to valid data types: %s.", ex.what());
 				logging::sentry::exception(ex);
 
-				this->ranked_status = (int32_t)status::unknown;
+				this->ranked_status = static_cast<int32_t>(status::unknown);
 				return false;
 			}
 		}
@@ -141,7 +141,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 	if (!success) {
 		LOG_F(ERROR, "Unable to connect to osu! api: %s.", output.c_str());
 
-		this->ranked_status = (int32_t)status::unknown;
+		this->ranked_status = static_cast<int32_t>(status::unknown);
 		return false;
 	}
 
@@ -156,7 +156,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 		LOG_F(ERROR, "Unable to parse json response from osu! api: %s.", ex.what());
 		logging::sentry::exception(ex);
 
-		this->ranked_status = (int32_t)status::unknown;
+		this->ranked_status = static_cast<int32_t>(status::unknown);
 		return false;
 	}
 
@@ -176,7 +176,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 			this->beatmap_id = boost::lexical_cast<int32_t>(std::string(part["beatmap_id"]));
 			this->ranked_status = boost::lexical_cast<int32_t>(std::string(part["approved"]));
 			this->hit_length = boost::lexical_cast<int32_t>(std::string(part["hit_length"]));
-			this->play_mode = (uint8_t)boost::lexical_cast<int32_t>(std::string(part["mode"]));
+			this->play_mode = static_cast<uint8_t>(boost::lexical_cast<int32_t>(std::string(part["mode"])));
 			this->cs = boost::lexical_cast<float>(std::string(part["diff_size"]));
 			this->ar = boost::lexical_cast<float>(std::string(part["diff_approach"]));
 			this->od = boost::lexical_cast<float>(std::string(part["diff_overall"]));
@@ -186,7 +186,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 			this->count_slider = boost::lexical_cast<int32_t>(std::string(part["count_slider"]));
 			this->count_spinner = boost::lexical_cast<int32_t>(std::string(part["count_spinner"]));
 
-			switch ((utils::play_mode)this->play_mode) {
+			switch (static_cast<utils::play_mode>(this->play_mode)) {
 			case utils::play_mode::standard:
 				this->difficulty_std = boost::lexical_cast<float>(std::string(part["difficultyrating"]));
 
@@ -216,13 +216,13 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 
 			// Beatmap is unranked
 			if (part["approved_date"].is_null())
-				this->ranked_status = (int32_t)status::latest_pending;
+				this->ranked_status = static_cast<int32_t>(status::latest_pending);
 		}
 		catch (const boost::bad_lexical_cast& ex) {
 			LOG_F(ERROR, "Unable to cast response of Bancho API to valid data types: %s.", ex.what());
 			logging::sentry::exception(ex);
 
-			this->ranked_status = (int32_t)status::unknown;
+			this->ranked_status = static_cast<int32_t>(status::unknown);
 			return false;
 		}
 
@@ -245,7 +245,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 
 	if (!map_found) {
 		// Map was not found when queuing for the beatmap set, the map is not submitted.
-		this->ranked_status = (int32_t)status::unsubmitted;
+		this->ranked_status = static_cast<int32_t>(status::unsubmitted);
 		return true;
 	}
 

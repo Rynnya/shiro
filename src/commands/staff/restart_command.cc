@@ -32,7 +32,7 @@
 
 bool shiro::commands::restart(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
     if (!roles::manager::has_permission(user, permissions::perms::cmd_restart)) {
-        utils::bot::respond("Permission denied. (" + std::to_string((uint64_t) permissions::perms::cmd_restart) + ")", std::move(user), std::move(channel), true);
+        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_restart)) + ")", std::move(user), std::move(channel), true);
         return false;
     }
 

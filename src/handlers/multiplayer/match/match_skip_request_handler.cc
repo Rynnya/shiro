@@ -32,12 +32,10 @@ void shiro::handler::multiplayer::match::skip_request::handle(shiro::io::osu_pac
 
         match.skipped_players.at(index) = true;
 
-        size_t player_count = std::count_if(match.multi_slot_status.begin(), match.multi_slot_status.end(), [](uint8_t status) {
-            return status == (uint8_t) utils::slot_status::playing;
-        });
-        size_t skipped_count = std::count_if(match.skipped_players.begin(), match.skipped_players.end(), [](bool skipped) {
-            return skipped;
-        });
+        size_t player_count = std::count_if(match.multi_slot_status.begin(), match.multi_slot_status.end(),
+            [](uint8_t status) { return status == static_cast<uint8_t>(utils::slot_status::playing); });
+        size_t skipped_count = std::count_if(match.skipped_players.begin(), match.skipped_players.end(),
+            [](bool skipped) { return skipped; });
 
         io::osu_writer writer;
         writer.match_player_skipped(index);
@@ -46,7 +44,7 @@ void shiro::handler::multiplayer::match::skip_request::handle(shiro::io::osu_pac
             writer.match_skip();
 
         for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
-            if (match.multi_slot_status.at(i) != (uint8_t) utils::slot_status::playing)
+            if (match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::playing))
                 continue;
 
             std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(match.multi_slot_id.at(i));

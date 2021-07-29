@@ -20,7 +20,7 @@
 
 void shiro::io::buffer::allocate(size_t amount) {
     for (size_t i = 0; i < amount; i++) {
-        this->bytes.emplace_back((uint8_t) 0x0);
+        this->bytes.emplace_back(static_cast<uint8_t>(0x0));
     }
 }
 

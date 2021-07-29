@@ -62,5 +62,5 @@ void shiro::io::layouts::message::unmarshal(shiro::io::buffer &buffer) {
 }
 
 int32_t shiro::io::layouts::message::get_size() {
-    return (int32_t) this->marshal().get_size();
+    return static_cast<int32_t>(this->marshal().get_size());
 }

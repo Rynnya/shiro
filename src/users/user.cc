@@ -59,7 +59,7 @@ bool shiro::users::user::init() {
     this->salt = row.salt;
     this->roles = row.roles;
     this->presence.permissions = roles::manager::get_chat_color(this->roles);
-    this->isRelax = row.is_relax;
+    this->is_relax = row.is_relax;
 
     auto relationship_result = db(select(all_of(relationships_table)).from(relationships_table).where(relationships_table.origin == this->user_id and relationships_table.blocked == false));
 
@@ -70,7 +70,7 @@ bool shiro::users::user::init() {
     if (users::punishments::is_restricted(this->user_id))
         this->hidden = true;
 
-    if (isRelax)
+    if (is_relax)
     {
         const tables::users_stats_relax user_stats_table {};
 
@@ -128,13 +128,13 @@ bool shiro::users::user::init() {
     return true;
 }
 
-void shiro::users::user::update(bool isRelax) {
+void shiro::users::user::update(bool is_relax) {
     sqlpp::mysql::connection db(db_connection->get_config());
 
     const tables::users user_table {};
-    db(sqlpp::update(user_table).set(user_table.is_relax = isRelax).where(user_table.id == this->user_id));
+    db(sqlpp::update(user_table).set(user_table.is_relax = is_relax).where(user_table.id == this->user_id));
 
-    if (isRelax)
+    if (is_relax)
     {
         const tables::users_stats_relax user_stats_table {};
         auto result = db(select(all_of(user_stats_table)).from(user_stats_table).where(user_stats_table.id == this->user_id).limit(1u));
@@ -144,7 +144,76 @@ void shiro::users::user::update(bool isRelax) {
 
         const auto& row = result.front();
 
-        if (this->status.play_mode == (uint8_t)utils::play_mode::standard) {
+        switch (static_cast<utils::play_mode>(this->status.play_mode))
+        {
+            case utils::play_mode::standard:
+                this->stats.pp = row.pp_std;
+                this->stats.total_score = row.total_score_std;
+                this->stats.ranked_score = row.ranked_score_std;
+                this->stats.play_count = row.play_count_std;
+                this->stats.rank = row.rank_std;
+                this->presence.rank = row.rank_std;
+                this->stats.max_combo = row.max_combo_std;
+                this->stats.accuracy = row.avg_accuracy_std;
+                this->stats.total_hits = row.total_hits_std;
+                this->stats.play_time = row.play_time_std;
+                this->stats.count_A = row.count_A_std;
+                this->stats.count_S = row.count_S_std;
+                this->stats.count_X = row.count_X_std;
+                this->stats.count_SH = row.count_SH_std;
+                this->stats.count_XH = row.count_XH_std;
+                break;
+            case utils::play_mode::taiko:
+                this->stats.pp = row.pp_taiko;
+                this->stats.total_score = row.total_score_taiko;
+                this->stats.ranked_score = row.ranked_score_taiko;
+                this->stats.play_count = row.play_count_taiko;
+                this->stats.rank = row.rank_taiko;
+                this->presence.rank = row.rank_taiko;
+                this->stats.max_combo = row.max_combo_taiko;
+                this->stats.accuracy = row.avg_accuracy_taiko;
+                this->stats.total_hits = row.total_hits_taiko;
+                this->stats.play_time = row.play_time_taiko;
+                this->stats.count_A = row.count_A_taiko;
+                this->stats.count_S = row.count_S_taiko;
+                this->stats.count_X = row.count_X_taiko;
+                this->stats.count_SH = row.count_SH_taiko;
+                this->stats.count_XH = row.count_XH_taiko;
+                break;
+            case utils::play_mode::fruits:
+                this->stats.pp = row.pp_ctb;
+                this->stats.total_score = row.total_score_ctb;
+                this->stats.ranked_score = row.ranked_score_ctb;
+                this->stats.play_count = row.play_count_ctb;
+                this->stats.rank = row.rank_ctb;
+                this->presence.rank = row.rank_ctb;
+                this->stats.max_combo = row.max_combo_ctb;
+                this->stats.accuracy = row.avg_accuracy_ctb;
+                this->stats.total_hits = row.total_hits_ctb;
+                this->stats.play_time = row.play_time_ctb;
+                this->stats.count_A = row.count_A_ctb;
+                this->stats.count_S = row.count_S_ctb;
+                this->stats.count_X = row.count_X_ctb;
+                this->stats.count_SH = row.count_SH_ctb;
+                this->stats.count_XH = row.count_XH_ctb;
+                break;
+        }
+
+        this->is_relax = true;
+        return;
+    }
+
+    const tables::users_stats user_stats_table {};
+    auto result = db(select(all_of(user_stats_table)).from(user_stats_table).where(user_stats_table.id == this->user_id).limit(1u));
+
+    if (result.empty())
+        return;
+
+    const auto& row = result.front();
+
+    switch (static_cast<utils::play_mode>(this->status.play_mode))
+    {
+        case utils::play_mode::standard:
             this->stats.pp = row.pp_std;
             this->stats.total_score = row.total_score_std;
             this->stats.ranked_score = row.ranked_score_std;
@@ -160,8 +229,8 @@ void shiro::users::user::update(bool isRelax) {
             this->stats.count_X = row.count_X_std;
             this->stats.count_SH = row.count_SH_std;
             this->stats.count_XH = row.count_XH_std;
-        }
-        else if (this->status.play_mode == (uint8_t)utils::play_mode::taiko) {
+            break;
+        case utils::play_mode::taiko:
             this->stats.pp = row.pp_taiko;
             this->stats.total_score = row.total_score_taiko;
             this->stats.ranked_score = row.ranked_score_taiko;
@@ -177,8 +246,8 @@ void shiro::users::user::update(bool isRelax) {
             this->stats.count_X = row.count_X_taiko;
             this->stats.count_SH = row.count_SH_taiko;
             this->stats.count_XH = row.count_XH_taiko;
-        }
-        else if (this->status.play_mode == (uint8_t)utils::play_mode::fruits) {
+            break;
+        case utils::play_mode::fruits:
             this->stats.pp = row.pp_ctb;
             this->stats.total_score = row.total_score_ctb;
             this->stats.ranked_score = row.ranked_score_ctb;
@@ -194,100 +263,102 @@ void shiro::users::user::update(bool isRelax) {
             this->stats.count_X = row.count_X_ctb;
             this->stats.count_SH = row.count_SH_ctb;
             this->stats.count_XH = row.count_XH_ctb;
+            break;
+        case utils::play_mode::mania:
+            this->stats.pp = row.pp_mania;
+            this->stats.total_score = row.total_score_mania;
+            this->stats.ranked_score = row.ranked_score_mania;
+            this->stats.play_count = row.play_count_mania;
+            this->stats.rank = row.rank_mania;
+            this->presence.rank = row.rank_mania;
+            this->stats.max_combo = row.max_combo_mania;
+            this->stats.accuracy = row.avg_accuracy_mania;
+            this->stats.total_hits = row.total_hits_mania;
+            this->stats.play_time = row.play_time_mania;
+            this->stats.count_A = row.count_A_mania;
+            this->stats.count_S = row.count_S_mania;
+            this->stats.count_X = row.count_X_mania;
+            this->stats.count_SH = row.count_SH_mania;
+            this->stats.count_XH = row.count_XH_mania;
+            break;
+    }
+
+    this->is_relax = false;
+}
+
+void shiro::users::user::save_stats(bool to_relax)
+{
+    sqlpp::mysql::connection db(db_connection->get_config());
+    
+    if (to_relax)
+    {
+        const tables::users_stats_relax user_stats_table {};
+        switch (static_cast<utils::play_mode>(this->stats.play_mode))
+        {
+            case utils::play_mode::standard:
+                db(sqlpp::update(user_stats_table).set(
+                    user_stats_table.pp_std = this->stats.pp,
+                    user_stats_table.total_score_std = this->stats.total_score,
+                    user_stats_table.ranked_score_std = this->stats.ranked_score,
+                    user_stats_table.play_count_std = this->stats.play_count,
+                    user_stats_table.rank_std = this->stats.rank,
+                    user_stats_table.max_combo_std = this->stats.max_combo,
+                    user_stats_table.avg_accuracy_std = this->stats.accuracy,
+                    user_stats_table.total_hits_std = this->stats.total_hits,
+                    user_stats_table.play_time_std = this->stats.play_time,
+                    user_stats_table.count_A_std = this->stats.count_A,
+                    user_stats_table.count_S_std = this->stats.count_S,
+                    user_stats_table.count_X_std = this->stats.count_X,
+                    user_stats_table.count_SH_std = this->stats.count_SH,
+                    user_stats_table.count_XH_std = this->stats.count_XH
+                ).where(user_stats_table.id == this->user_id));
+                break;
+            case utils::play_mode::taiko:
+                db(sqlpp::update(user_stats_table).set(
+                    user_stats_table.pp_taiko = this->stats.pp,
+                    user_stats_table.total_score_taiko = this->stats.total_score,
+                    user_stats_table.ranked_score_taiko = this->stats.ranked_score,
+                    user_stats_table.play_count_taiko = this->stats.play_count,
+                    user_stats_table.rank_taiko = this->stats.rank,
+                    user_stats_table.max_combo_taiko = this->stats.max_combo,
+                    user_stats_table.avg_accuracy_taiko = this->stats.accuracy,
+                    user_stats_table.total_hits_taiko = this->stats.total_hits,
+                    user_stats_table.play_time_taiko = this->stats.play_time,
+                    user_stats_table.count_A_taiko = this->stats.count_A,
+                    user_stats_table.count_S_taiko = this->stats.count_S,
+                    user_stats_table.count_X_taiko = this->stats.count_X,
+                    user_stats_table.count_SH_taiko = this->stats.count_SH,
+                    user_stats_table.count_XH_taiko = this->stats.count_XH
+                ).where(user_stats_table.id == this->user_id));
+                break;
+            case utils::play_mode::fruits:
+                db(sqlpp::update(user_stats_table).set(
+                    user_stats_table.pp_ctb = this->stats.pp,
+                    user_stats_table.total_score_ctb = this->stats.total_score,
+                    user_stats_table.ranked_score_ctb = this->stats.ranked_score,
+                    user_stats_table.play_count_ctb = this->stats.play_count,
+                    user_stats_table.rank_ctb = this->stats.rank,
+                    user_stats_table.max_combo_ctb = this->stats.max_combo,
+                    user_stats_table.avg_accuracy_ctb = this->stats.accuracy,
+                    user_stats_table.total_hits_ctb = this->stats.total_hits,
+                    user_stats_table.play_time_ctb = this->stats.play_time,
+                    user_stats_table.count_A_ctb = this->stats.count_A,
+                    user_stats_table.count_S_ctb = this->stats.count_S,
+                    user_stats_table.count_X_ctb = this->stats.count_X,
+                    user_stats_table.count_SH_ctb = this->stats.count_SH,
+                    user_stats_table.count_XH_ctb = this->stats.count_XH
+                ).where(user_stats_table.id == this->user_id));
+                break;
         }
 
-        this->isRelax = true;
         return;
     }
 
     const tables::users_stats user_stats_table {};
-    auto result = db(select(all_of(user_stats_table)).from(user_stats_table).where(user_stats_table.id == this->user_id).limit(1u));
 
-    if (result.empty())
-        return;
-
-    const auto& row = result.front();
-
-    if (this->status.play_mode == (uint8_t)utils::play_mode::standard) {
-        this->stats.pp = row.pp_std;
-        this->stats.total_score = row.total_score_std;
-        this->stats.ranked_score = row.ranked_score_std;
-        this->stats.play_count = row.play_count_std;
-        this->stats.rank = row.rank_std;
-        this->presence.rank = row.rank_std;
-        this->stats.max_combo = row.max_combo_std;
-        this->stats.accuracy = row.avg_accuracy_std;
-        this->stats.total_hits = row.total_hits_std;
-        this->stats.play_time = row.play_time_std;
-        this->stats.count_A = row.count_A_std;
-        this->stats.count_S = row.count_S_std;
-        this->stats.count_X = row.count_X_std;
-        this->stats.count_SH = row.count_SH_std;
-        this->stats.count_XH = row.count_XH_std;
-    }
-    else if (this->status.play_mode == (uint8_t)utils::play_mode::taiko) {
-        this->stats.pp = row.pp_taiko;
-        this->stats.total_score = row.total_score_taiko;
-        this->stats.ranked_score = row.ranked_score_taiko;
-        this->stats.play_count = row.play_count_taiko;
-        this->stats.rank = row.rank_taiko;
-        this->presence.rank = row.rank_taiko;
-        this->stats.max_combo = row.max_combo_taiko;
-        this->stats.accuracy = row.avg_accuracy_taiko;
-        this->stats.total_hits = row.total_hits_taiko;
-        this->stats.play_time = row.play_time_taiko;
-        this->stats.count_A = row.count_A_taiko;
-        this->stats.count_S = row.count_S_taiko;
-        this->stats.count_X = row.count_X_taiko;
-        this->stats.count_SH = row.count_SH_taiko;
-        this->stats.count_XH = row.count_XH_taiko;
-    }
-    else if (this->status.play_mode == (uint8_t)utils::play_mode::fruits) {
-        this->stats.pp = row.pp_ctb;
-        this->stats.total_score = row.total_score_ctb;
-        this->stats.ranked_score = row.ranked_score_ctb;
-        this->stats.play_count = row.play_count_ctb;
-        this->stats.rank = row.rank_ctb;
-        this->presence.rank = row.rank_ctb;
-        this->stats.max_combo = row.max_combo_ctb;
-        this->stats.accuracy = row.avg_accuracy_ctb;
-        this->stats.total_hits = row.total_hits_ctb;
-        this->stats.play_time = row.play_time_ctb;
-        this->stats.count_A = row.count_A_ctb;
-        this->stats.count_S = row.count_S_ctb;
-        this->stats.count_X = row.count_X_ctb;
-        this->stats.count_SH = row.count_SH_ctb;
-        this->stats.count_XH = row.count_XH_ctb;
-    }
-    else if (this->status.play_mode == (uint8_t)utils::play_mode::mania) {
-        this->stats.pp = row.pp_mania;
-        this->stats.total_score = row.total_score_mania;
-        this->stats.ranked_score = row.ranked_score_mania;
-        this->stats.play_count = row.play_count_mania;
-        this->stats.rank = row.rank_mania;
-        this->presence.rank = row.rank_mania;
-        this->stats.max_combo = row.max_combo_mania;
-        this->stats.accuracy = row.avg_accuracy_mania;
-        this->stats.total_hits = row.total_hits_mania;
-        this->stats.play_time = row.play_time_mania;
-        this->stats.count_A = row.count_A_mania;
-        this->stats.count_S = row.count_S_mania;
-        this->stats.count_X = row.count_X_mania;
-        this->stats.count_SH = row.count_SH_mania;
-        this->stats.count_XH = row.count_XH_mania;
-    }
-
-    this->isRelax = false;
-}
-
-void shiro::users::user::save_stats(bool toRelax) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    
-    if (toRelax)
+    switch (static_cast<utils::play_mode>(this->stats.play_mode)) 
     {
-        const tables::users_stats_relax user_stats_table {};
-        switch (this->stats.play_mode) {
-        case (uint8_t)utils::play_mode::standard:
+        case utils::play_mode::standard:
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_std = this->stats.pp,
                 user_stats_table.total_score_std = this->stats.total_score,
@@ -305,7 +376,7 @@ void shiro::users::user::save_stats(bool toRelax) {
                 user_stats_table.count_XH_std = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
-        case (uint8_t)utils::play_mode::taiko:
+        case utils::play_mode::taiko:
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_taiko = this->stats.pp,
                 user_stats_table.total_score_taiko = this->stats.total_score,
@@ -323,7 +394,7 @@ void shiro::users::user::save_stats(bool toRelax) {
                 user_stats_table.count_XH_taiko = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
-        case (uint8_t)utils::play_mode::fruits:
+        case utils::play_mode::fruits:
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_ctb = this->stats.pp,
                 user_stats_table.total_score_ctb = this->stats.total_score,
@@ -341,86 +412,24 @@ void shiro::users::user::save_stats(bool toRelax) {
                 user_stats_table.count_XH_ctb = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
-        }
-
-        return;
-    }
-
-    const tables::users_stats user_stats_table {};
-
-    switch (this->stats.play_mode) {
-    case (uint8_t)utils::play_mode::standard:
-        db(sqlpp::update(user_stats_table).set(
-            user_stats_table.pp_std = this->stats.pp,
-            user_stats_table.total_score_std = this->stats.total_score,
-            user_stats_table.ranked_score_std = this->stats.ranked_score,
-            user_stats_table.play_count_std = this->stats.play_count,
-            user_stats_table.rank_std = this->stats.rank,
-            user_stats_table.max_combo_std = this->stats.max_combo,
-            user_stats_table.avg_accuracy_std = this->stats.accuracy,
-            user_stats_table.total_hits_std = this->stats.total_hits,
-            user_stats_table.play_time_std = this->stats.play_time,
-            user_stats_table.count_A_std = this->stats.count_A,
-            user_stats_table.count_S_std = this->stats.count_S,
-            user_stats_table.count_X_std = this->stats.count_X,
-            user_stats_table.count_SH_std = this->stats.count_SH,
-            user_stats_table.count_XH_std = this->stats.count_XH
-        ).where(user_stats_table.id == this->user_id));
-        break;
-    case (uint8_t)utils::play_mode::taiko:
-        db(sqlpp::update(user_stats_table).set(
-            user_stats_table.pp_taiko = this->stats.pp,
-            user_stats_table.total_score_taiko = this->stats.total_score,
-            user_stats_table.ranked_score_taiko = this->stats.ranked_score,
-            user_stats_table.play_count_taiko = this->stats.play_count,
-            user_stats_table.rank_taiko = this->stats.rank,
-            user_stats_table.max_combo_taiko = this->stats.max_combo,
-            user_stats_table.avg_accuracy_taiko = this->stats.accuracy,
-            user_stats_table.total_hits_taiko = this->stats.total_hits,
-            user_stats_table.play_time_taiko = this->stats.play_time,
-            user_stats_table.count_A_taiko = this->stats.count_A,
-            user_stats_table.count_S_taiko = this->stats.count_S,
-            user_stats_table.count_X_taiko = this->stats.count_X,
-            user_stats_table.count_SH_taiko = this->stats.count_SH,
-            user_stats_table.count_XH_taiko = this->stats.count_XH
-        ).where(user_stats_table.id == this->user_id));
-        break;
-    case (uint8_t)utils::play_mode::fruits:
-        db(sqlpp::update(user_stats_table).set(
-            user_stats_table.pp_ctb = this->stats.pp,
-            user_stats_table.total_score_ctb = this->stats.total_score,
-            user_stats_table.ranked_score_ctb = this->stats.ranked_score,
-            user_stats_table.play_count_ctb = this->stats.play_count,
-            user_stats_table.rank_ctb = this->stats.rank,
-            user_stats_table.max_combo_ctb = this->stats.max_combo,
-            user_stats_table.avg_accuracy_ctb = this->stats.accuracy,
-            user_stats_table.total_hits_ctb = this->stats.total_hits,
-            user_stats_table.play_time_ctb = this->stats.play_time,
-            user_stats_table.count_A_ctb = this->stats.count_A,
-            user_stats_table.count_S_ctb = this->stats.count_S,
-            user_stats_table.count_X_ctb = this->stats.count_X,
-            user_stats_table.count_SH_ctb = this->stats.count_SH,
-            user_stats_table.count_XH_ctb = this->stats.count_XH
-        ).where(user_stats_table.id == this->user_id));
-        break;
-    case (uint8_t)utils::play_mode::mania:
-        db(sqlpp::update(user_stats_table).set(
-            user_stats_table.pp_mania = this->stats.pp,
-            user_stats_table.total_score_mania = this->stats.total_score,
-            user_stats_table.ranked_score_mania = this->stats.ranked_score,
-            user_stats_table.play_count_mania = this->stats.play_count,
-            user_stats_table.rank_mania = this->stats.rank,
-            user_stats_table.max_combo_mania = this->stats.max_combo,
-            user_stats_table.avg_accuracy_mania = this->stats.accuracy,
-            user_stats_table.total_hits_mania = this->stats.total_hits,
-            user_stats_table.play_time_mania = this->stats.play_time,
-            user_stats_table.count_A_mania = this->stats.count_A,
-            user_stats_table.count_S_mania = this->stats.count_S,
-            user_stats_table.count_X_mania = this->stats.count_X,
-            user_stats_table.count_SH_mania = this->stats.count_SH,
-            user_stats_table.count_XH_mania = this->stats.count_XH
-        ).where(user_stats_table.id == this->user_id));
-        break;
+        case utils::play_mode::mania:
+            db(sqlpp::update(user_stats_table).set(
+                user_stats_table.pp_mania = this->stats.pp,
+                user_stats_table.total_score_mania = this->stats.total_score,
+                user_stats_table.ranked_score_mania = this->stats.ranked_score,
+                user_stats_table.play_count_mania = this->stats.play_count,
+                user_stats_table.rank_mania = this->stats.rank,
+                user_stats_table.max_combo_mania = this->stats.max_combo,
+                user_stats_table.avg_accuracy_mania = this->stats.accuracy,
+                user_stats_table.total_hits_mania = this->stats.total_hits,
+                user_stats_table.play_time_mania = this->stats.play_time,
+                user_stats_table.count_A_mania = this->stats.count_A,
+                user_stats_table.count_S_mania = this->stats.count_S,
+                user_stats_table.count_X_mania = this->stats.count_X,
+                user_stats_table.count_SH_mania = this->stats.count_SH,
+                user_stats_table.count_XH_mania = this->stats.count_XH
+            ).where(user_stats_table.id == this->user_id));
+            break;
     }
 }
 
@@ -434,7 +443,7 @@ void shiro::users::user::update_country(std::string country)
     db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
 }
 
-void shiro::users::user::update_counts(std::string rank, bool isRelax)
+void shiro::users::user::update_counts(std::string rank)
 {
     static std::unordered_map<std::string, std::function<void()>> ranks =
     {

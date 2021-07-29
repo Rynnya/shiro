@@ -69,7 +69,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
 
     for (auto& map_json : json_result)
     {
-        std::string beatmap_id = std::to_string((int32_t)map_json["SetID"]);
+        std::string beatmap_id = std::to_string(map_json["SetID"].get<int32_t>());
         std::string last_updated = "-";
 
         if (map_json["LastUpdate"].is_string())
@@ -108,7 +108,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
                 difficulties << minutes << "m";
 
             difficulties << seconds << "s)" << "@";
-            difficulties << (int32_t)diff_json["Mode"] << ",";
+            difficulties << diff_json["Mode"].get<int32_t>() << ",";
         }
 
         std::string all_difficulties = difficulties.str();

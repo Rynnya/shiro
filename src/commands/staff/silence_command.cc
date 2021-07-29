@@ -32,7 +32,7 @@ bool shiro::commands::silence(std::deque<std::string> &args, std::shared_ptr<shi
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_silence)) {
-        utils::bot::respond("Permission denied. (" + std::to_string((uint64_t) permissions::perms::cmd_silence) + ")", user, channel, true);
+        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_silence)) + ")", user, channel, true);
         return false;
     }
 

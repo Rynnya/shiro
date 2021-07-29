@@ -49,7 +49,7 @@ void shiro::users::punishments::init() {
             if (row.duration.is_null())
                 continue;
 
-            utils::punishment_type type = (utils::punishment_type) static_cast<uint16_t>(row.type);
+            utils::punishment_type type = static_cast<utils::punishment_type>(row.type.value());
             int32_t timestamp = row.time;
             int32_t duration = row.duration;
 
@@ -60,7 +60,7 @@ void shiro::users::punishments::init() {
 
                 switch (type) {
                     case utils::punishment_type::silence: {
-                        LOG_F(INFO, "User %i has been unsilenced automatically.", (int32_t) row.id);
+                        LOG_F(INFO, "User %lli has been unsilenced automatically.", row.id.value());
                         break;
                     }
                     case utils::punishment_type::restrict: {
@@ -70,16 +70,16 @@ void shiro::users::punishments::init() {
                             io::osu_writer writer;
 
                             writer.announce("Your restriction has ended. Please login again.");
-                            writer.login_reply((int32_t) utils::login_responses::account_password_reset);
+                            writer.login_reply(static_cast<int32_t>(utils::login_responses::account_password_reset));
 
                             user->queue.enqueue(writer);
                         }
 
-                        LOG_F(INFO, "User %i has been unrestricted automatically.", (int32_t) row.id);
+                        LOG_F(INFO, "User %lli has been unrestricted automatically.", row.id.value());
                         break;
                     }
                     case utils::punishment_type::ban: {
-                        LOG_F(INFO, "User %i has been unbanned automatically.", (int32_t) row.id);
+                        LOG_F(INFO, "User %lli has been unbanned automatically.", row.id.value());
                         break;
                     }
                     default: {
@@ -104,7 +104,7 @@ void shiro::users::punishments::kick(int32_t user_id, int32_t origin, const std:
     db(insert_into(punishments_table).set(
             punishments_table.user_id = user_id,
             punishments_table.origin_id = origin,
-            punishments_table.type = (uint16_t) utils::punishment_type::kick,
+            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::kick),
             punishments_table.time = seconds.count(),
             punishments_table.active = false,
             punishments_table.reason = reason
@@ -122,7 +122,7 @@ void shiro::users::punishments::kick(int32_t user_id, int32_t origin, const std:
     io::osu_writer writer;
 
     writer.announce(reason);
-    writer.login_reply((int32_t) utils::login_responses::invalid_credentials);
+    writer.login_reply(static_cast<int32_t>(utils::login_responses::invalid_credentials));
 
     user->queue.enqueue(writer);
 }
@@ -141,7 +141,7 @@ void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_
     db(insert_into(punishments_table).set(
             punishments_table.user_id = user_id,
             punishments_table.origin_id = origin,
-            punishments_table.type = (uint16_t) utils::punishment_type::silence,
+            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::silence),
             punishments_table.time = seconds.count(),
             punishments_table.duration = duration,
             punishments_table.active = true,
@@ -191,7 +191,7 @@ void shiro::users::punishments::restrict(int32_t user_id, int32_t origin, const 
     db(insert_into(punishments_table).set(
             punishments_table.user_id = user_id,
             punishments_table.origin_id = origin,
-            punishments_table.type = (uint16_t) utils::punishment_type::restrict,
+            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::restrict),
             punishments_table.time = seconds.count(),
             punishments_table.active = true,
             punishments_table.reason = reason
@@ -248,7 +248,7 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
     db(insert_into(punishments_table).set(
             punishments_table.user_id = user_id,
             punishments_table.origin_id = origin,
-            punishments_table.type = (uint16_t) utils::punishment_type::ban,
+            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::ban),
             punishments_table.time = seconds.count(),
             punishments_table.active = true,
             punishments_table.reason = reason
@@ -268,7 +268,7 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
     io::osu_writer writer;
 
     writer.announce(reason);
-    writer.login_reply((int32_t) utils::login_responses::user_banned); // This will lock the client
+    writer.login_reply(static_cast<int32_t>(utils::login_responses::user_banned)); // This will lock the client
 
     user->queue.enqueue(writer);
 }
@@ -279,7 +279,7 @@ bool shiro::users::punishments::is_silenced(int32_t user_id) {
 
     auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
             punishments_table.user_id == user_id and
-            punishments_table.type == (uint16_t) utils::punishment_type::silence and
+            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
             punishments_table.active == true
     ).limit(1u));
 
@@ -292,7 +292,7 @@ bool shiro::users::punishments::is_restricted(int32_t user_id) {
 
     auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
             punishments_table.user_id == user_id and
-            punishments_table.type == (uint16_t) utils::punishment_type::restrict and
+            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict) and
             punishments_table.active == true
     ).limit(1u));
 
@@ -305,7 +305,7 @@ bool shiro::users::punishments::is_banned(int32_t user_id) {
 
     auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
             punishments_table.user_id == user_id and
-            punishments_table.type == (uint16_t) utils::punishment_type::ban and
+            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) and
             punishments_table.active == true
     ).limit(1u));
 
@@ -337,7 +337,7 @@ std::tuple<int32_t, uint32_t> shiro::users::punishments::get_silence_time(int32_
 
     auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
             punishments_table.user_id == user_id and
-            punishments_table.type == (uint16_t) utils::punishment_type::silence and
+            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
             punishments_table.active == true
     ).limit(1u));
 

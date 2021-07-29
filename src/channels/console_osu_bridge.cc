@@ -59,15 +59,17 @@ void shiro::channels::bridge::callback(void *user_data, const loguru::Message &l
     }
 }
 
-uint8_t shiro::channels::bridge::get_permission(loguru::Verbosity verbosity) {
-    switch (verbosity) {
+uint8_t shiro::channels::bridge::get_permission(loguru::Verbosity verbosity)
+{
+    switch (verbosity)
+    {
         case loguru::Verbosity_WARNING:
-            return (uint8_t) utils::osu_permissions::supporter;
+            return static_cast<uint8_t>(utils::osu_permissions::supporter);
         case loguru::Verbosity_ERROR:
-            return (uint8_t) utils::osu_permissions::bat;
+            return static_cast<uint8_t>(utils::osu_permissions::bat);
         case loguru::Verbosity_FATAL:
-            return (uint8_t) utils::osu_permissions::peppy;
+            return static_cast<uint8_t>(utils::osu_permissions::peppy);
         default:
-            return (uint8_t) utils::osu_permissions::friend_;
+            return static_cast<uint8_t>(utils::osu_permissions::friend_);
     }
 }

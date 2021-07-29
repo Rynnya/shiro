@@ -145,8 +145,8 @@ uint32_t shiro::utils::crypto::get_highest_bit(uint32_t bitwise) {
 }
 
 uint32_t shiro::utils::crypto::make_seed() {
-    int32_t a = (int32_t) std::clock();
-    int32_t b = (int32_t) std::time(nullptr);
+    int32_t a = std::clock();
+    int32_t b = std::time(nullptr);
     int32_t c = native::process_info::get_pid();
 
     a -= b;
@@ -185,5 +185,5 @@ uint32_t shiro::utils::crypto::make_seed() {
     c -= b;
     c ^= b >> 15;
 
-    return (uint32_t) c;
+    return static_cast<uint32_t>(c);
 }

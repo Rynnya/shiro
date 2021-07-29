@@ -32,14 +32,14 @@ namespace shiro::pp::recalculator {
     extern size_t running_threads;
     extern std::shared_timed_mutex mutex;
 
-    void begin(utils::play_mode mode, bool isRelax, uint32_t threads = std::thread::hardware_concurrency());
+    void begin(utils::play_mode mode, bool is_relax, uint32_t threads = std::thread::hardware_concurrency());
 
-    void end(utils::play_mode mode, bool isRelax);
+    void end(utils::play_mode mode, bool is_relax);
 
     bool in_progress();
 
     // Spawn workers
-    void recalculate(utils::play_mode mode, std::vector<int32_t> users, bool isRelax);
+    void recalculate(utils::play_mode mode, std::vector<int32_t> users, bool is_relax);
 
 }
 

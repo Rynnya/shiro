@@ -38,21 +38,21 @@ namespace shiro::io {
         buffer buf;
 
         void write(packet_id id) {
-            buf.write<int16_t>((int16_t) id);
+            buf.write<int16_t>(static_cast<int16_t>(id));
             buf.write<uint8_t>(0);
             buf.write<int32_t>(0);
         }
 
         template <typename t = serializable>
         void write(packet_id id, t data) {
-            buf.write<int16_t>((int16_t) id);
+            buf.write<int16_t>(static_cast<int16_t>(id));
             buf.write<uint8_t>(0);
             buf.write<int32_t>(data.get_size());
             buf.append(data.marshal().serialize());
         }
 
         void write(packet_id id, buffer &buf) {
-            buf.write<int16_t>((int16_t) id);
+            buf.write<int16_t>(static_cast<int16_t>(id));
             buf.write<uint8_t>(0);
             buf.write<int32_t>(buf.get_size());
             buf.append(buf);

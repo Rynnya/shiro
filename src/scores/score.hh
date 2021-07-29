@@ -50,7 +50,7 @@ namespace shiro::scores {
 
         bool fc = false;
         bool passed = false;
-        bool isRelax = false;
+        bool is_relax = false;
 
         int32_t count_300 = 0;
         int32_t count_100 = 0;
@@ -59,11 +59,11 @@ namespace shiro::scores {
         int32_t count_gekis = 0;
         int32_t count_misses = 0;
 
-        uint8_t play_mode = (uint8_t) utils::play_mode::standard;
+        uint8_t play_mode = static_cast<uint8_t>(utils::play_mode::standard);
         int32_t time = 0;
         int32_t play_time = 0;
 
-        std::string to_string(std::vector<score> &scores, bool isRelax);
+        std::string to_string(std::vector<score> &scores, bool is_relax);
 
     };
 

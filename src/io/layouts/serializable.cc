@@ -75,7 +75,7 @@ shiro::io::serializable::serializable(std::vector<int32_t> data) {
 }
 
 int32_t shiro::io::serializable::get_size() {
-    return (int32_t) this->marshal().get_size();
+    return static_cast<int32_t>(this->marshal().get_size());
 }
 
 shiro::io::buffer shiro::io::serializable::marshal() {
