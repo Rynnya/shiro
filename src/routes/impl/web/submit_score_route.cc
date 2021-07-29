@@ -297,7 +297,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     shiro::users::preferences preferences(user->user_id);
     std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.isRelax);
     bool overwrite = score.passed;
-    
+
     // User has previous scores on this map and this also pass, enable overwriting mode
     if (!previous_scores.empty() && overwrite)
     {
@@ -307,7 +307,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             double factor_iterator;
 
             // In relax only pp
-            if (score.isRelax && !preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
+            if (score.isRelax || !preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
             {
                 factor_score = score.pp;
                 factor_iterator = s.pp;
@@ -386,7 +386,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
         if (score.max_combo > user->stats.max_combo)
             user->stats.max_combo = score.max_combo;
-    }   
+    }
 
     replays::save_replay(score, beatmap, fields.at("replay-bin").body);
 
