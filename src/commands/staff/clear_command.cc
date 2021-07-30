@@ -31,7 +31,7 @@ bool shiro::commands::clear(std::deque<std::string> &args, std::shared_ptr<shiro
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_clear)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<int64_t>(permissions::perms::cmd_clear)) + ")", user, channel, true);
+        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_clear)) + ")", user, channel, true);
         return false;
     }
 

@@ -26,6 +26,9 @@
 std::vector<std::shared_ptr<shiro::users::user>> shiro::users::manager::online_users;
 std::shared_timed_mutex shiro::users::manager::mutex;
 
+std::unordered_set<int32_t> shiro::users::manager::preferences_query;
+std::shared_timed_mutex shiro::users::manager::query_mutex;
+
 void shiro::users::manager::login_user(std::shared_ptr<shiro::users::user> user)
 {
     if (user == nullptr || user->token.empty())
@@ -189,6 +192,20 @@ int32_t shiro::users::manager::get_id_by_username(const std::string &username)
         return -1;
 
     return result.front().id;
+}
+
+void shiro::users::manager::update_preferences(int32_t id)
+{
+    // Disallow other threads from writing (but not from reading)
+    std::shared_lock<std::shared_timed_mutex> lock(mutex);
+
+    for (const std::shared_ptr<user>& user : online_users)
+    {
+        if (user->user_id != id)
+            continue;
+
+        user->preferences = std::move(shiro::users::user_preferences(id));
+    }
 }
 
 void shiro::users::manager::iterate(const std::function<void(std::shared_ptr<shiro::users::user>)> &callback, bool skip_bot)

@@ -32,7 +32,7 @@
 
 namespace shiro::users {
 
-    class preferences
+    class user_preferences
     {
     public:
         bool display_classic = false;
@@ -44,9 +44,8 @@ namespace shiro::users {
         bool score_ow_ctb = false;
         bool score_ow_mania = false;
 
-        preferences() = default;
-        preferences(int32_t id);
-        preferences(std::string &username);
+        user_preferences() = default;
+        user_preferences(int32_t id);
         bool is_overwrite(shiro::utils::play_mode mode);
     };
 
@@ -74,6 +73,8 @@ namespace shiro::users {
         io::layouts::user_presence presence;
         io::layouts::user_stats stats;
         io::layouts::user_status status;
+
+        user_preferences preferences;
 
         io::queue queue;
 

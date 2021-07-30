@@ -23,7 +23,6 @@
 #include "../database/tables/user_table.hh"
 #include "../permissions/role_manager.hh"
 #include "../thirdparty/loguru.hh"
-#include "../users/user_manager.hh"
 #include "../utils/crypto.hh"
 #include "../utils/play_mode.hh"
 #include "../shiro.hh"
@@ -63,12 +62,11 @@ bool shiro::users::user::init() {
 
     auto relationship_result = db(select(all_of(relationships_table)).from(relationships_table).where(relationships_table.origin == this->user_id and relationships_table.blocked == false));
 
-    for (const auto &row : relationship_result) {
+    for (const auto &row : relationship_result)
         this->friends.emplace_back(row.target);
-    }
 
-    if (users::punishments::is_restricted(this->user_id))
-        this->hidden = true;
+    this->hidden = users::punishments::is_restricted(this->user_id);
+    this->preferences = std::move(user_preferences(this->user_id));
 
     if (is_relax)
     {
@@ -485,7 +483,7 @@ bool shiro::users::user::check_password(const std::string &password) {
     return utils::crypto::pbkdf2_hmac_sha512::hash(password, this->salt) == this->password;
 }
 
-shiro::users::preferences::preferences(int32_t id)
+shiro::users::user_preferences::user_preferences(int32_t id)
 {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users_preferences users_preferences_table{};
@@ -505,16 +503,10 @@ shiro::users::preferences::preferences(int32_t id)
     this->score_ow_mania = data.score_overwrite_mania;
 }
 
-shiro::users::preferences::preferences(std::string& username)
-{
-    preferences(shiro::users::manager::get_id_by_username(username));
-}
-
-bool shiro::users::preferences::is_overwrite(shiro::utils::play_mode mode)
+bool shiro::users::user_preferences::is_overwrite(shiro::utils::play_mode mode)
 {
     switch (mode)
     {
-        default:
         case shiro::utils::play_mode::standard:
             return this->score_ow_std;
         case shiro::utils::play_mode::taiko:
@@ -524,4 +516,6 @@ bool shiro::users::preferences::is_overwrite(shiro::utils::play_mode mode)
         case shiro::utils::play_mode::mania:
             return this->score_ow_mania;
     }
+
+    return false;
 }

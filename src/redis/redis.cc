@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,6 +19,8 @@
 
 #include "../thirdparty/loguru.hh"
 #include "redis.hh"
+#include "../users/user_manager.hh"
+#include "../utils/string_utils.hh"
 
 shiro::redis::redis(std::string address, uint32_t port, std::string password)
     : address(std::move(address))
@@ -38,7 +41,7 @@ void shiro::redis::connect() {
     if (!this->password.empty())
     {
         this->client->auth(this->password);
-        this->sub->auth(this->password); // TODO: Sub might be useful in future when i continue upgrading this project, but now... meh
+        this->sub->auth(this->password);
     }
 
     if (!is_connected())
@@ -76,7 +79,9 @@ void shiro::redis::setup() {
 
     this->client->sync_commit();
 
-    // TODO: Here might be subscribe to channels, i think username change and some other stuff
+    this->sub->subscribe("shiro.user_preferences", 
+        [](const std::string& ch, const std::string& msg) { users::manager::update_preferences(utils::strings::safe_int(msg)); });
+    this->sub->commit();
 }
 
 bool shiro::redis::is_connected() {

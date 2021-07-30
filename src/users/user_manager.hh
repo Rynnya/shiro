@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <shared_mutex>
+#include <unordered_set>
 #include <vector>
 
 #include "user.hh"
@@ -29,6 +30,9 @@ namespace shiro::users::manager {
 
     extern std::vector<std::shared_ptr<user>> online_users;
     extern std::shared_timed_mutex mutex;
+
+    extern std::unordered_set<int32_t> preferences_query;
+    extern std::shared_timed_mutex query_mutex;
 
     // Adds a user to online users
     void login_user(std::shared_ptr<user> user);
@@ -48,6 +52,8 @@ namespace shiro::users::manager {
     // Works for both online and offline users
     std::string get_username_by_id(int32_t id);
     int32_t get_id_by_username(const std::string &username);
+
+    void update_preferences(int32_t id);
 
     // Helper methods to quickly iterate over all online users
     void iterate(const std::function<void(std::shared_ptr<user>)> &callback, bool skip_bot = false);

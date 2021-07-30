@@ -47,7 +47,7 @@ void shiro::io::layouts::user_stats::recalculate_pp(bool is_relax) {
     float pp = 0; // Here it is a float to keep decimal points, round it when setting final pp value
 
     for (size_t i = 0; i < scores.size(); i++) {
-        scores::score score = scores.at(i);
+        const scores::score &score = scores.at(i);
 
         pp += (score.pp * std::pow(0.95, i));
     }

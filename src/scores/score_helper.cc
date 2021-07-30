@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -28,13 +29,21 @@
 #include "../utils/mods.hh"
 #include "score_helper.hh"
 
+inline static const auto& scores_sorting = [](const shiro::scores::score& s_left, const shiro::scores::score& s_right) 
+{
+    return s_left.total_score > s_right.total_score;
+};
+
 shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == is_relax)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.beatmap_md5 == beatmap_md5sum and 
+        score_table.user_id == user->user_id and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return score(-1);
@@ -58,7 +67,7 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
@@ -71,9 +80,6 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
         s.play_mode = row.play_mode;
         s.time = row.time;
 
-        if (!s.passed)
-            continue;
-
         if (!is_ranked(s, beatmaps::beatmap()))
             continue;
 
@@ -83,9 +89,7 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
     if (scores.empty())
         return score(-1);
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     return scores.at(0);
 }
@@ -94,9 +98,11 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.beatmap_md5 == beatmap_md5sum and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return {};
@@ -128,7 +134,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
@@ -140,9 +146,6 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
 
         s.play_mode = row.play_mode;
         s.time = row.time;
-
-        if (!s.passed)
-            continue;
 
         if (!users::punishments::has_scores(s.user_id))
             continue;
@@ -168,9 +171,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -182,9 +183,11 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.beatmap_md5 == beatmap_md5sum and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return {};
@@ -216,7 +219,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
@@ -228,9 +231,6 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
 
         s.play_mode = row.play_mode;
         s.time = row.time;
-
-        if (!s.passed)
-            continue;
 
         if (!users::punishments::has_scores(s.user_id))
             continue;
@@ -269,9 +269,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -283,9 +281,11 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.beatmap_md5 == beatmap_md5sum and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return {};
@@ -317,7 +317,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
@@ -329,9 +329,6 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
 
         s.play_mode = row.play_mode;
         s.time = row.time;
-
-        if (!s.passed)
-            continue;
 
         if (!users::punishments::has_scores(s.user_id))
             continue;
@@ -360,9 +357,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -374,9 +369,11 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.beatmap_md5 == beatmap_md5sum and score_table.is_relax == is_relax).limit(limit)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.beatmap_md5 == beatmap_md5sum and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return {};
@@ -408,7 +405,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
@@ -420,9 +417,6 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
 
         s.play_mode = row.play_mode;
         s.time = row.time;
-
-        if (!s.passed)
-            continue;
 
         if (!users::punishments::has_scores(s.user_id))
             continue;
@@ -464,9 +458,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -479,8 +471,11 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table).where(
-            score_table.beatmap_md5 == beatmap_md5sum and score_table.user_id == user->user_id and score_table.is_relax == is_relax
-    ).limit(limit));
+        score_table.beatmap_md5 == beatmap_md5sum and 
+        score_table.user_id == user->user_id and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return {};
@@ -512,7 +507,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = is_relax;
 
         s.count_300 = row.count_300;
@@ -524,9 +519,6 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
 
         s.play_mode = row.play_mode;
         s.time = row.time;
-
-        if (!s.passed)
-            continue;
 
         if (!is_ranked(s, beatmaps::beatmap()))
             continue;
@@ -537,9 +529,10 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
         scores.emplace_back(s);
     }
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
+
+    if (scores.size() > limit)
+        scores.resize(limit);
 
     return scores;
 }
@@ -548,9 +541,10 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.user_id == user_id and score_table.is_relax == is_relax).limit(limit)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.user_id == user_id and 
+        score_table.is_relax == is_relax
+    ).limit(limit));
 
     if (result.empty())
         return {};
@@ -590,9 +584,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
         scores.emplace_back(s);
     }
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     return scores;
 }
@@ -601,9 +593,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::scores score_table {};
 
-    auto result = db(select(all_of(score_table)).from(score_table)
-        .where(score_table.user_id == user_id and score_table.play_mode == static_cast<uint8_t>(mode) and score_table.is_relax == is_relax)
-    );
+    auto result = db(select(all_of(score_table)).from(score_table).where(
+        score_table.user_id == user_id and 
+        score_table.play_mode == static_cast<uint8_t>(mode) and 
+        score_table.is_relax == is_relax and
+        score_table.completed == true
+    ));
 
     if (result.empty())
         return {};
@@ -627,7 +622,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
         s.mods = row.mods;
 
         s.fc = row.full_combo;
-        s.passed = row.completed;
+        s.passed = true;
         s.is_relax = row.is_relax;
 
         s.count_300 = row.count_300;
@@ -639,9 +634,6 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
 
         s.play_mode = row.play_mode;
         s.time = row.time;
-
-        if (!s.passed)
-            continue;
 
         if (!is_ranked(s, beatmaps::beatmap()))
             continue;
@@ -688,9 +680,9 @@ std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int3
     const tables::scores score_table {};
 
     auto result = db(select(all_of(score_table)).from(score_table).where(
-            score_table.user_id == user_id and
-            score_table.play_mode == static_cast<uint8_t>(mode) and
-            score_table.is_relax == is_relax
+        score_table.user_id == user_id and
+        score_table.play_mode == static_cast<uint8_t>(mode) and
+        score_table.is_relax == is_relax
     ).order_by(score_table.time.desc()).limit(1u));
 
     if (result.empty())
@@ -774,9 +766,7 @@ shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
 }
 
 int32_t shiro::scores::helper::get_scoreboard_position(const shiro::scores::score &s, std::vector<score> scores) {
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.total_score > s_right.total_score;
-    });
+    std::sort(scores.begin(), scores.end(), scores_sorting);
 
     for (size_t i = 0; i < scores.size(); i++) {
         score &beatmap_score = scores.at(i);
@@ -792,7 +782,8 @@ bool shiro::scores::helper::is_ranked(const shiro::scores::score &score, const s
     bool ranked = true;
     int32_t mods = score.mods;
 
-    switch (static_cast<utils::play_mode>(score.play_mode)) {
+    switch (static_cast<utils::play_mode>(score.play_mode)) 
+    {
         case utils::play_mode::standard:
             ranked &= config::score_submission::std_ranked;
             break;
@@ -1058,7 +1049,7 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
 }
 
 float shiro::scores::helper::calculate_accuracy(utils::play_mode mode, int32_t _300, int32_t _100, int32_t _50, int32_t geki, int32_t katu, int32_t miss) {
-    // TODO: Use performance library for accuracy calculation
+    // TODO: Use performance library for accuracy calculation - source closed or deleled?
     // https://github.com/Marc3842h/hikari/blob/master/src/accuracy.rs
     // https://github.com/Marc3842h/hikari/blob/982260f83309499e2239148800561548f3fa39cf/include/hikari.h#L49
 

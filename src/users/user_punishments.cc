@@ -54,9 +54,7 @@ void shiro::users::punishments::init() {
             int32_t duration = row.duration;
 
             if (seconds.count() >= (timestamp + duration)) {
-                db(update(punishments_table).set(
-                        punishments_table.active = false
-                ).where(punishments_table.id == row.id));
+                db(update(punishments_table).set(punishments_table.active = false).where(punishments_table.id == row.id));
 
                 switch (type) {
                     case utils::punishment_type::silence: {

@@ -153,9 +153,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     int32_t game_version = 20131216;
 
-    score_metadata.at(17).erase(std::remove_if(score_metadata.at(17).begin(), score_metadata.at(17).end(), [](char c) {
-        return !std::isdigit(c);
-    }), score_metadata.at(17).end());
+    score_metadata.at(17).erase(std::remove_if(score_metadata.at(17).begin(), score_metadata.at(17).end(),
+        [](char c) { return !std::isdigit(c); }), score_metadata.at(17).end());
 
     scores::score score;
     score.user_id = user->user_id;
@@ -294,7 +293,6 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(beatmap.ranked_status)))
         score.pp = pp::calculate(beatmap, score);
 
-    shiro::users::preferences preferences(user->user_id);
     std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.is_relax);
     bool overwrite = score.passed;
 
@@ -307,7 +305,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
             double factor_iterator;
 
             // In relax only pp
-            if (score.is_relax || !preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
+            if (score.is_relax || !user->preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
             {
                 factor_score = score.pp;
                 factor_iterator = s.pp;

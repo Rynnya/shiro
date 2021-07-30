@@ -127,9 +127,8 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     } else {
         parseable_version = version;
 
-        parseable_version.erase(std::remove_if(parseable_version.begin(), parseable_version.end(), [](char c) {
-            return !std::isdigit(c);
-        }), parseable_version.end());
+        parseable_version.erase(std::remove_if(parseable_version.begin(), parseable_version.end(), 
+            [](char c) { return !std::isdigit(c); }), parseable_version.end());
     }
 
     try {
