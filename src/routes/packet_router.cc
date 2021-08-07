@@ -55,6 +55,7 @@
 #include "../handlers/request_status_update_handler.hh"
 #include "../handlers/user_status_handler.hh"
 #include "../thirdparty/loguru.hh"
+#include "../utils/time_utils.hh"
 #include "packet_router.hh"
 
 void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
@@ -204,8 +205,5 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             return;
     }
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
-    user->last_ping = seconds;
+    user->last_ping = utils::time::current_time();
 }

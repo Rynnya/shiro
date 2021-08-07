@@ -96,38 +96,37 @@ bool shiro::beatmaps::beatmap::fetch_db() {
 	return true;
 }
 
-bool shiro::beatmaps::beatmap::fetch_api() {
-	if (this->beatmapset_id == 0) {
+bool shiro::beatmaps::beatmap::fetch_api() 
+{
+	if (this->beatmapset_id == 0)
+	{
 		std::string url = "https://old.ppy.sh/api/get_beatmaps?k=" + config::bancho::api_key + "&b=" + std::to_string(this->beatmap_id);
 		auto [success, output] = utils::curl::get(url);
 
-		if (!success) {
+		if (!success) 
+		{
 			LOG_F(ERROR, "Unable to connect to osu! api: %s.", output.c_str());
 
 			this->ranked_status = static_cast<int32_t>(status::unknown);
 			return false;
 		}
 
-		json json_result;
-
-		try {
-			json_result = json::parse(output);
-		}
-		catch (const json::parse_error& ex) {
-			LOG_F(ERROR, "Unable to parse json response from osu! api: %s.", ex.what());
-			logging::sentry::exception(ex);
+		json json_result = json::parse(output, nullptr, false);
+		if (json_result.is_discarded())
+		{
+			LOG_F(ERROR, "Unable to parse json response from osu! api.");
+			logging::sentry::exception(std::invalid_argument("JSON from osu! api was invalid."));
 
 			this->ranked_status = static_cast<int32_t>(status::unknown);
 			return false;
 		}
 
-		for (auto& part : json_result) {
-			try {
-				this->beatmapset_id = boost::lexical_cast<int32_t>(std::string(part["beatmapset_id"]));
-			}
-			catch (const boost::bad_lexical_cast& ex) {
-				LOG_F(ERROR, "Unable to cast response of osu! API to valid data types: %s.", ex.what());
-				logging::sentry::exception(ex);
+		for (auto& part : json_result)
+		{
+			if (!utils::strings::safe_int(part["beatmapset_id"], this->beatmapset_id))
+			{
+				LOG_F(ERROR, "Unable to cast response of osu! API to valid data types: bad cast on beatmapset_id (string -> int32_t)");
+				logging::sentry::exception(boost::bad_lexical_cast());
 
 				this->ranked_status = static_cast<int32_t>(status::unknown);
 				return false;
@@ -138,89 +137,101 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 	std::string url = "https://old.ppy.sh/api/get_beatmaps?k=" + config::bancho::api_key + "&s=" + std::to_string(this->beatmapset_id);
 	auto [success, output] = utils::curl::get(url);
 
-	if (!success) {
+	if (!success)
+	{
 		LOG_F(ERROR, "Unable to connect to osu! api: %s.", output.c_str());
 
 		this->ranked_status = static_cast<int32_t>(status::unknown);
 		return false;
 	}
 
-	json json_result;
 	std::string original_md5sum = this->beatmap_md5;
 	bool map_found = false;
+	json json_result = json::parse(output, nullptr, false);
 
-	try {
-		json_result = json::parse(output);
-	}
-	catch (const json::parse_error& ex) {
-		LOG_F(ERROR, "Unable to parse json response from osu! api: %s.", ex.what());
-		logging::sentry::exception(ex);
+	if (json_result.is_discarded())
+	{
+		LOG_F(ERROR, "Unable to parse json response from osu! api.");
+		logging::sentry::exception(std::invalid_argument("JSON from osu! api was invalid."));
 
 		this->ranked_status = static_cast<int32_t>(status::unknown);
 		return false;
 	}
 
-	for (auto& part : json_result) {
-		try {
-			this->artist = part["artist"];
-			this->title = part["title"];
-			this->difficulty_name = part["version"];
-			this->creator = part["creator"];
+	/* This way faster than lexical_cast, but provides less information why this thing crashed... */
+	/* If you have any problems - please debug program to catch real exception (bad_lexical_cast don't give any information) */
+	/* Personally I think that ppy's api cannot crash this in any way */
 
-			char buffer[128];
-			std::snprintf(buffer, sizeof(buffer), "%s - %s [%s]", this->artist.c_str(), this->title.c_str(), this->difficulty_name.c_str());
-			this->song_name = buffer;
+	for (auto& part : json_result)
+	{
+		bool parse_result = true;
 
-			this->beatmap_md5 = part["file_md5"];
-			this->beatmapset_id = boost::lexical_cast<int32_t>(std::string(part["beatmapset_id"]));
-			this->beatmap_id = boost::lexical_cast<int32_t>(std::string(part["beatmap_id"]));
-			this->ranked_status = boost::lexical_cast<int32_t>(std::string(part["approved"]));
-			this->hit_length = boost::lexical_cast<int32_t>(std::string(part["hit_length"]));
-			this->play_mode = static_cast<uint8_t>(boost::lexical_cast<int32_t>(std::string(part["mode"])));
-			this->cs = boost::lexical_cast<float>(std::string(part["diff_size"]));
-			this->ar = boost::lexical_cast<float>(std::string(part["diff_approach"]));
-			this->od = boost::lexical_cast<float>(std::string(part["diff_overall"]));
-			this->hp = boost::lexical_cast<float>(std::string(part["diff_drain"]));
-			this->bpm = static_cast<int32_t>(boost::lexical_cast<float>(std::string(part["bpm"])));
-			this->count_normal = boost::lexical_cast<int32_t>(std::string(part["count_normal"]));
-			this->count_slider = boost::lexical_cast<int32_t>(std::string(part["count_slider"]));
-			this->count_spinner = boost::lexical_cast<int32_t>(std::string(part["count_spinner"]));
+		this->artist = part["artist"];
+		this->title = part["title"];
+		this->difficulty_name = part["version"];
+		this->creator = part["creator"];
+		this->beatmap_md5 = part["file_md5"];
 
-			switch (static_cast<utils::play_mode>(this->play_mode)) {
+		char buffer[256];
+		std::snprintf(buffer, sizeof(buffer), "%s - %s [%s]", this->artist.c_str(), this->title.c_str(), this->difficulty_name.c_str());
+		this->song_name = buffer;
+
+		parse_result &= utils::strings::safe_int  (part["beatmapset_id"], this->beatmapset_id);
+		parse_result &= utils::strings::safe_int  (part["beatmap_id"],    this->beatmap_id);
+		parse_result &= utils::strings::safe_int  (part["approved"],      this->ranked_status);
+		parse_result &= utils::strings::safe_int  (part["hit_length"],    this->hit_length);
+		parse_result &= utils::strings::safe_uchar(part["mode"],          this->play_mode);
+		parse_result &= utils::strings::safe_float(part["diff_size"],     this->cs);
+		parse_result &= utils::strings::safe_float(part["diff_approach"], this->ar);
+		parse_result &= utils::strings::safe_float(part["diff_overall"],  this->od);
+		parse_result &= utils::strings::safe_float(part["diff_drain"],    this->hp);
+		parse_result &= utils::strings::safe_int  (part["bpm"],           this->bpm);
+		parse_result &= utils::strings::safe_int  (part["count_normal"],  this->count_normal);
+		parse_result &= utils::strings::safe_int  (part["count_slider"],  this->count_slider);
+		parse_result &= utils::strings::safe_int  (part["count_spinner"], this->count_spinner);
+
+		switch (static_cast<utils::play_mode>(this->play_mode))
+		{
 			case utils::play_mode::standard:
-				this->difficulty_std = boost::lexical_cast<float>(std::string(part["difficultyrating"]));
+			{
+				parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_std);
 
 				// For some older beatmaps the max_combo is null. See ppy/osu-api#130
-				if (!part["max_combo"].is_null())
-					this->max_combo = boost::lexical_cast<int32_t>(std::string(part["max_combo"]));
-
-				break;
-			case utils::play_mode::taiko:
-				this->difficulty_taiko = boost::lexical_cast<float>(std::string(part["difficultyrating"]));
-
-				break;
-			case utils::play_mode::fruits:
-				if (!part["difficultyrating"].is_null())
-					this->difficulty_ctb = boost::lexical_cast<float>(std::string(part["difficultyrating"]));
-
-				// For some older beatmaps the max_combo is null. See ppy/osu-api#130
-				if (!part["max_combo"].is_null())
-					this->max_combo = boost::lexical_cast<int32_t>(std::string(part["max_combo"]));
-
-				break;
-			case utils::play_mode::mania:
-				this->difficulty_mania = boost::lexical_cast<float>(std::string(part["difficultyrating"]));
+				if (part["max_combo"].is_string())
+					parse_result &= utils::strings::safe_int(part["max_combo"], this->max_combo);
 
 				break;
 			}
+			case utils::play_mode::taiko:
+			{
+				parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_taiko);
+				break;
+			}
+			case utils::play_mode::fruits:
+			{
+				parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_ctb);
 
-			// Beatmap is unranked
-			if (part["approved_date"].is_null())
-				this->ranked_status = static_cast<int32_t>(status::latest_pending);
+				// For some older beatmaps the max_combo is null. See ppy/osu-api#130
+				if (part["max_combo"].is_string())
+					parse_result &= utils::strings::safe_int(part["max_combo"], this->max_combo);
+
+				break;
+			}
+			case utils::play_mode::mania:
+			{
+				parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_mania);
+				break;
+			}
 		}
-		catch (const boost::bad_lexical_cast& ex) {
-			LOG_F(ERROR, "Unable to cast response of Bancho API to valid data types: %s.", ex.what());
-			logging::sentry::exception(ex);
+
+		// Beatmap is unranked
+		if (part["approved_date"].is_null())
+			this->ranked_status = static_cast<int32_t>(status::latest_pending);
+
+		if (!parse_result)
+		{
+			LOG_F(ERROR, "Unable to cast response of Bancho API to valid data types.");
+			logging::sentry::exception(boost::bad_lexical_cast());
 
 			this->ranked_status = static_cast<int32_t>(status::unknown);
 			return false;
@@ -243,7 +254,8 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 
 	this->beatmap_md5 = original_md5sum;
 
-	if (!map_found) {
+	if (!map_found) 
+	{
 		// Map was not found when queuing for the beatmap set, the map is not submitted.
 		this->ranked_status = static_cast<int32_t>(status::unsubmitted);
 		return true;
@@ -253,7 +265,8 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 	return true;
 }
 
-void shiro::beatmaps::beatmap::save() {
+void shiro::beatmaps::beatmap::save()
+{
 	sqlpp::mysql::connection db(db_connection->get_config());
 	const tables::beatmaps beatmaps_table{};
 
@@ -292,7 +305,8 @@ void shiro::beatmaps::beatmap::save() {
 	));
 }
 
-void shiro::beatmaps::beatmap::update_play_metadata() {
+void shiro::beatmaps::beatmap::update_play_metadata()
+{
 	sqlpp::mysql::connection db(db_connection->get_config());
 	const tables::beatmaps beatmaps_table{};
 
@@ -302,12 +316,14 @@ void shiro::beatmaps::beatmap::update_play_metadata() {
 	).where(beatmaps_table.beatmap_md5 == this->beatmap_md5));
 }
 
-std::string shiro::beatmaps::beatmap::get_url() {
+std::string shiro::beatmaps::beatmap::get_url()
+{
 	std::string url = config::ipc::beatmap_url + std::to_string(this->beatmap_id);
 	return url;
 }
 
-std::string shiro::beatmaps::beatmap::build_header() {
+std::string shiro::beatmaps::beatmap::build_header()
+{
 	std::stringstream result;
 
 	result << helper::fix_beatmap_status(this->ranked_status) << "|false|" << this->beatmap_id << "|" << this->beatmapset_id << "|" << this->pass_count << std::endl;
@@ -318,7 +334,8 @@ std::string shiro::beatmaps::beatmap::build_header() {
 	return result.str();
 }
 
-std::string shiro::beatmaps::beatmap::build_header(const std::vector<scores::score>& scores) {
+std::string shiro::beatmaps::beatmap::build_header(const std::vector<scores::score>& scores)
+{
 	std::stringstream result;
 
 	result << helper::fix_beatmap_status(this->ranked_status) << "|false|" << this->beatmap_id << "|" << this->beatmapset_id << "|" << scores.size() << std::endl;

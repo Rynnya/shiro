@@ -29,7 +29,7 @@ std::shared_timed_mutex shiro::users::manager::mutex;
 std::unordered_set<int32_t> shiro::users::manager::preferences_query;
 std::shared_timed_mutex shiro::users::manager::query_mutex;
 
-void shiro::users::manager::login_user(std::shared_ptr<shiro::users::user> user)
+void shiro::users::manager::login_user(const std::shared_ptr<shiro::users::user> &user)
 {
     if (user == nullptr || user->token.empty())
         return;
@@ -51,7 +51,7 @@ void shiro::users::manager::login_user(std::shared_ptr<shiro::users::user> user)
         redis_connection->get()->incr("shiro.online_users", nullptr).commit();
 }
 
-void shiro::users::manager::logout_user(std::shared_ptr<shiro::users::user> user)
+void shiro::users::manager::logout_user(const std::shared_ptr<shiro::users::user> &user)
 {
     if (user == nullptr || !is_online(user))
         return;
@@ -82,7 +82,7 @@ void shiro::users::manager::logout_user(int32_t user_id)
     logout_user(target_user);
 }
 
-bool shiro::users::manager::is_online(std::shared_ptr<shiro::users::user> user)
+bool shiro::users::manager::is_online(const std::shared_ptr<shiro::users::user>& user)
 {
     if (user == nullptr)
         return false;

@@ -42,7 +42,7 @@ namespace shiro::scores::helper {
 
     std::vector<score> fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<users::user> user, bool is_relax, size_t limit = std::numeric_limits<size_t>::max());
 
-    int32_t get_scoreboard_position(const score &s, std::vector<score> scores);
+    int32_t get_scoreboard_position(const score &s, std::vector<score> &scores);
 
     std::vector<score> fetch_all_user_scores(int32_t user_id, bool is_relax, size_t limit = std::numeric_limits<size_t>::max());
 

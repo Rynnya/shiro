@@ -29,9 +29,14 @@
 #include "../utils/mods.hh"
 #include "score_helper.hh"
 
-inline static const auto& scores_sorting = [](const shiro::scores::score& s_left, const shiro::scores::score& s_right) 
+inline static const auto& score_sorting = [](const shiro::scores::score& s_left, const shiro::scores::score& s_right) 
 {
     return s_left.total_score > s_right.total_score;
+};
+
+inline static const auto& pp_sorting = [](const shiro::scores::score& s_left, const shiro::scores::score& s_right)
+{
+    return s_left.pp > s_right.pp;
 };
 
 shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax) {
@@ -89,7 +94,7 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
     if (scores.empty())
         return score(-1);
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     return scores.at(0);
 }
@@ -171,7 +176,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -269,7 +274,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -357,7 +362,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -458,7 +463,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -529,7 +534,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
         scores.emplace_back(s);
     }
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     if (scores.size() > limit)
         scores.resize(limit);
@@ -584,7 +589,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
         scores.emplace_back(s);
     }
 
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+    is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
     return scores;
 }
@@ -665,9 +670,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
         return false;
     }), scores.end());
 
-    std::sort(scores.begin(), scores.end(), [](const score &s_left, const score &s_right) {
-        return s_left.pp > s_right.pp;
-    });
+    std::sort(scores.begin(), scores.end(), pp_sorting);
 
     if (scores.size() > 100)
         scores.resize(100);
@@ -765,10 +768,12 @@ shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
     return s;
 }
 
-int32_t shiro::scores::helper::get_scoreboard_position(const shiro::scores::score &s, std::vector<score> scores) {
-    std::sort(scores.begin(), scores.end(), scores_sorting);
+int32_t shiro::scores::helper::get_scoreboard_position(const shiro::scores::score &s, std::vector<score> &scores)
+{
+    s.is_relax ? std::sort(scores.begin(), scores.end(), pp_sorting) : std::sort(scores.begin(), scores.end(), score_sorting);
 
-    for (size_t i = 0; i < scores.size(); i++) {
+    for (size_t i = 0; i < scores.size(); i++)
+    {
         score &beatmap_score = scores.at(i);
 
         if (beatmap_score.id == s.id)

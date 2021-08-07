@@ -21,11 +21,12 @@
 #include "redis.hh"
 #include "../users/user_manager.hh"
 #include "../utils/string_utils.hh"
+#include "../utils/time_utils.hh"
 
-shiro::redis::redis(std::string address, uint32_t port, std::string password)
-    : address(std::move(address))
+shiro::redis::redis(const std::string& address, uint32_t port, const std::string& password)
+    : address(address)
     , port(port)
-    , password(std::move(password)){
+    , password(password){
     // Initialized in initializer list
 }
 
@@ -51,9 +52,7 @@ void shiro::redis::connect() {
 }
 
 void shiro::redis::disconnect() {
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
     this->client->set("shiro.startup", "0");
     this->client->set("shiro.shutdown", std::to_string(seconds.count()));
 
@@ -71,9 +70,7 @@ void shiro::redis::disconnect() {
 void shiro::redis::setup() {
     this->client->set("shiro.online_users", "0");
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
     this->client->set("shiro.startup", std::to_string(seconds.count()));
     this->client->set("shiro.shutdown", "0");
 

@@ -18,7 +18,6 @@
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/lexical_cast.hpp>
 #include <sstream>
 #include <utility>
 
@@ -59,14 +58,16 @@ void shiro::replays::replay::parse() {
         if (pieces.size() < 4)
             continue;
 
-        try {
-            a.w = boost::lexical_cast<int64_t>(pieces.at(0));
-            a.x = boost::lexical_cast<float>(pieces.at(1));
-            a.y = boost::lexical_cast<float>(pieces.at(2));
-            a.z = boost::lexical_cast<int32_t>(pieces.at(3));
-        } catch (const boost::bad_lexical_cast &ex) {
-            LOG_F(ERROR, "Unable to cast action values into correct data types: %s", ex.what());
-            logging::sentry::exception(ex);
+        bool parse_result = true;
+        parse_result &= utils::strings::safe_ll(pieces.at(0), a.w);
+        parse_result &= utils::strings::safe_float(pieces.at(1), a.x);
+        parse_result &= utils::strings::safe_float(pieces.at(2), a.y);
+        parse_result &= utils::strings::safe_int(pieces.at(3), a.z);
+
+        if (!parse_result)
+        {
+            LOG_F(ERROR, "Unable to cast action values into correct data types.");
+            logging::sentry::exception(std::invalid_argument("Action string was invalid."));
             continue;
         }
 
@@ -78,12 +79,13 @@ std::vector<shiro::replays::action> shiro::replays::replay::get_actions() {
     return this->actions;
 }
 
-std::string shiro::replays::replay::to_string() const {
-    std::stringstream stream;
+std::string shiro::replays::replay::to_string() const
+{
+    static std::stringstream stream;
+    stream.clear();
 
-    for (const action &a : this->actions) {
+    for (const action &a : this->actions)
         stream << a.to_string();
-    }
 
     return stream.str();
 }

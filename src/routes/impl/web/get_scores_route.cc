@@ -25,6 +25,7 @@
 #include "../../../thirdparty/loguru.hh"
 #include "../../../users/user_manager.hh"
 #include "../../../utils/mods.hh"
+#include "../../../utils/string_utils.hh"
 #include "get_scores_route.hh"
 
 void shiro::routes::web::get_scores::handle(const crow::request &request, crow::response &response) {
@@ -62,16 +63,18 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
         return;
     }
 
+    bool parse_result = true;
     int32_t scoreboard_type = 0;
     beatmaps::beatmap beatmap;
 
-    try {
-        beatmap.beatmapset_id = boost::lexical_cast<int32_t>(beatmapset_id);
-        beatmap.beatmap_md5 = md5sum;
-        scoreboard_type = boost::lexical_cast<int32_t>(type);
-    } catch (const boost::bad_lexical_cast &ex) {
-        LOG_F(ERROR, "Unable to convert sent values to beatmap metadata: %s.", ex.what());
-        logging::sentry::exception(ex);
+    parse_result &= utils::strings::safe_int(beatmapset_id, beatmap.beatmapset_id);
+    parse_result &= utils::strings::safe_int(type, scoreboard_type);
+    beatmap.beatmap_md5 = md5sum;
+
+    if (!parse_result)
+    {
+        LOG_F(ERROR, "Unable to convert sent values to beatmap metadata.");
+        logging::sentry::exception(std::invalid_argument("Sent values was not a numbers."));
 
         response.code = 500;
         response.end();
@@ -84,40 +87,40 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     const tables::users users_table {};
     sqlpp::mysql::connection db(db_connection->get_config());
-    auto result = db(sqlpp::select(users_table.is_relax).from(users_table).where(users_table.id == user->user_id));
-    const auto& row = result.front();
-    bool is_relax = row.is_relax;
+    bool is_relax = db(sqlpp::select(users_table.is_relax).from(users_table).where(users_table.id == user->user_id)).front().is_relax;
 
     std::vector<scores::score> score_list;
 
-    switch (scoreboard_type) {
-        case 1: {
+    switch (scoreboard_type) 
+    {
+        case 1: 
+        {
             score_list = scores::helper::fetch_all_scores(md5sum, is_relax);
             break;
         }
         case 2: {
             char *mods = request.url_params.get("mods");
 
-            if (mods == nullptr) {
+            if (mods == nullptr)
+            {
                 response.code = 400;
                 response.end();
                 return;
             }
 
-            try {
-                mods_list = boost::lexical_cast<int32_t>(mods);
-                is_relax |= (mods_list & static_cast<uint32_t>(utils::mods::relax)) > 0;
-            } catch (const boost::bad_lexical_cast &ex) {
-                LOG_F(ERROR, "Unable to convert sent values to mods: %s.", ex.what());
-                logging::sentry::exception(ex);
-
-                response.code = 500;
-                response.end();
-                return;
+            if (utils::strings::safe_int(mods, mods_list))
+            {
+                is_relax = (mods_list & static_cast<uint32_t>(utils::mods::relax));
+                score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, is_relax);
+                break;
             }
 
-            score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, is_relax);
-            break;
+            LOG_F(ERROR, "Unable to convert sent values (`%s`) to mods.", mods);
+            logging::sentry::exception(std::invalid_argument("Mods was not a number."));
+
+            response.code = 500;
+            response.end();
+            return;
         }
         case 3: {
             score_list = scores::helper::fetch_friend_scores(md5sum, user, is_relax);

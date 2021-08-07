@@ -16,12 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/lexical_cast.hpp>
-
 #include "../../logger/sentry_logger.hh"
 #include "../../thirdparty/loguru.hh"
 #include "../../utils/curler.hh"
 #include "../../utils/play_mode.hh"
+#include "../../utils/string_utils.hh"
 #include "beatconnect.hh"
 
 std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_map<std::string, std::string> parameters) {
@@ -166,15 +165,15 @@ std::tuple<std::string, std::string> shiro::direct::beatconnect::sanitize_args(s
     return { key, value };
 }
 
-void shiro::direct::beatconnect::sanitize_mode(std::string &value) {
+void shiro::direct::beatconnect::sanitize_mode(std::string &value)
+{
     int32_t mode = 0;
 
-    try {
-        mode = boost::lexical_cast<int32_t>(value);
-    } catch (const boost::bad_lexical_cast &ex) {
-        logging::sentry::exception(ex);
+    if (!utils::strings::safe_int(value, mode))
+    {
+        LOG_F(WARNING, "Unable to cast `%s` to int32_t.", value.c_str());
+        logging::sentry::exception(std::invalid_argument("Value was not a number or it was more than int32_t max."));
 
-        LOG_F(WARNING, "Unable to cast %s to int32_t: %s", value.c_str(), ex.what());
         return;
     }
 

@@ -39,6 +39,7 @@
 #include "../utils/login_responses.hh"
 #include "../utils/osu_client.hh"
 #include "../utils/string_utils.hh"
+#include "../utils/time_utils.hh"
 #include "login_handler.hh"
 
 void shiro::handler::login::handle(const crow::request &request, crow::response &response) {
@@ -131,23 +132,13 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
             [](char c) { return !std::isdigit(c); }), parseable_version.end());
     }
 
-    try {
-        build = boost::lexical_cast<int32_t>(parseable_version);
-    } catch (const boost::bad_lexical_cast &ex) {
-        LOG_F(WARNING, "Unable to cast %s to int32_t: %s", version.c_str(), ex.what());
-        logging::sentry::exception(ex);
+    if (!utils::strings::safe_int(parseable_version, build))
+    {
+        LOG_F(WARNING, "Unable to cast `%s` to int32_t.", version.c_str());
+        logging::sentry::exception(std::invalid_argument("Parseable version was invalid."));
 
-        if (config::score_submission::restrict_mismatching_client_version) {
-            writer.login_reply(static_cast<int32_t>(utils::login_responses::server_error));
-
-            response.end(writer.serialize());
-            return;
-        }
-    } catch (const std::out_of_range &ex) {
-        LOG_F(WARNING, "Unable to convert client version %s to valid build: %s.", version.c_str(), ex.what());
-        logging::sentry::exception(ex);
-
-        if (config::score_submission::restrict_mismatching_client_version) {
+        if (config::score_submission::restrict_mismatching_client_version)
+        {
             writer.login_reply(static_cast<int32_t>(utils::login_responses::server_error));
 
             response.end(writer.serialize());
@@ -169,9 +160,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         return;
     }
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     user->token = sole::uuid4().str();
     user->client_version = version;
@@ -181,13 +170,15 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
     uint8_t time_zone = 9;
 
-    try {
-        int32_t parsed_time_zone = boost::lexical_cast<int32_t>(utc_offset);
-        time_zone = static_cast<uint8_t>(parsed_time_zone + 24);
-    } catch (const boost::bad_lexical_cast &ex) {
-        LOG_F(WARNING, "Unable to cast %s to int32_t (uint8_t): %s.", utc_offset.c_str(), ex.what());
-        logging::sentry::exception(ex);
+    int32_t parsed_time_zone = 0;
+    if (!utils::strings::safe_int(utc_offset, parsed_time_zone))
+    {
+        LOG_F(WARNING, "Unable to cast %s to int32_t (uint8_t).", utc_offset.c_str());
+        logging::sentry::exception(std::invalid_argument("UTC Offset was not a number."));
     }
+
+    if (parsed_time_zone != 0)
+        time_zone = static_cast<uint8_t>(parsed_time_zone + 24);
 
     geoloc::location_info location_info = geoloc::get_location(request.get_ip_address());
 

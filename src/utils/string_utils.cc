@@ -20,6 +20,25 @@
 #include <algorithm>
 #include "string_utils.hh"
 
+bool shiro::utils::strings::safe_uchar(const std::string& src, uint8_t& num)
+{
+    int32_t parse;
+    if (!safe_int(src, parse))
+        return false;
+
+    num = static_cast<uint8_t>(parse);
+    return true;
+}
+
+uint8_t shiro::utils::strings::safe_uchar(const std::string& src)
+{
+    int32_t parse;
+    if (!safe_int(src, parse))
+        return 0; // unsigned
+
+    return static_cast<uint8_t>(parse);
+}
+
 bool shiro::utils::strings::safe_int(const std::string& src, int32_t& num)
 {
     const char* ptr = src.c_str();
@@ -42,6 +61,30 @@ int32_t shiro::utils::strings::safe_int(const std::string& src)
     if (safe_int(src, num))
         return num;
     return -1;
+}
+
+bool shiro::utils::strings::safe_uint(const std::string& src, uint32_t& num)
+{
+    const char* ptr = src.c_str();
+    char* end_ptr;
+    const unsigned long ans = std::strtoul(ptr, &end_ptr, 10);
+
+    if (ptr == end_ptr)
+        return false;
+
+    if (ans == UINT_MAX)
+        return false; // Almost NEVER this happend
+
+    num = ans;
+    return true;
+}
+
+uint32_t shiro::utils::strings::safe_uint(const std::string& src)
+{
+    uint32_t num;
+    if (safe_uint(src, num))
+        return num;
+    return 0; // unsigned
 }
 
 bool shiro::utils::strings::safe_float(const std::string& src, float& num)
@@ -68,7 +111,7 @@ float shiro::utils::strings::safe_float(const std::string& src)
     return -1;
 }
 
-bool shiro::utils::strings::safe_long_long(const std::string& src, int64_t& num)
+bool shiro::utils::strings::safe_ll(const std::string& src, int64_t& num)
 {
     const char* ptr = src.c_str();
     char* end_ptr;
@@ -84,10 +127,10 @@ bool shiro::utils::strings::safe_long_long(const std::string& src, int64_t& num)
     return true;
 }
 
-int64_t shiro::utils::strings::safe_long_long(const std::string& src)
+int64_t shiro::utils::strings::safe_ll(const std::string& src)
 {
     int64_t num;
-    if (safe_long_long(src, num))
+    if (safe_ll(src, num))
         return num;
     return -1;
 }

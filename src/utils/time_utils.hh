@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -31,6 +32,13 @@ namespace shiro::utils::time {
     extern std::unordered_map<std::string, uint32_t> duration_mapping;
 
     int64_t get_current_time_ticks();
+
+    template <typename T = std::chrono::seconds>
+    inline T current_time()
+    {
+        static_assert(std::chrono::_Is_duration_v<T>, "T must be std::chrono::duration");
+        return std::chrono::duration_cast<T>(std::chrono::system_clock::now().time_since_epoch());
+    }
 
     // Returns seconds of the parsed time string, e.g input: "15min" returns 900 (seconds)
     std::optional<uint32_t> parse_time_string(const std::string &input);

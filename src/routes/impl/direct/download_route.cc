@@ -17,6 +17,7 @@
  */
 
 #include "../../../direct/direct_provider.hh"
+#include "../../../utils/string_utils.hh"
 #include "download_route.hh"
 
 void shiro::routes::direct::download::handle(const crow::request &request, crow::response &response, std::string args) {
@@ -31,9 +32,8 @@ void shiro::routes::direct::download::handle(const crow::request &request, crow:
 
     int32_t id = 0;
 
-    try {
-        id = boost::lexical_cast<int32_t>(no_video ? args.substr(0, args.length() - 1) : args);
-    } catch (boost::bad_lexical_cast &ex) {
+    if (!utils::strings::safe_int(no_video ? args.substr(0, args.length() - 1) : args, id))
+    {
         response.code = 400;
         response.end("Invalid beatmap id");
         return;

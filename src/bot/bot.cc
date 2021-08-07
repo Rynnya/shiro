@@ -46,6 +46,7 @@
 #include "../users/user_manager.hh"
 #include "../utils/escaper.hh"
 #include "../utils/osu_client.hh"
+#include "../utils/time_utils.hh"
 #include "bot.hh"
 
 std::shared_ptr<shiro::users::user> shiro::bot::bot_user = nullptr;
@@ -92,9 +93,7 @@ void shiro::bot::init() {
     if (!bot_user->init())
         ABORT_F("Unable to initialize chat bot.");
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     bot_user->token = sole::uuid4().str();
     bot_user->hwid = digestpp::sha256().absorb(config::bot::name).hexdigest();

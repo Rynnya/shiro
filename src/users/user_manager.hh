@@ -35,13 +35,13 @@ namespace shiro::users::manager {
     extern std::shared_timed_mutex query_mutex;
 
     // Adds a user to online users
-    void login_user(std::shared_ptr<user> user);
+    void login_user(const std::shared_ptr<user> &user);
 
     // Removes a user from online users
-    void logout_user(std::shared_ptr<user> user);
+    void logout_user(const std::shared_ptr<user> &user);
     void logout_user(int32_t user_id);
 
-    bool is_online(std::shared_ptr<user> user);
+    bool is_online(const std::shared_ptr<user> &user);
     bool is_online(int32_t user_id);
     bool is_online(const std::string &token);
 

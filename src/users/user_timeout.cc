@@ -16,9 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <chrono>
-
 #include "../thirdparty/loguru.hh"
+#include "../utils/time_utils.hh"
 #include "../shiro.hh"
 #include "user_timeout.hh"
 #include "user_manager.hh"
@@ -26,18 +25,16 @@
 void shiro::users::timeout::init() {
     scheduler.Schedule(60s, [](tsc::TaskContext ctx) {
         std::vector<std::shared_ptr<users::user>> dead;
-        std::chrono::seconds now = std::chrono::duration_cast<std::chrono::seconds>(
-                std::chrono::system_clock::now().time_since_epoch()
-        );
+        std::chrono::seconds now = utils::time::current_time();
 
         // Iterate over all users to find out which ones are dead
-        users::manager::iterate([now, &dead](std::shared_ptr<users::user> user) {
+        users::manager::iterate([now, &dead](const std::shared_ptr<users::user> &user) {
             int64_t difference = std::chrono::duration_cast<std::chrono::seconds>(now - user->last_ping).count();
 
             if (difference < 60)
                 return;
 
-            dead.push_back(user);
+            dead.emplace_back(user);
         }, true);
 
         io::osu_writer writer;
@@ -54,7 +51,7 @@ void shiro::users::timeout::init() {
             writer.user_quit(quit);
         }
 
-        users::manager::iterate([&writer](std::shared_ptr<users::user> user) {
+        users::manager::iterate([&writer](const std::shared_ptr<users::user> &user) {
             user->queue.enqueue(writer);
         }, true);
 

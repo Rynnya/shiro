@@ -36,7 +36,7 @@ namespace shiro {
         std::string password;
 
     public:
-        redis(std::string address, uint32_t port, std::string password = "");
+        redis(const std::string &address, uint32_t port, const std::string &password = "");
 
         void connect();
         void disconnect();

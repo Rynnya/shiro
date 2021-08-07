@@ -34,14 +34,16 @@ bool shiro::commands::recalculate(std::deque<std::string> &args, std::shared_ptr
     utils::play_mode mode = static_cast<utils::play_mode>(user->stats.play_mode);
     bool is_relax = false;
 
-    if (args.size() >= 2) {
-        try {
-            mode = static_cast<utils::play_mode>(boost::lexical_cast<int32_t>(args.at(0)));
-            is_relax = utils::strings::to_bool(args.at(1));
-        } catch (boost::bad_lexical_cast &ex) {
-            utils::bot::respond("Unable to parse provided game mode or relax into integer and boolean.", std::move(user), std::move(channel), true);
+    if (args.size() >= 2)
+    {
+        int32_t parsed_mode = 0;
+        if (!utils::strings::safe_int(args.at(0), parsed_mode))
+        {
+            utils::bot::respond("Unable to parse provided game mode into integer.", std::move(user), std::move(channel), true);
             return false;
         }
+        mode = static_cast<utils::play_mode>(parsed_mode);
+        is_relax = utils::strings::to_bool(args.at(1));
     }
 
     pp::recalculator::begin(mode, is_relax);

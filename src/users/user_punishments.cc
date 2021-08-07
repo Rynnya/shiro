@@ -23,29 +23,29 @@
 #include "../utils/bot_utils.hh"
 #include "../utils/login_responses.hh"
 #include "../utils/punishment_type.hh"
+#include "../utils/time_utils.hh"
 #include "../shiro.hh"
 #include "user_manager.hh"
 #include "user_punishments.hh"
 
 void shiro::users::punishments::init() {
-    scheduler.Schedule(1min, [](tsc::TaskContext ctx) {
+    scheduler.Schedule(1min, [](tsc::TaskContext &ctx)
+    {
         sqlpp::mysql::connection db(db_connection->get_config());
         const tables::punishments punishments_table {};
 
-        auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
-                punishments_table.active == true
-        ));
+        auto result = db(select(all_of(punishments_table)).from(punishments_table).where(punishments_table.active));
 
-        if (result.empty()) {
+        if (result.empty())
+        {
             ctx.Repeat();
             return;
         }
 
-        std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-                std::chrono::system_clock::now().time_since_epoch()
-        );
+        std::chrono::seconds seconds = utils::time::current_time();
 
-        for (const auto &row : result) {
+        for (const auto &row : result)
+        {
             if (row.duration.is_null())
                 continue;
 
@@ -92,9 +92,7 @@ void shiro::users::punishments::init() {
 }
 
 void shiro::users::punishments::kick(int32_t user_id, int32_t origin, const std::string &reason) {
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::punishments punishments_table {};
@@ -129,9 +127,7 @@ void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_
     if (is_silenced(user_id))
         return;
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::punishments punishments_table {};
@@ -179,9 +175,7 @@ void shiro::users::punishments::restrict(int32_t user_id, int32_t origin, const 
     if (is_restricted(user_id))
         return;
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::punishments punishments_table {};
@@ -236,9 +230,7 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
     if (is_banned(user_id))
         return;
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::punishments punishments_table {};

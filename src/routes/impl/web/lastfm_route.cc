@@ -22,6 +22,7 @@
 #include "../../../users/user.hh"
 #include "../../../users/user_punishments.hh"
 #include "../../../utils/client_side_flags.hh"
+#include "../../../utils/string_utils.hh"
 #include "lastfm_route.hh"
 
 void shiro::routes::web::lastfm::handle(const crow::request &request, crow::response &response) {
@@ -55,7 +56,8 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
     std::string beatmap_str = beatmap;
 
     // Stop processing normal requests
-    if (!boost::algorithm::starts_with(beatmap_str, "a")) {
+    if (beatmap_str[0] != 'a')
+    {
         response.code = 200;
         response.end();
         return;
@@ -63,18 +65,18 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
 
     int32_t startup_value = 0;
 
-    try {
-        startup_value = boost::lexical_cast<int32_t>(beatmap_str.substr(1));
-    } catch (const boost::bad_lexical_cast &ex) {
-        LOG_F(WARNING, "Unable to cast %s to int32_t: %s", beatmap_str.substr(1).c_str(), ex.what());
-        logging::sentry::exception(ex);
+    if (!utils::strings::safe_int(beatmap_str.substr(1), startup_value))
+    {
+        LOG_F(WARNING, "Unable to cast `%s` to int32_t.", beatmap_str.substr(1).c_str());
+        logging::sentry::exception(std::invalid_argument("Unable to cast startup_value into int32_t."));
 
         response.code = 500;
         response.end();
         return;
     }
 
-    for (utils::client_side_flags flag : utils::client_side_flags::_values()) {
+    for (utils::client_side_flags flag : utils::client_side_flags::_values())
+    {
         int32_t numeric_flag = flag;
 
         if (!(startup_value & numeric_flag))

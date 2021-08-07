@@ -28,11 +28,11 @@
 #include "user_manager.hh"
 
 void shiro::users::activity::init() {
-    scheduler.Schedule(1min, [](tsc::TaskContext ctx) {
+    scheduler.Schedule(1min, [](tsc::TaskContext &ctx) {
         sqlpp::mysql::connection db(db_connection->get_config());
         const tables::users user_table {};
 
-        users::manager::iterate([&db, &user_table](std::shared_ptr<users::user> user) {
+        users::manager::iterate([&db, &user_table](const std::shared_ptr<users::user> &user) {
             db(update(user_table).set(
                     user_table.latest_activity = user->last_ping.count()
             ).where(user_table.id == user->user_id));

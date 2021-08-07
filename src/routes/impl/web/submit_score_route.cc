@@ -162,22 +162,22 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.beatmap_md5 = score_metadata.at(0);
     score.hash = score_metadata.at(2);
 
-    /* This way might be faster than lexical_cast, but provides less information why this thing crashed... */
-    /* If you have any problems - please revent commit (or replace this implementation) to catch real exception */
+    /* This way faster than lexical_cast, but provides less information why this thing crashed... */
+    /* I run some tests and lexical_cast x100 takes around 9600 ns, when safe_* x100 takes around 3100 ns */
+    /* If you have any problems - please debug program to catch real exception (bad_lexical_cast don't give any information) */
 
     bool parse_result = true;
-    int32_t play_mode = 0;
-    parse_result &= utils::strings::safe_int(score_metadata.at(3), score.count_300);
-    parse_result &= utils::strings::safe_int(score_metadata.at(4), score.count_100);
-    parse_result &= utils::strings::safe_int(score_metadata.at(5), score.count_50);
-    parse_result &= utils::strings::safe_int(score_metadata.at(6), score.count_gekis);
-    parse_result &= utils::strings::safe_int(score_metadata.at(7), score.count_katus);
-    parse_result &= utils::strings::safe_int(score_metadata.at(8), score.count_misses);
-    parse_result &= utils::strings::safe_long_long(score_metadata.at(9), score.total_score);
-    parse_result &= utils::strings::safe_int(score_metadata.at(10), score.max_combo);
-    parse_result &= utils::strings::safe_int(score_metadata.at(13), score.mods);
-    parse_result &= utils::strings::safe_int(score_metadata.at(15), play_mode);
-    score.play_mode = static_cast<int8_t>(play_mode);
+
+    parse_result &= utils::strings::safe_int  (score_metadata.at(3),  score.count_300);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(4),  score.count_100);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(5),  score.count_50);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(6),  score.count_gekis);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(7),  score.count_katus);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(8),  score.count_misses);
+    parse_result &= utils::strings::safe_ll   (score_metadata.at(9),  score.total_score);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(10), score.max_combo);
+    parse_result &= utils::strings::safe_int  (score_metadata.at(13), score.mods);
+    parse_result &= utils::strings::safe_uchar(score_metadata.at(15), score.play_mode);
 
     if (!parse_result)
     {
@@ -208,8 +208,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     bool failed = false;
     if (fields.find("ft") != fields.end())
     {
-        std::string fail = fields.at("ft").body;
-        failtime = std::atoi(fail.c_str());
+        failtime = utils::strings::safe_int(fields.at("ft").body);
         failed = failtime > 0;
     }
 
@@ -221,9 +220,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
-    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    std::chrono::seconds seconds = utils::time::current_time();
 
     score.rank = score_metadata.at(12);
     score.fc = utils::strings::to_bool(score_metadata.at(11));

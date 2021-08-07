@@ -16,25 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/lexical_cast.hpp>
 #include <random>
 
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "roll_command.hh"
 
 static std::random_device random_device;
 static std::mt19937 engine(random_device());
 
-bool shiro::commands::roll(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+bool shiro::commands::roll(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel)
+{
     int32_t max = 100;
 
-    if (!args.empty()) {
-        try {
-            max = boost::lexical_cast<int32_t>(args.at(0));
-        } catch (const boost::bad_lexical_cast&) {
-            // User wrote some non-sense, let's ignore and roll with default 100
-        }
-    }
+    if (!args.empty()) // On error max won't changes
+        std::ignore = utils::strings::safe_int(args.at(0), max);
 
     if (max < 0)
         max = 1;
