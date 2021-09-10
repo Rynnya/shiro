@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <chrono>
 
 #include "mods.hh"
@@ -53,7 +54,7 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
     int64_t it = 0;
     int64_t size = input.size();
     std::vector<char> chars;
-    
+
     std::string raw_unit = "s";
     std::string raw_time = input;
     uint32_t time = 0;

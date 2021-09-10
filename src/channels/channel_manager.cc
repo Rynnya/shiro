@@ -53,7 +53,7 @@ void shiro::channels::manager::init() {
         std::string name = row.name;
 
         if (name.at(0) != '#') {
-            LOG_F(WARNING, "Channel name of channel id %lli doesn't start with #, fixing (%s -> %s).", row.id.value(), name.c_str(), ("#" + name).c_str());
+            LOG_F(WARNING, "Channel name of channel id %li doesn't start with #, fixing (%s -> %s).", row.id.value(), name.c_str(), ("#" + name).c_str());
             name.insert(0, "#");
 
             db(update(channel_table).set(

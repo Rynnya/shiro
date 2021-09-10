@@ -208,12 +208,12 @@ void shiro::users::manager::update_preferences(int32_t id)
     }
 }
 
-void shiro::users::manager::iterate(const std::function<void(std::shared_ptr<shiro::users::user>)> &callback, bool skip_bot)
+void shiro::users::manager::iterate(const std::function<void(std::shared_ptr<shiro::users::user>&)> &callback, bool skip_bot)
 {
     // Disallow other threads from writing (but not from reading)
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
 
-    for (const std::shared_ptr<user> &user : online_users)
+    for (std::shared_ptr<user> &user : online_users)
     {
         if (user->user_id == 1 && skip_bot)
             continue;
@@ -222,14 +222,14 @@ void shiro::users::manager::iterate(const std::function<void(std::shared_ptr<shi
     }
 }
 
-void shiro::users::manager::iterate(const std::function<void(size_t, std::shared_ptr<shiro::users::user>)> &callback, bool skip_bot)
+void shiro::users::manager::iterate(const std::function<void(size_t, std::shared_ptr<shiro::users::user>&)> &callback, bool skip_bot)
 {
     // Disallow other threads from writing (but not from reading)
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
 
     for (size_t i = 0; i < online_users.size(); i++)
     {
-        std::shared_ptr<user> user = online_users.at(i);
+        std::shared_ptr<user> &user = online_users.at(i);
 
         if (user->user_id == 1 && skip_bot)
             continue;

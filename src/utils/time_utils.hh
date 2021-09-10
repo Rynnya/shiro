@@ -21,6 +21,7 @@
 #define SHIRO_TIME_UTILS_HH
 
 #include <cstdint>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -36,7 +37,6 @@ namespace shiro::utils::time {
     template <typename T = std::chrono::seconds>
     inline T current_time()
     {
-        static_assert(std::chrono::_Is_duration_v<T>, "T must be std::chrono::duration");
         return std::chrono::duration_cast<T>(std::chrono::system_clock::now().time_since_epoch());
     }
 

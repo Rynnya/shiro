@@ -20,6 +20,7 @@
 #ifndef SHIRO_CATCH_THE_PP_MATH_HH
 #define SHIRO_CATCH_THE_PP_MATH_HH
 
+#include <cmath>
 #include <deque>
 
 namespace shiro::pp::ctb

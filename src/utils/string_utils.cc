@@ -18,6 +18,8 @@
  */
 
 #include <algorithm>
+#include <climits>
+#include <cmath> // for some reasons infinity declared here
 #include "string_utils.hh"
 
 bool shiro::utils::strings::safe_uchar(const std::string& src, uint8_t& num)

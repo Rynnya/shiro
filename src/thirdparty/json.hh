@@ -493,6 +493,19 @@ template<typename> struct is_basic_json : std::false_type {};
 NLOHMANN_BASIC_JSON_TPL_DECLARATION
 struct is_basic_json<NLOHMANN_BASIC_JSON_TPL> : std::true_type {};
 
+//////////////////////
+// json_ref helpers //
+//////////////////////
+
+template <typename>
+class json_ref;
+
+template <typename>
+struct is_json_ref : std::false_type {};
+
+template <typename T>
+struct is_json_ref<json_ref<T>> : std::true_type {};
+
 //////////////////////////
 // aliases for detected //
 //////////////////////////
@@ -579,6 +592,37 @@ T>::value;
 ///////////////////
 // is_ functions //
 ///////////////////
+
+// https://en.cppreference.com/w/cpp/types/conjunction
+template <class...> struct conjunction : std::true_type {};
+template <class B1> struct conjunction<B1> : B1 {};
+template <class B1, class... Bn>
+struct conjunction<B1, Bn...> : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};
+
+// https://en.cppreference.com/w/cpp/types/negation
+template <class B> struct negation : std::integral_constant <bool, !B::value> {};
+
+// Reimplementation of is_constuctible and is_default_constuctible, due to them being broken for
+// std::pair and std::tuple until LWG 2367 fix (see https://cplusplus.github.io/LWG/lwg-defects.html#2367).
+// This causes compile errors in e.g clang 3.5 or gcc 4.9.
+template <typename T>
+struct is_default_constructible : std::is_default_constructible<T> {};
+
+template <typename T1, typename T2>
+struct is_default_constructible<std::pair<T1, T2>>
+        : conjunction<is_default_constructible<T1>, is_default_constructible<T2>> {};
+
+template <typename T1, typename T2>
+struct is_default_constructible<const std::pair<T1, T2>>
+        : conjunction<is_default_constructible<T1>, is_default_constructible<T2>> {};
+
+template <typename... Ts>
+struct is_default_constructible<std::tuple<Ts...>>
+        : conjunction<is_default_constructible<Ts>...> {};
+
+template <typename... Ts>
+struct is_default_constructible<const std::tuple<Ts...>>
+        : conjunction<is_default_constructible<Ts>...> {};
 
 template <typename T, typename = void>
 struct is_iterator_traits : std::false_type {};
@@ -14105,10 +14149,10 @@ assert_invariant();
 // other constructors and destructor //
 ///////////////////////////////////////
 
-/// @private
-basic_json(const detail::json_ref<basic_json>& ref)
-: basic_json(ref.moved_or_copied())
-{}
+template <typename JsonRef,
+    detail::enable_if_t<detail::conjunction<detail::is_json_ref<JsonRef>,
+        std::is_same<typename JsonRef::value_type, basic_json>>::value, int> = 0>
+basic_json(const JsonRef& ref) : basic_json(ref.moved_or_copied()) {}
 
 /*!
     @brief copy constructor

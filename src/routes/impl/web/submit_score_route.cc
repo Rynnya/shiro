@@ -18,6 +18,7 @@
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <functional>
 #include <memory>
 
 #include "../../../beatmaps/beatmap.hh"
@@ -395,7 +396,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     }
 
     scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, score.is_relax);
-    int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, scores::helper::fetch_all_scores(beatmap.beatmap_md5, score.is_relax, 5));
+    std::vector<scores::score> first_scores = scores::helper::fetch_all_scores(beatmap.beatmap_md5, score.is_relax, 5);
+    int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, first_scores);
 
     if (top_score.hash == score.hash && !user->hidden) {
         if (scoreboard_position == 1) {
@@ -437,7 +439,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                     scores_first_table.play_mode = score.play_mode,
                     scores_first_table.is_relax = score.is_relax
                 ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
-            }, std::move(db) /* We don't manipulate with database anymore */, user, beatmap, score).detach();
+            }, std::ref(db) /* We don't manipulate with database anymore */, std::ref(user), std::ref(beatmap), std::ref(score)).detach();
         }
     }
 

@@ -34,8 +34,10 @@ shiro::scores::table_display::table_display(std::shared_ptr<users::user> user, b
 
 void shiro::scores::table_display::init() {
     scores::score old_top_score = helper::fetch_top_score_user(this->beatmap.beatmap_md5, this->user, this->user->is_relax);
+    std::vector<scores::score> first_scores = helper::fetch_all_scores(this->beatmap.beatmap_md5, 5);
+
     this->old_top_score = old_top_score;
-    this->old_scoreboard_pos = helper::get_scoreboard_position(old_top_score, helper::fetch_all_scores(this->beatmap.beatmap_md5, 5));
+    this->old_scoreboard_pos = helper::get_scoreboard_position(old_top_score, first_scores);
 
     if (this->old_scoreboard_pos == -1)
         this->old_scoreboard_pos = 0;

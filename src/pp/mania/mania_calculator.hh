@@ -20,6 +20,8 @@
 #ifndef SHIRO_MANIA_CALCULATOR_HH
 #define SHIRO_MANIA_CALCULATOR_HH
 
+#include <cmath>
+
 #include "../../beatmaps/beatmap.hh"
 #include "../../scores/score.hh"
 
@@ -28,7 +30,13 @@ namespace shiro::pp::mania
     class note
     {
     public:
-        note() {};
+        note() :
+            contains_data(false),
+            key(0),
+            start_t(0),
+            end_t(0),
+            individual_strain(0)
+        {};
         note(double key, int32_t start, int32_t end, double ind_strain) :
             contains_data(true),
             key(key),
@@ -37,12 +45,12 @@ namespace shiro::pp::mania
             individual_strain(ind_strain)
         {};
 
-        double key = 0;
-        int32_t start_t = 0;
-        int32_t end_t = 0;
+        double key;
+        int32_t start_t;
+        int32_t end_t;
         double overall_strain = 1;
-        double individual_strain = 0;
-        bool contains_data = false;
+        double individual_strain;
+        bool contains_data;
 
         note& operator=(const note& other) noexcept
         {

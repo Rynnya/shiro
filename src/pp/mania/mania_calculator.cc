@@ -68,7 +68,7 @@ float shiro::pp::mania::mania_calculator::calculate()
 
     double hit300_window = 34 + 3.0 * (std::min(10.0f, std::max(0.0f, 10 - od)));
 
-    double strain_value = std::pow((5 * std::max(1.0, this->stars / 0.2) - 4), 2.2) / 135 * (1 + 0.1 * std::min(1ULL, this->notes.size() / 1500));
+    double strain_value = std::pow((5 * std::max(1.0, this->stars / 0.2) - 4), 2.2) / 135 * (1 + 0.1 * std::min(std::vector<shiro::pp::mania::note>::size_type(1), this->notes.size() / 1500));
 
     if (real_score <= 500000)
         strain_value = 0;

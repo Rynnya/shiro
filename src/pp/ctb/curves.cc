@@ -18,6 +18,8 @@
  */
 
 #include <cmath>
+#include <stdexcept>
+#include <tuple>
 
 #include "curves.hh"
 
@@ -197,7 +199,7 @@ std::tuple<float, float, float> shiro::pp::ctb::Perfect::get_circum_circle()
         + this->curve_points[2].first * (this->curve_points[0].second - this->curve_points[1].second));
 
     if (d == 0)
-        throw std::exception("Invalid circle! Unable to chose angle.");
+        throw std::invalid_argument("Invalid circle! Unable to chose angle.");
 
     float ux = ((std::pow(this->curve_points[0].first, 2) + std::pow(this->curve_points[0].second, 2))
         * (this->curve_points[1].first - this->curve_points[2].first)

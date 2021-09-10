@@ -56,8 +56,8 @@ namespace shiro::users::manager {
     void update_preferences(int32_t id);
 
     // Helper methods to quickly iterate over all online users
-    void iterate(const std::function<void(std::shared_ptr<user>)> &callback, bool skip_bot = false);
-    void iterate(const std::function<void(size_t, std::shared_ptr<user>)> &callback, bool skip_bot = false);
+    void iterate(const std::function<void(std::shared_ptr<user>&)> &callback, bool skip_bot = false);
+    void iterate(const std::function<void(size_t, std::shared_ptr<user>&)> &callback, bool skip_bot = false);
 
     size_t get_online_users();
 

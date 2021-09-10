@@ -76,7 +76,7 @@ namespace shiro::pp::ctb
         };
 
         int get_combo();
-        slider_tick& to_tick()
+        inline slider_tick to_tick()
         {
             return slider_tick(this->x, this->y, this->time);
         }
@@ -107,18 +107,24 @@ namespace shiro::pp::ctb
     class difficulty_object
     {
     public:
-        difficulty_object() : object(slider_tick(0, 0, 0)) {};
+        difficulty_object() :
+            empty(true),
+            object(slider_tick(0, 0, 0)),
+            player_width(0)
+        {};
         difficulty_object(slider_tick object, float player_width) :
-            object(object), player_width(player_width), empty(false)
+            empty(false),
+            object(object),
+            player_width(player_width)
         {};
 
-        bool empty = true;
+        bool empty;
         float strain = 1;
         float offset = 0;
         float last_movement = 0;
         slider_tick object;
         int32_t error_margin = constants::ABSOLUTE_PLAYER_POSITIONING_ERROR;
-        float player_width = 0;
+        float player_width;
         float scaled_position = object.x * (constants::NORMALIZED_HITOBJECT_RADIUS / player_width);
         float hyperdash_distance = 0;
         bool hyperdash = false;
