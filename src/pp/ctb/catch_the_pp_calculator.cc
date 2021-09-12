@@ -470,26 +470,26 @@ void shiro::pp::ctb::fruit::calculate_slider()
         slider_type = "L";
     }
 
-    curve* _curve = nullptr;
+    std::unique_ptr<curve> _curve = nullptr;
     if (slider_type == "P")
     {
         try
         {
-            _curve = new Perfect(this->curve_points);
+            _curve = std::make_unique<Perfect>(Perfect(this->curve_points));
         }
         catch (const std::exception&)
         {
-            _curve = new Bezier(this->curve_points);
+            _curve = std::make_unique<Bezier>(Bezier(this->curve_points));
             slider_type = "B";
         }
     }
     else if (slider_type == "B")
     {
-        _curve = new Bezier(this->curve_points);
+        _curve = std::make_unique<Bezier>(Bezier(this->curve_points));
     }
     else if (slider_type == "C")
     {
-        _curve = new Catmull(this->curve_points);
+        _curve = std::make_unique<Catmull>(Catmull(this->curve_points));
     }
 
     float current_distance = this->tick_distance;

@@ -412,7 +412,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
             utils::bot::respond(buffer, user, "#announce", false);
 
-            std::thread([](sqlpp::mysql::connection& db, const std::shared_ptr<users::user>& user, const beatmaps::beatmap& beatmap, const scores::score& score)
+            std::thread([](sqlpp::mysql::connection&& db, const std::shared_ptr<users::user>& user, const beatmaps::beatmap& beatmap, const scores::score& score)
             {
                 shiro::channels::discord_webhook::send_top1_message(user, beatmap, score);
 
@@ -439,7 +439,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                     scores_first_table.play_mode = score.play_mode,
                     scores_first_table.is_relax = score.is_relax
                 ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
-            }, std::ref(db) /* We don't manipulate with database anymore */, std::ref(user), std::ref(beatmap), std::ref(score)).detach();
+            }, std::move(db) /* We don't manipulate with database anymore */, user, beatmap, score).detach();
         }
     }
 
