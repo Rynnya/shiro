@@ -277,7 +277,7 @@ bool shiro::beatmaps::beatmap::exist()
 
 	for (const auto& row : result)
 	{
-		if (row.beatmap_md5 == this->beatmap_md5)
+		if (row.beatmap_id.value() == this->beatmap_id)
 		{
 			return true;
 		}
