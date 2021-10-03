@@ -17,6 +17,7 @@
  */
 
 #include "../../../direct/direct_provider.hh"
+#include "../../../thirdparty/loguru.hh"
 #include "search_route.hh"
 
 void shiro::routes::direct::search::handle(const crow::request &request, crow::response &response) {
@@ -35,6 +36,9 @@ void shiro::routes::direct::search::handle(const crow::request &request, crow::r
     if (!success) {
         response.code = 504;
         response.end();
+
+        LOG_F(WARNING, "Direct search returned invalid response, message: %s", output.c_str());
+
         return;
     }
 

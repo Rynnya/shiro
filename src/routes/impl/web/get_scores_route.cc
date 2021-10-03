@@ -83,6 +83,12 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     beatmap.fetch();
 
+    if (beatmap.ranked_status == static_cast<int32_t>(shiro::beatmaps::status::unknown) && beatmap.exist())
+    {
+        response.end("1|false");
+        return;
+    }
+
     int32_t mods_list = static_cast<int32_t>(utils::mods::none);
 
     const tables::users users_table {};
