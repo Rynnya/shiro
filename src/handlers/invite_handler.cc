@@ -38,8 +38,7 @@ void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_wr
 
     if (target->client_type == +utils::clients::osu_client::aschente)
     {
-        // TODO: Replace config::bot::name to real name of target, because bots might be appear on this server
-        utils::bot::respond("Thanks for the invite but I have to decline :)", user, config::bot::name, true);
+        utils::bot::respond("Thanks for the invite but I have to decline :)", user, target->presence.username, true);
         return;
     }
 

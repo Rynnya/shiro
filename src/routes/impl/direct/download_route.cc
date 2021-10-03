@@ -18,6 +18,7 @@
 
 #include "../../../direct/direct_provider.hh"
 #include "../../../utils/string_utils.hh"
+#include "../../../thirdparty/loguru.hh"
 #include "download_route.hh"
 
 void shiro::routes::direct::download::handle(const crow::request &request, crow::response &response, std::string args) {
@@ -25,10 +26,7 @@ void shiro::routes::direct::download::handle(const crow::request &request, crow:
     response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
 
     const char &last_char = args.back();
-    bool no_video = false;
-
-    if (last_char == 'n')
-        no_video = true;
+    bool no_video = last_char == 'n';
 
     int32_t id = 0;
 
@@ -51,6 +49,9 @@ void shiro::routes::direct::download::handle(const crow::request &request, crow:
     if (!success) {
         response.code = 504;
         response.end();
+
+        LOG_F(WARNING, "Direct search returned invalid response, message: %s", output.c_str());
+
         return;
     }
 

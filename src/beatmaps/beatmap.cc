@@ -39,13 +39,16 @@ void shiro::beatmaps::beatmap::fetch(bool force_peppster) {
 		return;
 	}
 
-	if (!force_peppster) {
+	if (!force_peppster)
+	{
 		if (fetch_db())
 			return;
 	}
 
 	if (!fetch_api())
+	{
 		this->ranked_status = static_cast<int32_t>(status::unknown);
+	}
 }
 
 bool shiro::beatmaps::beatmap::fetch_db() {
@@ -263,6 +266,24 @@ bool shiro::beatmaps::beatmap::fetch_api()
 
 	fetch_db();
 	return true;
+}
+
+bool shiro::beatmaps::beatmap::exist()
+{
+	sqlpp::mysql::connection db(db_connection->get_config());
+	const tables::beatmaps beatmaps_table{};
+
+	auto result = db(select(all_of(beatmaps_table)).from(beatmaps_table).where(beatmaps_table.beatmapset_id == this->beatmapset_id));
+
+	for (const auto& row : result)
+	{
+		if (row.beatmap_id.value() == this->beatmap_id)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void shiro::beatmaps::beatmap::save()

@@ -58,6 +58,9 @@ shiro::pp::mania::mania_calculator::~mania_calculator()
 
 float shiro::pp::mania::mania_calculator::calculate()
 {
+    if (this->stars == 0)
+        return 0;
+
     double score_rate = 1;
     if (this->mods & static_cast<int32_t>(shiro::utils::mods::easy)) score_rate *= 0.5;
     if (this->mods & static_cast<int32_t>(shiro::utils::mods::no_fail)) score_rate *= 0.5;

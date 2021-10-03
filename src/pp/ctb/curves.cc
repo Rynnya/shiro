@@ -125,22 +125,13 @@ void shiro::pp::ctb::Catmull::setup()
         t = 0;
         while (t < this->step + 1)
         {
-            if (x >= 1)
-                v1 = this->curve_points[x - 1];
-            else
-                v1 = this->curve_points[x];
+            v1 = x >= 1 ? this->curve_points[x - 1] : this->curve_points[x];
 
             v2 = this->curve_points[x];
 
-            if (x + 1 < this->order)
-                v3 = this->curve_points[x + 1];
-            else
-                v3 = appvec(v2, 1, appvec(v2, -1, v1));
+            v3 = x + 1 < this->order ? this->curve_points[x + 1] : appvec(v2, 1, appvec(v2, -1, v1));
 
-            if (x + 2 < this->order)
-                v4 = this->curve_points[x + 2];
-            else
-                v4 = appvec(v3, 1, appvec(v3, -1, v2));
+            v4 = x + 2 < this->order ? this->curve_points[x + 2] : appvec(v3, 1, appvec(v3, -1, v2));
 
             std::pair<float, float> point = get_point({ v1, v2, v3, v4 }, t);
             this->points.push_back(point);
