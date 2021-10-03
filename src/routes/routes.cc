@@ -23,6 +23,7 @@
 #include "../thirdparty/loguru.hh"
 #include "impl/api/ci_trigger_route.hh"
 #include "impl/direct/download_route.hh"
+#include "impl/direct/maps_route.hh"
 #include "impl/direct/search_route.hh"
 #include "impl/web/bancho_connect_route.hh"
 #include "impl/web/get_replay_route.hh"
@@ -41,7 +42,6 @@ void shiro::routes::init() {
     init_routes();
 
     try {
-        server.multithreaded();
         server.concurrency(config::bancho::concurrency);
 
         server.bindaddr(config::bancho::host);
@@ -64,6 +64,7 @@ void shiro::routes::init_routes() {
 
     // osu!direct routes
     CROW_ROUTE(server, "/web/osu-search.php").methods("GET"_method)(shiro_route(direct::search::handle));
+    CROW_ROUTE(server, "/web/maps/<string>").methods("GET"_method)(shiro_route_parameterized(direct::maps::handle, std::string, args));
     CROW_ROUTE(server, "/d/<string>").methods("GET"_method)(shiro_route_parameterized(direct::download::handle, std::string, args));
     CROW_ROUTE(server, "/s/<string>").methods("GET"_method)(shiro_route_parameterized(direct::download::handle, std::string, args));
 

@@ -83,7 +83,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     beatmap.fetch();
 
-    if (beatmap.ranked_status == static_cast<int32_t>(shiro::beatmaps::status::unknown) && beatmap.exist())
+    if (beatmap.ranked_status == static_cast<int32_t>(shiro::beatmaps::status::unsubmitted) && beatmap.exist())
     {
         response.end("1|false");
         return;
