@@ -157,7 +157,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
         return { false, ex.what() };
     }
 
-    std::string url = config::direct::search_url + "/s/" + set_result["ParentSetID"].get<std::string>();
+    std::string url = config::direct::search_url + "/s/" + std::to_string(set_result["ParentSetID"].get<int32_t>());
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success)
