@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,23 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SHIRO_EMULATION_HH
-#define SHIRO_EMULATION_HH
+#ifndef SHIRO_SEARCH_SET_ROUTE_HH
+#define SHIRO_SEARCH_SET_ROUTE_HH
 
-#include "../direct_provider.hh"
+#include <cstdint>
 
-namespace shiro::direct {
+#include "../../../thirdparty/crow.hh"
 
-    class emulation : public direct_provider {
-    public:
-        std::tuple<bool, std::string> search(std::unordered_map<std::string, std::string> parameters) override;
-        std::tuple<bool, std::string> search_np(std::unordered_map<std::string, std::string> parameters) override;
-        std::tuple<bool, std::string> download(int32_t beatmap_id, bool no_video) override;
+namespace shiro::routes::direct::search::set {
 
-        const std::string name() const override;
-
-    };
+    void handle(const crow::request& request, crow::response& response);
 
 }
 
-#endif //SHIRO_EMULATION_HH
+#endif //SHIRO_SEARCH_SET_ROUTE_HH

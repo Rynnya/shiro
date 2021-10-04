@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../../beatmaps/beatmap_helper.hh"
 #include "../../utils/string_utils.hh"
 #include "../../config/direct_file.hh"
 #include "../../logger/sentry_logger.hh"
@@ -118,6 +119,68 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
         out << "|"; // End of difficulties
         out << "\n"; // std::endl flushes additionally which is not something we want
     }
+
+    return { true, out.str() };
+}
+
+std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters)
+{
+    if (parameters.find("s") == parameters.end())
+        return { false, "s not provided" };
+
+    // Remove username from the request so the requesting user stays anonymous
+    if (parameters.find("u") != parameters.end())
+        parameters.erase("u");
+
+    // Remove password hash from the request so no credentials are leaked
+    if (parameters.find("h") != parameters.end())
+        parameters.erase("h");
+
+    std::string url = config::direct::search_url + "/s/" + parameters.find("s")->second;
+
+    auto [success, output] = utils::curl::get_direct(url);
+
+    if (!success)
+        return { false, output };
+
+    json json_result;
+
+    try
+    {
+        json_result = json::parse(output);
+    }
+    catch (const json::parse_error& ex)
+    {
+        LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
+        logging::sentry::exception(ex);
+
+        return { false, ex.what() };
+    }
+
+    std::stringstream out;
+
+    std::string beatmap_id = std::to_string(json_result["SetID"].get<int32_t>());
+    bool has_video = json_result["HasVideo"].get<bool>();
+    std::string last_updated = "-";
+
+    if (json_result["LastUpdate"].is_string())
+        last_updated = json_result["LastUpdate"];
+
+    out << beatmap_id << ".osz" << "|"; // Filename
+    out << (std::string)json_result["Artist"] << "|"; // Artist
+    out << (std::string)json_result["Title"] << "|"; // Song
+    out << (std::string)json_result["Creator"] << "|"; // Mapper
+    out << shiro::beatmaps::helper::fix_beatmap_status(json_result["RankedStatus"].get<int32_t>()) << "|"; // Ranked status
+    out << 0.0 << "|"; // Average Rating
+    out << last_updated << "|"; // Last updated
+    out << beatmap_id << "|"; // Beatmap id
+    out << beatmap_id << "|"; // Beatmap id?
+    out << (int32_t)has_video << "|"; // Video?
+    out << 0 << "|"; // ?
+    out << 0 << "|"; // ?
+    out << (has_video ? 7331 : 0); // Video size (faked cuz nobody provide this)
+
+    out << "\n"; // std::endl flushes additionally which is not something we want
 
     return { true, out.str() };
 }

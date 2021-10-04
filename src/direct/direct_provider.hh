@@ -31,6 +31,7 @@ namespace shiro::direct {
         virtual ~direct_provider() = default;
 
         virtual std::tuple<bool, std::string> search(std::unordered_map<std::string, std::string> parameters);
+        virtual std::tuple<bool, std::string> search_np(std::unordered_map<std::string, std::string> parameters);
         virtual std::tuple<bool, std::string> download(int32_t beatmap_id, bool no_video);
 
         virtual const std::string name() const;

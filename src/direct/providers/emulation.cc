@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -29,16 +30,21 @@ std::tuple<bool, std::string> shiro::direct::emulation::search(std::unordered_ma
     if (parameters.find("h") != parameters.end())
         parameters.erase("h");
 
-    std::string url = config::direct::base_url + "/web/osu-search.php?";
+    std::string url = config::direct::base_url + (parameters.find("b") == parameters.end() ? "/web/osu-search-set.php?" : "/web/osu-search.php?");
 
     for (const auto &[key, value] : parameters) {
         url.append(key).append("=").append(utils::curl::escape_url(value)).append("&");
     }
 
-    // Remove the last char (which will be a &)
-    url = url.substr(0, url.length() - 1);
+    // Remove the last char (which will be a & or ?)
+    url.pop_back();
 
     return utils::curl::get_direct(url);
+}
+
+std::tuple<bool, std::string> shiro::direct::emulation::search_np(std::unordered_map<std::string, std::string> parameters)
+{
+    return this->search(parameters);
 }
 
 std::tuple<bool, std::string> shiro::direct::emulation::download(int32_t beatmap_id, bool no_video) {

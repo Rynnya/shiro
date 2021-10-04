@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../../beatmaps/beatmap_helper.hh"
 #include "../../logger/sentry_logger.hh"
 #include "../../thirdparty/loguru.hh"
 #include "../../utils/curler.hh"
@@ -40,8 +42,8 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
         url.append(sane_key).append("=").append(sane_value).append("&");
     }
 
-    // Remove the last char (which will be a &)
-    url = url.substr(0, url.length() - 1);
+    // Remove the last char (which will be a & or ?)
+    url.pop_back();
 
     auto [success, output] = utils::curl::get_direct(url);
 
@@ -111,6 +113,67 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
         out << "|"; // End of difficulties
         out << "\n"; // std::endl flushes additionally which is not something we want
     }
+
+    return { true, out.str() };
+}
+
+std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unordered_map<std::string, std::string> parameters)
+{
+    if (parameters.find("s") == parameters.end())
+        return { false, "s not provided" };
+
+    // Remove username from the request so the requesting user stays anonymous
+    if (parameters.find("u") != parameters.end())
+        parameters.erase("u");
+
+    // Remove password hash from the request so no credentials are leaked
+    if (parameters.find("h") != parameters.end())
+        parameters.erase("h");
+
+    std::string url = "https://beatconnect.io/api/beatmap/" + parameters.find("s")->second + "/";
+
+    auto [success, output] = utils::curl::get_direct(url);
+
+    if (!success)
+        return { false, output };
+
+    json json_result;
+
+    try
+    {
+        json_result = json::parse(output);
+    }
+    catch (const json::parse_error& ex)
+    {
+        LOG_F(ERROR, "Unable to parse json response from Beatconnect: %s.", ex.what());
+        logging::sentry::exception(ex);
+
+        return { false, ex.what() };
+    }
+
+    std::stringstream out;
+
+    std::string beatmap_id = std::to_string(json_result["id"].get<int32_t>());
+    bool has_video = json_result["video"].get<bool>();
+    std::string last_updated = "-";
+    
+    if (json_result["last_updated"].is_string())
+        last_updated = json_result["last_updated"];
+
+    out << beatmap_id << ".osz" << "|"; // Filename
+    out << (std::string)json_result["artist"] << "|"; // Artist
+    out << (std::string)json_result["title"] << "|"; // Song
+    out << (std::string)json_result["creator"] << "|"; // Mapper
+    out << shiro::beatmaps::helper::fix_beatmap_status(json_result["ranked"].get<int32_t>()) << "|"; // Ranked status
+    out << 0.0 << "|"; // Average Rating
+    out << last_updated << "|"; // Last updated
+    out << beatmap_id << "|"; // Beatmap id
+    out << (int32_t)has_video << "|"; // Video?
+    out << 0 << "|"; // ?
+    out << 0 << "|"; // ?
+    out << (has_video ? 7331 : 0); // Video size (faked cuz nobody provide this)
+
+    out << "\n"; // std::endl flushes additionally which is not something we want
 
     return { true, out.str() };
 }

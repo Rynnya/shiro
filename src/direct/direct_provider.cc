@@ -83,6 +83,10 @@ std::tuple<bool, std::string> shiro::direct::direct_provider::search(std::unorde
     return { false, "Unimplemented" };
 }
 
+std::tuple<bool, std::string> shiro::direct::direct_provider::search_np(std::unordered_map<std::string, std::string> parameters) {
+    return { false, "Unimplemented" };
+}
+
 std::tuple<bool, std::string> shiro::direct::direct_provider::download(int32_t beatmap_id, bool no_video) {
     return { false, "Unimplemented" };
 }
