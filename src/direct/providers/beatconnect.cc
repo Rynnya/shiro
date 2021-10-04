@@ -119,8 +119,9 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
 
 std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unordered_map<std::string, std::string> parameters)
 {
-    if (parameters.find("s") == parameters.end())
-        return { false, "s not provided" };
+    auto b = parameters.find("b");
+    if (b == parameters.end())
+        return { false, "b not provided" };
 
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end())
@@ -130,8 +131,7 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     if (parameters.find("h") != parameters.end())
         parameters.erase("h");
 
-    std::string url = "https://beatconnect.io/api/beatmap/" + parameters.find("s")->second + "/";
-
+    std::string url = "https://beatconnect.io/api/beatmap/" + b->second + "/";
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success)

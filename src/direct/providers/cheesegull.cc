@@ -125,8 +125,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
 
 std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters)
 {
-    if (parameters.find("s") == parameters.end())
-        return { false, "s not provided" };
+    auto b = parameters.find("b");
+    if (b == parameters.end())
+        return { false, "b not provided" };
 
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end())
@@ -136,8 +137,27 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     if (parameters.find("h") != parameters.end())
         parameters.erase("h");
 
-    std::string url = config::direct::search_url + "/s/" + parameters.find("s")->second;
+    std::string set_url = config::direct::search_url + "/b/" + b->second;
+    auto [set_success, set_output] = utils::curl::get_direct(set_url);
 
+    if (!set_success)
+        return { false, set_output };
+
+    json set_result;
+
+    try
+    {
+        set_result = json::parse(set_output);
+    }
+    catch (const json::parse_error& ex)
+    {
+        LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
+        logging::sentry::exception(ex);
+
+        return { false, ex.what() };
+    }
+
+    std::string url = config::direct::search_url + "/s/" + set_result["ParentSetID"].get<std::string>();
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success)
