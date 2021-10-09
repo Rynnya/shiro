@@ -17,7 +17,6 @@
  */
 
 #include "../../bot/bot.hh"
-#include "../../multiplayer/lobby_manager.hh"
 #include "../../multiplayer/match_manager.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
@@ -26,9 +25,9 @@
 
 bool shiro::commands_mp::abort(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
 {
-    if (!shiro::multiplayer::lobby_manager::in_lobby(user))
+    if (!shiro::multiplayer::match_manager::in_match(user))
     {
-        utils::bot::respond("You must be in lobby to perform this action!", user, channel, true);
+        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
         return true;
     }
 
