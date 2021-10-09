@@ -125,6 +125,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
 
 std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters)
 {
+    // TODO: Make able to use s as well, i'm not sure if this intended to be, but Ripple supports both - https://github.com/osuripple/lets/blob/master/handlers/osuSearchSetHandler.py#L23
     auto b = parameters.find("b");
     if (b == parameters.end())
         return { false, "b not provided" };

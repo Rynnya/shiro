@@ -29,7 +29,7 @@
 #include "../utils/mods.hh"
 #include "score_helper.hh"
 
-inline static const auto& score_sorting = [](const shiro::scores::score& s_left, const shiro::scores::score& s_right) 
+inline static const auto& score_sorting = [](const shiro::scores::score& s_left, const shiro::scores::score& s_right)
 {
     return s_left.total_score > s_right.total_score;
 };

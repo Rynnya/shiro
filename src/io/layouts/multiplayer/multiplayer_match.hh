@@ -58,6 +58,7 @@ namespace shiro::io::layouts {
         uint8_t multi_special_modes = 0; // 1 = Free Mod
 
         int32_t random_seed = 0;
+        bool slots_locked = false;
         std::string game_password = "";
 
         void send_update(bool global);

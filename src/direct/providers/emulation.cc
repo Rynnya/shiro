@@ -44,6 +44,7 @@ std::tuple<bool, std::string> shiro::direct::emulation::search(std::unordered_ma
 
 std::tuple<bool, std::string> shiro::direct::emulation::search_np(std::unordered_map<std::string, std::string> parameters)
 {
+    // TODO: Feels like i should change it soon, but i simply don't have any mirrors, except Ripple -> which everybody uses and it accepts both s and b, so...
     return this->search(parameters);
 }
 
