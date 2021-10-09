@@ -54,7 +54,7 @@ void shiro::utils::bot::handle(shiro::io::layouts::message message, std::shared_
         // If player just typed '!mp' then we returns help
         if (args.size() > 0)
         {
-            command = splitted.at(0);
+            command = args.at(0);
             args.pop_front();
         }
 
