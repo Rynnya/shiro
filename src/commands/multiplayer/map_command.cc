@@ -97,7 +97,5 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
         return true;
     });
 
-    // Beatmap might be downloaded from API, so save for later usage
-    beatmap.save();
     return true;
 }
