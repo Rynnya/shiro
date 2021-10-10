@@ -72,7 +72,7 @@ bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<s
     message.sender_id = user->user_id;
 
     message.content = "Hey! Come and join my multiplayer room: [" + url + " " + match.game_name + "]";
-    message.channel = user->presence.username;
+    message.channel = target->presence.username;
 
     writer.send_message(message);
     target->queue.enqueue(writer);

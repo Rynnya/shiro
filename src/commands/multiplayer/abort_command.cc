@@ -40,7 +40,7 @@ bool shiro::commands_mp::abort(std::deque<std::string>& args, std::shared_ptr<sh
 
         if (!match.in_progress)
         {
-            utils::bot::respond("Match should be in progress.", user, channel, true);
+            utils::bot::respond("Match must be in progress.", user, channel, true);
             return true;
         }
 

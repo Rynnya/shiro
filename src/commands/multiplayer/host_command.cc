@@ -62,7 +62,7 @@ bool shiro::commands_mp::host(std::deque<std::string>& args, std::shared_ptr<shi
                 writer.match_transfer_host();
 
                 target->queue.enqueue(writer);
-                utils::bot::respond("Host was transfered to " + user->presence.username, user, channel, true);
+                utils::bot::respond("Host was transfered to " + target->presence.username, user, channel, true);
                 return true;
             }
         }
