@@ -68,6 +68,7 @@ bool shiro::commands_mp::password(std::deque<std::string>& args, std::shared_ptr
                 lobby_user->queue.enqueue(writer);
             }
 
+            utils::bot::respond("Password was changed.", user, channel, true);
             return true;
         }
 

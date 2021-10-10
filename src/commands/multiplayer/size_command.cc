@@ -85,7 +85,16 @@ bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shi
                 kicking_user->queue.enqueue(writer);
             }
 
+            // Unlock every slot that not in range but locked
+            for (int32_t slot_id = 0; slot_id < size; slot_id++)
+            {
+                uint8_t& slot_status = match.multi_slot_status.at(slot_id);
+                if (slot_status == static_cast<uint8_t>(utils::slot_status::locked))
+                    slot_status = static_cast<uint8_t>(utils::slot_status::open);
+            }
+
             match.send_update(true);
+            utils::bot::respond("Size was changed to " + std::to_string(size), user, channel, true);
             return true;
         }
 

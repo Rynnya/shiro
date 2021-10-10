@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../../beatmaps/beatmap.hh"
+#include "../../beatmaps/beatmap_ranked_status.hh"
 #include "../../multiplayer/match_manager.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/slot_status.hh"
@@ -44,7 +46,17 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
         return true;
     }
 
-    shiro::multiplayer::match_manager::iterate([&user, &channel, beatmap_id](shiro::io::layouts::multiplayer_match& match) -> bool
+    shiro::beatmaps::beatmap beatmap;
+    beatmap.beatmap_id = beatmap_id;
+    beatmap.fetch();
+
+    if (beatmap.ranked_status == static_cast<int32_t>(shiro::beatmaps::status::unknown))
+    {
+        utils::bot::respond("Beatmap cannot be found in osu!API and our database, sorry :c", user, channel, true);
+        return true;
+    }
+
+    shiro::multiplayer::match_manager::iterate([&user, &channel, beatmap](shiro::io::layouts::multiplayer_match& match) -> bool
     {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
@@ -53,8 +65,12 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
 
         if (match.host_id == user->user_id)
         {
+            int32_t beatmap_id = beatmap.beatmap_id;
             bool changed = match.beatmap_id != beatmap_id;
+
             match.beatmap_id = beatmap_id;
+            match.beatmap_name = beatmap.song_name;
+            match.beatmap_checksum = beatmap.beatmap_md5;
 
             if (changed)
             {
@@ -68,10 +84,13 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
 
                     match.multi_slot_status.at(i) = static_cast<uint8_t>(utils::slot_status::not_ready);
                 }
+
+                match.send_update(true);
+                utils::bot::respond("Map was changed to " + std::to_string(beatmap_id), user, channel, true);
+                return true;
             }
 
-            match.send_update(true);
-            utils::bot::respond("Map was changed to " + std::to_string(beatmap_id), user, channel, true);
+            utils::bot::respond("Previous map id's and current are equals.", user, channel, true);
             return true;
         }
 

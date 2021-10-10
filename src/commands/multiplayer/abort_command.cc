@@ -38,12 +38,18 @@ bool shiro::commands_mp::abort(std::deque<std::string>& args, std::shared_ptr<sh
         if (iterator == match.multi_slot_id.end())
             return false;
 
+        if (!match.in_progress)
+        {
+            utils::bot::respond("Match should be in progress.", user, channel, true);
+            return true;
+        }
+
         if (match.host_id == user->user_id)
         {
             match.in_progress = false;
 
             io::osu_writer writer;
-            writer.match_complete();
+            writer.match_abort();
 
             for (size_t i = 0; i < match.multi_slot_id.size(); i++)
             {
