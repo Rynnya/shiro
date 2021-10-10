@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,25 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SHIRO_BOT_HH
-#define SHIRO_BOT_HH
+#ifndef SHIRO_INVITE_COMMAND_MP_HH
+#define SHIRO_INVITE_COMMAND_MP_HH
 
-#include <string>
 #include <deque>
+#include <string>
 
-#include "../users/user.hh"
+#include "../../users/user.hh"
 
-namespace shiro::bot {
+namespace shiro::commands_mp
+{
 
-    extern std::shared_ptr<users::user> bot_user;
-
-    void init();
-
-    void init_commands();
-
-    bool handle(const std::string &command, std::deque<std::string> &args, std::shared_ptr<users::user> user, std::string channel);
-    bool handle_mp(const std::string& command, std::deque<std::string>& args, std::shared_ptr<users::user> user, std::string channel);
+    bool invite(std::deque<std::string>& args, std::shared_ptr<users::user> user, std::string channel);
 
 }
 
-#endif //SHIRO_BOT_HH
+#endif //SHIRO_INVITE_COMMAND_MP_HH

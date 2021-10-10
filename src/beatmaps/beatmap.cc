@@ -134,6 +134,8 @@ bool shiro::beatmaps::beatmap::fetch_api()
 				this->ranked_status = static_cast<int32_t>(status::unknown);
 				return false;
 			}
+
+			this->beatmap_md5 = part["file_md5"];
 		}
 	}
 

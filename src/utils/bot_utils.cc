@@ -31,7 +31,8 @@
 #include "string_utils.hh"
 
 void shiro::utils::bot::handle(shiro::io::layouts::message message, std::shared_ptr<users::user> user) {
-    if (!boost::algorithm::starts_with(message.content, "!"))
+    //if (!boost::algorithm::starts_with(message.content, "!"))
+    if (message.content.length() > 0 && message.content[0] != '!')
         return;
 
     std::string removed_index = message.content.substr(1);
@@ -45,6 +46,21 @@ void shiro::utils::bot::handle(shiro::io::layouts::message message, std::shared_
     std::string command = splitted.at(0);
     std::deque<std::string> args(splitted.begin(), splitted.end());
     args.pop_front(); // Remove command which is the first argument
+
+    for (auto& it : command) { it = std::tolower(it); }
+
+    if (command == "mp")
+    {
+        // If player just typed '!mp' then we returns help
+        if (args.size() > 0)
+        {
+            command = args.at(0);
+            args.pop_front();
+        }
+
+        shiro::bot::handle_mp(command, args, std::move(user), message.channel);
+        return;
+    }
 
     shiro::bot::handle(command, args, std::move(user), message.channel);
 }

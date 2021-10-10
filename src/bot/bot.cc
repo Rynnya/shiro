@@ -21,10 +21,21 @@
 #include <utility>
 #include <memory>
 
+#include "../commands/multiplayer/abort_command.hh"
+#include "../commands/multiplayer/help_command.hh"
+#include "../commands/multiplayer/host_command.hh"
+#include "../commands/multiplayer/invite_command.hh"
+#include "../commands/multiplayer/lock_command.hh"
+#include "../commands/multiplayer/map_command.hh"
+#include "../commands/multiplayer/password_command.hh"
+#include "../commands/multiplayer/size_command.hh"
+#include "../commands/multiplayer/unlock_command.hh"
+
 #include "../commands/public/help_command.hh"
 #include "../commands/public/localclear_command.hh"
 #include "../commands/public/roll_command.hh"
 #include "../commands/public/switch_command.hh"
+
 #include "../commands/staff/announce_command.hh"
 #include "../commands/staff/ban_command.hh"
 #include "../commands/staff/clear_command.hh"
@@ -35,6 +46,7 @@
 #include "../commands/staff/restrict_command.hh"
 #include "../commands/staff/rtx_command.hh"
 #include "../commands/staff/silence_command.hh"
+
 #include "../config/bot_file.hh"
 #include "../config/db_file.hh"
 #include "../database/tables/user_table.hh"
@@ -51,6 +63,7 @@
 
 std::shared_ptr<shiro::users::user> shiro::bot::bot_user = nullptr;
 static std::unordered_map<std::string, std::function<bool(std::deque<std::string>&, std::shared_ptr<shiro::users::user>, std::string)>> commands_map;
+static std::unordered_map<std::string, std::function<bool(std::deque<std::string>&, std::shared_ptr<shiro::users::user>, std::string)>> commands_mp_map;
 
 void shiro::bot::init() {
     sqlpp::mysql::connection db(db_connection->get_config());
@@ -121,7 +134,8 @@ void shiro::bot::init() {
     LOG_F(INFO, "Bot has been successfully registered as %s and is now online.", config::bot::name.c_str());
 }
 
-void shiro::bot::init_commands() {
+void shiro::bot::init_commands()
+{
     commands_map.insert(std::make_pair("announce", commands::announce));
     commands_map.insert(std::make_pair("ban", commands::ban));
     commands_map.insert(std::make_pair("classic", commands::classic));
@@ -139,23 +153,58 @@ void shiro::bot::init_commands() {
     commands_map.insert(std::make_pair("silence", commands::silence));
 
     LOG_F(INFO, "Bot commands have been successfully loaded. %lu commands available.", commands_map.size());
+
+    commands_mp_map.insert(std::make_pair("mp", commands_mp::help));
+    commands_mp_map.insert(std::make_pair("help", commands_mp::help));
+
+    commands_mp_map.insert(std::make_pair("abort", commands_mp::abort));
+    commands_mp_map.insert(std::make_pair("host", commands_mp::host));
+    commands_mp_map.insert(std::make_pair("invite", commands_mp::invite));
+    commands_mp_map.insert(std::make_pair("lock", commands_mp::lock));
+    commands_mp_map.insert(std::make_pair("unlock", commands_mp::unlock));
+    commands_mp_map.insert(std::make_pair("map", commands_mp::map));
+    commands_mp_map.insert(std::make_pair("password", commands_mp::password));
+    commands_mp_map.insert(std::make_pair("size", commands_mp::size));
+
+    LOG_F(INFO, "Multiplayer commands have been successfully loaded. %lu commands available.", commands_mp_map.size());
 }
 
-bool shiro::bot::handle(const std::string &command, std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
-    try {
-        return commands_map.at(command)(args, user, channel);
-    } catch (const std::out_of_range &ex) {
-        io::layouts::message msg;
-        io::osu_writer writer;
+bool shiro::bot::handle(const std::string &command, std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel)
+{
+    auto cmd = commands_map.find(command);
+    if (cmd != commands_map.end())
+        return cmd->second(args, user, channel);
 
-        msg.sender = config::bot::name;
-        msg.sender_id = 1;
-        msg.channel = channel;
-        msg.content = "!" + command + " could not be found. Type !help to get a list of available commands.";
+    io::layouts::message msg;
+    io::osu_writer writer;
 
-        writer.send_message(msg);
-        user->queue.enqueue(writer);
-    }
+    msg.sender = config::bot::name;
+    msg.sender_id = 1;
+    msg.channel = channel;
+    msg.content = "!" + command + " could not be found. Type !help to get a list of available commands.";
+
+    writer.send_message(msg);
+    user->queue.enqueue(writer);
+
+    return false;
+}
+
+bool shiro::bot::handle_mp(const std::string& command, std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
+{
+    auto cmd = commands_mp_map.find(command);
+    if (cmd != commands_mp_map.end())
+        return cmd->second(args, user, channel);
+
+    io::layouts::message msg;
+    io::osu_writer writer;
+
+    msg.sender = config::bot::name;
+    msg.sender_id = 1;
+    msg.channel = channel;
+    msg.content = "!mp " + command + " could not be found. Type !mp help to get a list of available commands.";
+
+    writer.send_message(msg);
+    user->queue.enqueue(writer);
 
     return false;
 }

@@ -32,7 +32,7 @@ void shiro::handler::multiplayer::room::change_slot::handle(shiro::io::osu_packe
         if (iterator == match.multi_slot_id.end())
             return false;
 
-        if (match.multi_slot_status.at(slot_id) != static_cast<uint8_t>(utils::slot_status::open))
+        if (match.multi_slot_status.at(slot_id) != static_cast<uint8_t>(utils::slot_status::open) || match.slots_locked)
             return true;
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
