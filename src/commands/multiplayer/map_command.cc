@@ -65,10 +65,9 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
 
         if (match.host_id == user->user_id)
         {
-            int32_t beatmap_id = beatmap.beatmap_id;
-            bool changed = match.beatmap_id != beatmap_id;
+            bool changed = match.beatmap_id != beatmap.beatmap_id;
 
-            match.beatmap_id = beatmap_id;
+            match.beatmap_id = beatmap.beatmap_id;
             match.beatmap_name = beatmap.song_name;
             match.beatmap_checksum = beatmap.beatmap_md5;
 
@@ -86,7 +85,7 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
                 }
 
                 match.send_update(true);
-                utils::bot::respond("Map was changed to " + std::to_string(beatmap_id), user, channel, true);
+                utils::bot::respond("Map was changed to " + std::to_string(beatmap.beatmap_id), user, channel, true);
                 return true;
             }
 
@@ -98,5 +97,7 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
         return true;
     });
 
+    // Beatmap might be downloaded from API, so save for later usage
+    beatmap.save();
     return true;
 }
