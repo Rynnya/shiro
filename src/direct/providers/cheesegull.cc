@@ -20,10 +20,12 @@
 #include "../../beatmaps/beatmap_helper.hh"
 #include "../../utils/string_utils.hh"
 #include "../../config/direct_file.hh"
+#include "../../database/tables/beatmap_table.hh"
 #include "../../logger/sentry_logger.hh"
 #include "../../thirdparty/loguru.hh"
 #include "../../utils/curler.hh"
 #include "../../utils/play_mode.hh"
+#include "../../shiro.hh"
 #include "cheesegull.hh"
 
 std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_map<std::string, std::string> parameters)
@@ -125,10 +127,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
 
 std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters)
 {
-    // TODO: Make able to use s as well, i'm not sure if this intended to be, but Ripple supports both - https://github.com/osuripple/lets/blob/master/handlers/osuSearchSetHandler.py#L23
     auto b = parameters.find("b");
     if (b == parameters.end())
-        return { false, "b not provided" };
+        return { false, "'beatmap_id' not provided" };
 
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end())
@@ -138,27 +139,19 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     if (parameters.find("h") != parameters.end())
         parameters.erase("h");
 
-    std::string set_url = config::direct::search_url + "/b/" + b->second;
-    auto [set_success, set_output] = utils::curl::get_direct(set_url);
+    sqlpp::mysql::connection db(db_connection->get_config());
+    const tables::beatmaps beatmaps_tables{};
 
-    if (!set_success)
-        return { false, set_output };
+    int32_t beatmap_id = utils::strings::safe_ll(b->second);
+    auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == beatmap_id));
 
-    json set_result;
+    if (result.empty())
+        return { false, "Beatmap not loaded to database" };
 
-    try
-    {
-        set_result = json::parse(set_output);
-    }
-    catch (const json::parse_error& ex)
-    {
-        LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
-        logging::sentry::exception(ex);
+    auto& _result = result.front();
+    int32_t beatmapset_id = _result.beatmapset_id;
 
-        return { false, ex.what() };
-    }
-
-    std::string url = config::direct::search_url + "/s/" + std::to_string(set_result["ParentSetID"].get<int32_t>());
+    std::string url = config::direct::search_url + "/s/" + std::to_string(beatmapset_id);
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success)
@@ -177,6 +170,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
 
         return { false, ex.what() };
     }
+
+    if (json_result.is_null())
+        return { false, "Cheesegull response was null" };
 
     std::stringstream out;
 

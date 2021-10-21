@@ -119,14 +119,10 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
 
 std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unordered_map<std::string, std::string> parameters)
 {
-    // We cannot do anything here about s because Beatconnect not provide way to get set from set_id, not beatmap_id
-    // Actually we can, but its requires to use our database -> can be wrong or null at all because we using threaded way to operate
-    // Also might use sleep for around 3 ms, this is normal time for database to proceed our new map
-    // But the problem is rate limit - I HIT THIS **** REALLY HARDLY
     auto b = parameters.find("b");
     if (b == parameters.end())
         return { false, "b not provided" };
-
+    
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end())
         parameters.erase("u");
