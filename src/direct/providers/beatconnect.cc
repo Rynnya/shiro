@@ -18,11 +18,13 @@
  */
 
 #include "../../beatmaps/beatmap_helper.hh"
+#include "../../database/tables/beatmap_table.hh"
 #include "../../logger/sentry_logger.hh"
 #include "../../thirdparty/loguru.hh"
 #include "../../utils/curler.hh"
 #include "../../utils/play_mode.hh"
 #include "../../utils/string_utils.hh"
+#include "../../shiro.hh"
 #include "beatconnect.hh"
 
 std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_map<std::string, std::string> parameters) {
@@ -131,7 +133,19 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     if (parameters.find("h") != parameters.end())
         parameters.erase("h");
 
-    std::string url = "https://beatconnect.io/api/beatmap/" + b->second + "/";
+    sqlpp::mysql::connection db(db_connection->get_config());
+    const tables::beatmaps beatmaps_tables{};
+
+    int32_t _beatmap_id = utils::strings::safe_ll(b->second);
+    auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
+
+    if (result.empty())
+        return { false, "Beatmap not loaded to database" };
+
+    auto& _result = result.front();
+    int32_t beatmapset_id = _result.beatmapset_id;
+
+    std::string url = "https://beatconnect.io/api/beatmap/" + std::to_string(beatmapset_id) + "/";
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success)
@@ -150,6 +164,9 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
 
         return { false, ex.what() };
     }
+
+    if (json_result["error"].is_object())
+        return { false, "Beatconnect response contains error" };
 
     std::stringstream out;
 
