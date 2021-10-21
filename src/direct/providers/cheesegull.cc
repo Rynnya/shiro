@@ -142,8 +142,8 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::beatmaps beatmaps_tables{};
 
-    int32_t beatmap_id = utils::strings::safe_ll(b->second);
-    auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == beatmap_id));
+    int32_t _beatmap_id = utils::strings::safe_ll(b->second);
+    auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
     if (result.empty())
         return { false, "Beatmap not loaded to database" };
