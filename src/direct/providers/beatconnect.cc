@@ -183,7 +183,7 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     out << (std::string)json_result["creator"] << "|"; // Mapper
     // TODO: I really hope Beatconnect will fix this bug cuz this looks really shitty
     out << shiro::beatmaps::helper::fix_beatmap_status(
-        json_result["ranked"].is_number()
+        json_result["ranked"].is_string()
         ? utils::strings::safe_int(json_result["ranked"].get<std::string>())
         : json_result["ranked"].get<int32_t>()
     ) << "|"; // Ranked status
