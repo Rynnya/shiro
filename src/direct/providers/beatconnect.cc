@@ -181,7 +181,7 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     out << (std::string)json_result["artist"] << "|"; // Artist
     out << (std::string)json_result["title"] << "|"; // Song
     out << (std::string)json_result["creator"] << "|"; // Mapper
-    out << shiro::beatmaps::helper::fix_beatmap_status(json_result["ranked"].get<int32_t>()) << "|"; // Ranked status
+    out << shiro::beatmaps::helper::fix_beatmap_status(utils::strings::safe_int(json_result["ranked"].get<std::string>())) << "|"; // Ranked status
     out << 0.0 << "|"; // Average Rating
     out << last_updated << "|"; // Last updated
     out << beatmap_id << "|"; // Beatmap id
