@@ -39,7 +39,7 @@ SOFTWARE.
 #include <future> // future
 #include <mutex> // mutex
 #include <string> //string
-#include "../json.hh"
+#include "curl_wrapper.hh"
 
 using json = nlohmann::json;
 
@@ -133,6 +133,18 @@ namespace nlohmann
          */
         void add_breadcrumb(const std::string& message,
                             const json& attributes = nullptr);
+
+        /*!
+         * @brief remove given amount of breadcrumbs
+         * 
+         * @param[in] amount of breadcrumbs
+         * 
+         * @exceptionsafety No-throw guarantee: this constructor never throws
+         * exceptions.
+         * 
+         * @since 0.0.6+
+         */
+        void remove_breadcrumbs(size_t amount) noexcept;
 
         /*!
          * @brief return the id of the last reported event
@@ -230,9 +242,11 @@ namespace nlohmann
          * @param[in] synchronous whether the payload should be sent immediately
          * @return result
          */
-        std::string post(json payload) const;
+        curl_wrapper::response post(json payload) const;
 
-        void enqueue_post();
+        void enqueue_post(bool send_independently = false);
+        void wait_rate_limit(const std::chrono::seconds& wait);
+        void handle_rate_limit(const std::pair<std::string, std::string>& header);
 
         /*!
          * @brief termination handler that detects uncaught exceptions
@@ -249,7 +263,7 @@ namespace nlohmann
         const int m_sample_rate;
 
         /// whether the client is enabled
-        const bool m_enabled = true;
+        bool m_enabled = true;
         /// the public key to be used in requests
         std::string m_public_key;
         /// the secret key to be used in requests
@@ -262,6 +276,11 @@ namespace nlohmann
         /// a mutex to make payload thread-safe
         std::mutex m_payload_mutex;
 
+        /// to handle rate limits from sentry
+        std::chrono::seconds m_rate_limit_timer = std::chrono::seconds(0);
+        /// a mutex to sync threads
+        std::mutex m_rate_limit_mutex;
+        
         /// a vector of POST jobs
         mutable std::vector<std::future<std::string>> m_jobs;
         /// a mutex to make m_jobs thread-safe

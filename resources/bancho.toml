@@ -22,3 +22,7 @@ title_url = "https://yukime.ml"
 
 [integrations]
 sentry = true
+sentry_dsn = ""
+# Additional information, mostly requests from server to others API
+breadcrumb = true
+breadcrumb_limit = 100

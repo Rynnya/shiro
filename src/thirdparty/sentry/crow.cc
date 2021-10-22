@@ -3,8 +3,14 @@
 /*
  _____ _____ _____ _ _ _
 |     | __  |     | | | |  Crow - a Sentry client for C++
-|   --|    -|  |  | | | |  version 0.0.6
+|   --|    -|  |  | | | |  version 0.0.6+
 |_____|__|__|_____|_____|  https://github.com/nlohmann/crow
+
+Modified by Rynnya, to make sure that new version of Sentry will work with this code.
+List of changes:
+ - Upgraded client version from 5 to 7
+ - Allowed to recreate m_payload, which don't create memory leaks anymore
+ - Changed from asserts and exceptions to exception-free standard (as Sentry requests from clients)
 
 Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 SPDX-License-Identifier: MIT
@@ -44,8 +50,10 @@ SOFTWARE.
 #include "crow_utilities.hh"
 #include "curl_wrapper.hh"
 #include "../json.hh"
+#include "../../config/bancho_file.hh"
 #include "../../native/system_info.hh"
 #include "../../native/system_statistics.hh"
+#include "../../thirdparty/loguru.hh"
 
 using json = nlohmann::json;
 
@@ -66,23 +74,13 @@ nlohmann::crow::crow(const std::string& dsn,
         // process DSN
         if (not dsn.empty())
         {
-            std::regex dsn_regex("(http[s]?)://([^:]+):([^@]+)@([^/]+)/([0-9]+)");
-            std::regex dsn_public_regex("(http[s]?)://([^:]+)@([^/]+)/([0-9]+)");
+            std::regex dsn_regex("(http[s]?)://([^:]+)@([^/]+)/([0-9]+)");
+            std::regex dsn_compatability_regex("(http[s]?)://([^:]+):([^@]+)@([^/]+)/([0-9]+)");
 
             std::smatch pieces_match;
 
-            if (std::regex_match(dsn, pieces_match, dsn_regex) and pieces_match.size() == 6)
+            if (std::regex_match(dsn, pieces_match, dsn_regex) and pieces_match.size() == 5)
             {
-                const auto scheme = pieces_match.str(1);
-                m_public_key = pieces_match.str(2);
-                m_secret_key = pieces_match.str(3);
-                const auto host = pieces_match.str(4);
-                const auto project_id = pieces_match.str(5);
-                m_store_url = scheme + "://" + host + "/api/" + project_id + "/store/";
-            }
-            else if (std::regex_match(dsn, pieces_match, dsn_public_regex) and pieces_match.size() == 5)
-            {
-                dsn_regex = std::regex("(http[s]?)://([^:]+)@([^/]+)/([0-9]+)");
                 const auto scheme = pieces_match.str(1);
                 m_public_key = pieces_match.str(2);
                 m_secret_key = "";
@@ -90,10 +88,32 @@ nlohmann::crow::crow(const std::string& dsn,
                 const auto project_id = pieces_match.str(4);
                 m_store_url = scheme + "://" + host + "/api/" + project_id + "/store/";
             }
+            else if (std::regex_match(dsn, pieces_match, dsn_compatability_regex) and pieces_match.size() == 6)
+            {
+                dsn_regex = dsn_compatability_regex;
+                const auto scheme = pieces_match.str(1);
+                m_public_key = pieces_match.str(2);
+                m_secret_key = pieces_match.str(3);
+                const auto host = pieces_match.str(4);
+                const auto project_id = pieces_match.str(5);
+                m_store_url = scheme + "://" + host + "/api/" + project_id + "/store/";
+            }
             else
             {
-                throw std::invalid_argument("DSN " + dsn + " is invalid");
+                // We cannot use macro here, because of strange instability in 'operator>', caused by json.hh
+                // Also this log really important, even when owner disables warnings
+                loguru::log(loguru::Verbosity_WARNING, __FILE__, __LINE__, "DSN Sentry link was invalid, disabling to minimize performance losses.");
+                shiro::config::bancho::sentry_integration = false;
+                m_enabled = false;
+                return;
             }
+        }
+        else
+        {
+            loguru::log(loguru::Verbosity_INFO, __FILE__, __LINE__, "DSN Sentry link was empty, disabling to minimize performance losses.");
+            shiro::config::bancho::sentry_integration = false;
+            m_enabled = false;
+            return;
         }
 
         // manage context
@@ -107,7 +127,7 @@ nlohmann::crow::crow(const std::string& dsn,
         }
     }
 
-    void nlohmann::crow::install_handler()
+void nlohmann::crow::install_handler()
     {
         if (existing_termination_handler == nullptr)
         {
@@ -123,6 +143,9 @@ nlohmann::crow::crow(const std::string& dsn,
     void nlohmann::crow::capture_message(const std::string& message,
                                const json& attributes)
     {
+        if (!m_enabled)
+            return;
+
         std::lock_guard<std::mutex> lock(m_payload_mutex);
         m_payload["message"] = message;
         m_payload["event_id"] = nlohmann::crow_utilities::generate_uuid();
@@ -163,17 +186,22 @@ nlohmann::crow::crow(const std::string& dsn,
                                  const json& context,
                                  const bool handled)
     {
+        if (!m_enabled)
+            return;
+
         std::stringstream thread_id;
         thread_id << std::this_thread::get_id();
         std::lock_guard<std::mutex> lock(m_payload_mutex);
-        m_payload["exception"].push_back({{"type", crow_utilities::pretty_name(typeid(exception).name())},
+        const std::string& type = crow_utilities::pretty_name(typeid(exception).name());
+        m_payload["exception"]["values"].push_back({{"type", type},
                                           {"value", exception.what()},
                                           {"module", crow_utilities::pretty_name(typeid(exception).name(), true)},
-                                          {"mechanism", {{"handled", handled}, {"description", handled ? "handled exception" : "unhandled exception"}}},
+                                          {"mechanism", {{"type", type}, {"handled", handled}, {"description", handled ? "handled exception" : "unhandled exception"}}},
                                           {"stacktrace", {{"frames", crow_utilities::get_backtrace()}}},
                                           {"thread_id", thread_id.str()}});
         m_payload["event_id"] = crow_utilities::generate_uuid();
         m_payload["timestamp"] = nlohmann::crow_utilities::get_iso8601();
+        m_payload["platform"] = "native";
 
         // add given context
         merge_context(context);
@@ -187,6 +215,12 @@ nlohmann::crow::crow(const std::string& dsn,
     void nlohmann::crow::add_breadcrumb(const std::string& message = "",
                               const json& attributes)
     {
+        if (!shiro::config::bancho::enable_breadcrumb)
+            return;
+
+        if (m_payload["breadcrumb"]["values"].size() > shiro::config::bancho::breadcrumb_limit)
+            enqueue_post(true);
+
         json breadcrumb =
                 {
                         {"event_id", crow_utilities::generate_uuid()},
@@ -233,6 +267,19 @@ nlohmann::crow::crow(const std::string& dsn,
 
         std::lock_guard<std::mutex> lock(m_payload_mutex);
         m_payload["breadcrumbs"]["values"].push_back(std::move(breadcrumb));
+    }
+
+    void nlohmann::crow::remove_breadcrumbs(size_t amount) noexcept
+    {
+        const size_t current_size = m_payload["breadcrumbs"]["values"].size();
+        if (current_size <= amount)
+        {
+            m_payload["breadcrumbs"]["values"].clear();
+            return;
+        }
+
+        // Every new value adds from back, so we remove from begin
+        m_payload["breadcrumbs"]["values"].erase(m_payload["breadcrumbs"]["values"].begin(), m_payload["breadcrumbs"]["values"].begin() + amount);
     }
 
     std::string nlohmann::crow::get_last_event_id() const
@@ -289,13 +336,10 @@ nlohmann::crow::crow(const std::string& dsn,
             std::lock_guard<std::mutex> lock(m_payload_mutex);
             for (const auto& el : context.items())
             {
-                if (el.key() == "user" or el.key() == "request" or el.key() == "extra" or el.key() == "tags")
+                const std::string& k = el.key();
+                if (k == "user" or k == "request" or k == "extra" or k == "tags")
                 {
-                    m_payload[el.key()].update(el.value());
-                }
-                else
-                {
-                    throw std::runtime_error("invalid context");
+                    m_payload[k].update(el.value());
                 }
             }
         }
@@ -371,12 +415,12 @@ nlohmann::crow::crow(const std::string& dsn,
         }
     }
 
-    std::string nlohmann::crow::post(json payload) const
+    curl_wrapper::response nlohmann::crow::post(json payload) const
     {
         curl_wrapper curl;
 
         // add security header
-        std::string security_header = "X-Sentry-Auth: Sentry sentry_version=5,sentry_client=crow/0.0.6,sentry_timestamp=";
+        std::string security_header = "X-Sentry-Auth: Sentry sentry_version=7,sentry_client=crow-shiro/0.0.6,sentry_timestamp=";
         security_header += std::to_string(crow_utilities::get_timestamp());
         security_header += ",sentry_key=" + m_public_key;
 
@@ -386,18 +430,18 @@ nlohmann::crow::crow(const std::string& dsn,
 
         curl.set_header(security_header.c_str());
 
-        return curl.post(m_store_url, payload, true).data;
+        return curl.post(m_store_url, payload, true);
     }
 
-    void nlohmann::crow::enqueue_post()
+    void nlohmann::crow::enqueue_post(bool send_independently)
     {
         if (not m_enabled)
         {
             return;
         }
 
-        // https://docs.sentry.io/clientdev/features/#event-sampling
-        const auto rand = crow_utilities::get_random_number(0, 99);
+        // https://develop.sentry.dev/sdk/features/#event-sampling
+        const auto rand = send_independently ? -1 : crow_utilities::get_random_number(0, 99);
         if (rand >= m_sample_rate)
         {
             return;
@@ -421,16 +465,48 @@ nlohmann::crow::crow(const std::string& dsn,
         // add the new job
         m_jobs.emplace_back(std::async(std::launch::async, [this]()
         {
-            return json::parse(post(m_payload)).at("id").get<std::string>();
-        }));
+            this->wait_rate_limit(m_rate_limit_timer);
+            const curl_wrapper::response& response = post(m_payload);
+            {
+                std::lock_guard<std::mutex> lock_payload(m_payload_mutex);
+                m_payload["breadcrumb"]["values"].clear();
+            }
+            if (response.status_code == 429)
+            {
+                const auto& header = response.headers.find("Retry-After");
+                if (header != response.headers.end())
+                    this->handle_rate_limit(*header);
+            }
+            nlohmann::json result = json::parse(response.data, nullptr, false);
+            if (result.is_discarded())
+                return std::string("-1");
 
-        assert(not m_jobs.empty());
-        assert(m_jobs.back().valid());
+            return result["id"].is_string() ? result["id"].get<std::string>() : "-1";
+        }));
+    }
+
+    void nlohmann::crow::wait_rate_limit(const std::chrono::seconds& wait)
+    {
+        std::this_thread::sleep_for(wait);
+
+        std::lock_guard<std::mutex> m_lock(m_rate_limit_mutex);
+        if (m_rate_limit_timer.count() != 0)
+            m_rate_limit_timer -= wait;
+    }
+
+    void nlohmann::crow::handle_rate_limit(const std::pair<std::string, std::string>& header)
+    {
+        const std::string& str_time = header.second;
+        int32_t time = std::atoi(str_time.c_str());
+
+        std::lock_guard<std::mutex> m_lock(m_rate_limit_mutex);
+        m_rate_limit_timer += std::chrono::seconds(time);
     }
 
     void nlohmann::crow::new_termination_handler()
     {
-        assert(m_client_that_installed_termination_handler != nullptr);
+        if (m_client_that_installed_termination_handler == nullptr)
+            return;
 
         auto current_ex = std::current_exception();
         if (current_ex)

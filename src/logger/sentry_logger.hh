@@ -24,10 +24,12 @@
 #include "../thirdparty/crow.hh"
 #include "../thirdparty/sentry/crow.hh"
 #include "../thirdparty/loguru.hh"
+#include "../thirdparty/taskscheduler.hh"
 
 namespace shiro::logging::sentry {
 
-    extern nlohmann::crow client;
+    extern std::shared_ptr<nlohmann::crow> client;
+    extern tsc::TaskScheduler scheduler;
 
     void init();
 

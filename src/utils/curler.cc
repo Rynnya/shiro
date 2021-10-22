@@ -42,7 +42,7 @@ std::tuple<bool, std::string> shiro::utils::curl::get(const std::string &url) {
     curl_easy_cleanup(curl);
 
     if (status_code == CURLE_OK) {
-        logging::sentry::http_request_out(url, "GET", status_code, url.find("/osu/") == std::string::npos ? output : "");
+        logging::sentry::http_request_out(url, "GET", status_code, url.find("/osu/") == std::string::npos && output.size() < 100000 ? output : "");
         return { true, output };
     }
 
@@ -113,7 +113,7 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
     curl_easy_cleanup(curl);
 
     if (status_code == CURLE_OK) {
-        logging::sentry::http_request_out(url, "GET", status_code, url.find("/osu/") == std::string::npos ? output : "");
+        logging::sentry::http_request_out(url, "GET", status_code, url.find("/osu/") == std::string::npos && output.size() < 100000 ? output : "");
         return { true, output };
     }
 
@@ -150,13 +150,17 @@ bool shiro::utils::curl::post_message(const std::string& url, const nlohmann::js
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
 
     status_code = curl_easy_perform(curl);
+
+    int http_status_code;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code);
+
     curl_easy_cleanup(curl);
 
     if (status_code == CURLE_OK)
         return true;
 
     // Replace original url with fake to avoid leaks
-    logging::sentry::http_request_out("https://discord.com/api/webhooks/id/token", "POST", status_code, output);
+    logging::sentry::http_request_out("https://discord.com/api/webhooks/id/token", "POST", http_status_code, output);
     return false;
 }
 

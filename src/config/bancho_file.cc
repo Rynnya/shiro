@@ -37,6 +37,9 @@ std::string shiro::config::bancho::title_image = "https://i.ppy.sh/motd.png";
 std::string shiro::config::bancho::title_url = "https://osu.yukime.ml";
 
 bool shiro::config::bancho::sentry_integration = true;
+std::string shiro::config::bancho::sentry_dsn = "";
+bool shiro::config::bancho::enable_breadcrumb = true;
+int32_t shiro::config::bancho::breadcrumb_limit = 100;
 
 void shiro::config::bancho::parse() {
     if (config_file != nullptr)
@@ -62,6 +65,9 @@ void shiro::config::bancho::parse() {
     title_url = config_file->get_qualified_as<std::string>("motd.title_url").value_or("https://osu.yukime.ml");
 
     sentry_integration = config_file->get_qualified_as<bool>("integrations.sentry").value_or(true);
+    sentry_dsn = config_file->get_qualified_as<std::string>("integrations.sentry_dsn").value_or("");
+    enable_breadcrumb = config_file->get_qualified_as<bool>("integrations.breadcrumb").value_or(true);
+    breadcrumb_limit = config_file->get_qualified_as<int32_t>("integrations.breadcrumb_limit").value_or(100);
 
     LOG_F(INFO, "Successfully parsed bancho.toml.");
 
@@ -70,7 +76,7 @@ void shiro::config::bancho::parse() {
     cli::cli_app.add_option("--bancho-concurrency", concurrency, "Amount of concurrent connections that should be handled");
 
     // Boolean flags are not yet supported fully in cli, see score_submission_file.cc
-    //cli::cli_app.add_option("--bancho-default-supporter", default_Supporter, "Allow users with no roles / permissions to have supporer in-game?");
+    //cli::cli_app.add_option("--bancho-default-supporter", default_Supporter, "Allow users with no roles / permissions to have supporter in-game?");
 
     cli::cli_app.add_option("--bancho-api-key", api_key, "API key for accessing official osu!Bancho API");
 

@@ -174,19 +174,15 @@ std::string nlohmann::crow_utilities::generate_uuid() {
     std::string result(32, ' ');
 
     for (std::size_t i = 0; i < result.size(); ++i) {
-        // the 12th character must be a '4'
-        if (i == 12) {
-            result[i] = '4';
+        const char r = static_cast<char>(get_random_number(0, 15));
+        if (r < 10) {
+            result[i] = '0' + r;
         } else {
-            // get a random number from 0..15
-            const auto r = static_cast<char>(get_random_number(0, 15));
-            if (r < 10) {
-                result[i] = '0' + r;
-            } else {
-                result[i] = 'a' + r - static_cast<char>(10);
-            }
+            result[i] = 'a' + r - static_cast<char>(10);
         }
     }
 
+    // the 12th character must be a '4'
+    result[12] = '4';
     return result;
 }

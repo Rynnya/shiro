@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,7 +20,8 @@
 #include "../config/bancho_file.hh"
 #include "sentry_logger.hh"
 
-nlohmann::crow shiro::logging::sentry::client("https://da055b9caaf34778a93db094a1f8b6c2@sentry.io/1277337");
+std::shared_ptr<nlohmann::crow> shiro::logging::sentry::client = nullptr;
+tsc::TaskScheduler shiro::logging::sentry::scheduler;
 
 void shiro::logging::sentry::init() {
     if (!config::bancho::sentry_integration) {
@@ -27,16 +29,25 @@ void shiro::logging::sentry::init() {
         return;
     }
 
+    client = std::make_shared<nlohmann::crow>(config::bancho::sentry_dsn);
     loguru::add_callback("sentry.io", logging::sentry::callback, nullptr, loguru::Verbosity_INFO);
     loguru::set_fatal_handler(logging::sentry::fatal_callback);
-    client.add_breadcrumb("Successfully started communication with sentry.io.");
+    scheduler.Schedule(std::chrono::hours(48), [](tsc::TaskContext ctx) {
+        client->remove_breadcrumbs(25);
+
+        ctx.Repeat(std::chrono::hours(48));
+    });
+    client->add_breadcrumb("Successfully started communication with sentry.io.");
+    LOG_F(INFO, "Sentry successfully started.");
+    if (config::bancho::enable_breadcrumb)
+        LOG_F(WARNING, "Please note that breadcrumbs might take a lot of RAM!");
 }
 
 void shiro::logging::sentry::callback(void *user_data, const loguru::Message &message) {
     switch (message.verbosity) {
         case loguru::Verbosity_ERROR:
         case loguru::Verbosity_FATAL:
-            client.capture_message(message.message, {
+            client->capture_message(message.message, {
                     { "level", verbosity_to_sentry_level(message.verbosity) },
                     { "extra",
                         {
@@ -49,7 +60,7 @@ void shiro::logging::sentry::callback(void *user_data, const loguru::Message &me
             });
             break;
         default:
-            client.add_breadcrumb(message.message, {
+            client->add_breadcrumb(message.message, {
                     { "level", verbosity_to_sentry_level(message.verbosity) },
                     { "data",
                         {
@@ -65,8 +76,8 @@ void shiro::logging::sentry::callback(void *user_data, const loguru::Message &me
 }
 
 void shiro::logging::sentry::fatal_callback(const loguru::Message &message) {
-    client.add_breadcrumb("!! FATAL ERROR OCCURRED, EXITING NOW !!");
-    client.capture_message(message.message, {
+    client->add_breadcrumb("!! FATAL ERROR OCCURRED, EXITING NOW !!");
+    client->capture_message(message.message, {
             { "level", "fatal" },
             { "extra",
                 {
@@ -80,7 +91,10 @@ void shiro::logging::sentry::fatal_callback(const loguru::Message &message) {
 }
 
 void shiro::logging::sentry::exception(const std::exception &ex) {
-    client.capture_exception(ex);
+    if (!config::bancho::sentry_integration)
+        return;
+
+    client->capture_exception(ex);
 }
 
 void shiro::logging::sentry::exception(const std::exception_ptr &ptr) {
@@ -90,7 +104,7 @@ void shiro::logging::sentry::exception(const std::exception_ptr &ptr) {
     try {
         std::rethrow_exception(ptr);
     } catch (const std::exception &ex) {
-        client.capture_exception(ex, nullptr, false);
+        client->capture_exception(ex, nullptr, false);
     }
 }
 
@@ -107,7 +121,7 @@ void shiro::logging::sentry::http_request_out(const std::string &url, const std:
     if (!reason.empty())
         req["reason"] = reason;
 
-    client.add_breadcrumb("", {
+    client->add_breadcrumb("", {
             { "level", "info" },
             { "type", "http" },
             { "data", req }
@@ -143,7 +157,7 @@ void shiro::logging::sentry::http_request_in(const ::crow::request &request) {
     if (!cookie.empty())
         req["cookies"] = cookie;
 
-    client.add_request_context(req);
+    client->add_request_context(req);
 }
 
 std::string shiro::logging::sentry::verbosity_to_sentry_level(const loguru::Verbosity &verbosity) {
