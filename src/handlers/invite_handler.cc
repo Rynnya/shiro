@@ -68,10 +68,4 @@ void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_wr
 
     writer.send_message(message);
     target->queue.enqueue(writer);
-
-    io::osu_writer self_writer;
-    message.channel = target->presence.username;
-
-    self_writer.send_message(message);
-    user->queue.enqueue(self_writer);
 }

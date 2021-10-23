@@ -13,14 +13,14 @@ public:
     class response
     {
     public:
-        response(std::string d, int sc, std::unordered_map<std::string, std::string> heads)
+        response(std::string d, long sc, std::unordered_map<std::string, std::string> heads)
                 : data(std::move(d))
                 , status_code(sc)
                 , headers(std::move(heads))
         {}
 
         std::string data;
-        int status_code;
+        long status_code;
         std::unordered_map<std::string, std::string> headers;
 
         nlohmann::json json()
@@ -86,7 +86,7 @@ public:
 
         auto res = curl_easy_perform(m_curl);
 
-        int status_code;
+        long status_code;
         curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &status_code);
 
         if (res != CURLE_OK)

@@ -151,7 +151,7 @@ bool shiro::utils::curl::post_message(const std::string& url, const nlohmann::js
 
     status_code = curl_easy_perform(curl);
 
-    int http_status_code;
+    long http_status_code;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code);
 
     curl_easy_cleanup(curl);

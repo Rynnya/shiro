@@ -77,11 +77,5 @@ bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<s
     writer.send_message(message);
     target->queue.enqueue(writer);
 
-    io::osu_writer self_writer;
-    message.channel = target->presence.username;
-
-    self_writer.send_message(message);
-    user->queue.enqueue(self_writer);
-
     return true;
 }
