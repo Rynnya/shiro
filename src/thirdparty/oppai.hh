@@ -2035,7 +2035,7 @@ int pp_std(ezpp_t ez) {
             0.4f * al_min(1.0f, nobjects_over_2k) +
             (ez->nobjects > 2000 ? (float)log10(nobjects_over_2k) * 0.5f : 0.0f)
     );
-    float miss_penality = (float)pow(0.97f, ez->nmiss);
+    float miss_penality = 1.0f;
     float combo_break = (
             (float)pow(ez->combo, 0.8f) / (float)pow(ez->max_combo, 0.8f)
     );
@@ -2044,6 +2044,10 @@ int pp_std(ezpp_t ez) {
     float acc_bonus, od_bonus;
     float od_squared;
     float hd_bonus;
+
+    if (ez->nmiss > 0) {
+        miss_penality = 0.97f * pow(1.0f - pow(ez->nmiss / ez->ncircles, 0.775f), ez->nmiss);
+    }
 
     /* acc used for pp is different in scorev1 because it ignores sliders */
     float real_acc;
@@ -2079,7 +2083,7 @@ int pp_std(ezpp_t ez) {
     }
 
     /* ar bonus -------------------------------------------------------- */
-    ar_bonus = 1.0f;
+    ar_bonus = 0.0f;
 
     /* high ar bonus */
     if (ez->ar > 10.33f) {
@@ -2088,7 +2092,7 @@ int pp_std(ezpp_t ez) {
 
         /* low ar bonus */
     else if (ez->ar < 8.0f) {
-        ar_bonus += 0.01f * (8.0f - ez->ar);
+        ar_bonus += 0.1f * (8.0f - ez->ar);
     }
 
     /* aim pp ---------------------------------------------------------- */
@@ -2096,7 +2100,7 @@ int pp_std(ezpp_t ez) {
     ez->aim_pp *= length_bonus;
     ez->aim_pp *= miss_penality;
     ez->aim_pp *= combo_break;
-    ez->aim_pp *= ar_bonus;
+    ez->aim_pp *= 1.0f + ar_bonus * length_bonus;
 
     /* hidden */
     hd_bonus = 1.0f;
@@ -2119,7 +2123,7 @@ int pp_std(ezpp_t ez) {
     }
 
     /* acc bonus (bad aim can lead to bad acc) */
-    acc_bonus = 0.5f + accuracy / 2.0f;
+    acc_bonus *= accuracy;
 
     /* od bonus (high od requires better aim timing to acc) */
     od_squared = (float)pow(ez->od, 2);
@@ -2134,7 +2138,7 @@ int pp_std(ezpp_t ez) {
     ez->speed_pp *= miss_penality;
     ez->speed_pp *= combo_break;
     if (ez->ar > 10.33f) {
-        ez->speed_pp *= ar_bonus;
+        ez->speed_pp *= 1.0f + ar_bonus * length_bonus;
     }
     ez->speed_pp *= hd_bonus;
 
