@@ -2041,7 +2041,7 @@ int pp_std(ezpp_t ez) {
     );
     float ar_bonus;
     float final_multiplier;
-    float acc_bonus, od_bonus;
+    float od_bonus;
     float od_squared;
     float hd_bonus;
 
@@ -2122,14 +2122,12 @@ int pp_std(ezpp_t ez) {
         ez->aim_pp *= fl_bonus;
     }
 
-    /* acc bonus (bad aim can lead to bad acc) */
-    acc_bonus *= accuracy;
-
     /* od bonus (high od requires better aim timing to acc) */
     od_squared = (float)pow(ez->od, 2);
     od_bonus = 0.98f + od_squared / 2500.0f;
 
-    ez->aim_pp *= acc_bonus;
+    /* acc bonus (bad aim can lead to bad acc) */
+    ez->aim_pp *= accuracy;
     ez->aim_pp *= od_bonus;
 
     /* speed pp -------------------------------------------------------- */
@@ -2142,11 +2140,11 @@ int pp_std(ezpp_t ez) {
     }
     ez->speed_pp *= hd_bonus;
 
-    /* scale the speed value with accuracy slightly */
-    ez->speed_pp *= 0.02f + accuracy;
-
     /* it's important to also consider accuracy difficulty when doing that */
-    ez->speed_pp *= 0.96f + (od_squared / 1600.0f);
+    ez->speed_pp *= 0.95f + (od_squared / 750.0f);
+
+    /* scale the speed value with accuracy slightly */
+    ez->speed_pp *= pow(accuracy, (14.5f - al_max(ez->od, 8.0f)) / 2);
 
     /* acc pp ---------------------------------------------------------- */
     /* arbitrary values tom crafted out of trial and error */
