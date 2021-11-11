@@ -21,10 +21,14 @@
 
 #include <deque>
 #include <string>
+#include <unordered_map>
 
 #include "../../users/user.hh"
+#include "../../permissions/permissions.hh"
 
 namespace shiro::commands {
+
+    extern const std::unordered_map<shiro::permissions::perms, std::string> staff_commands;
 
     bool help(std::deque<std::string> &args, std::shared_ptr<users::user> user, std::string channel);
 

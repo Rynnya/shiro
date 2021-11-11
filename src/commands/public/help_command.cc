@@ -20,6 +20,19 @@
 #include "../../utils/bot_utils.hh"
 #include "help_command.hh"
 
+const std::unordered_map<shiro::permissions::perms, std::string> shiro::commands::staff_commands = {
+    { shiro::permissions::perms::cmd_announce,      "!announce - Sends a announcement to everyone or a specific user" },
+    { shiro::permissions::perms::cmd_ban,           "!ban - Bans a player" },
+    { shiro::permissions::perms::cmd_clear,         "!clear - Clears the chat for everyone or a specific user" },
+    { shiro::permissions::perms::cmd_clients,       "!clients - Lists game versions of connected players" },
+    { shiro::permissions::perms::cmd_kick,          "!kick - Kicks a player from the server" },
+    { shiro::permissions::perms::cmd_recalculate,   "!recalculate - Starts pp recalculation service" },
+    { shiro::permissions::perms::cmd_restart,       "!restart - Restarts the server" },
+    { shiro::permissions::perms::cmd_restrict,      "!restrict - Restricts a player" },
+    { shiro::permissions::perms::cmd_rtx,           "!rtx - Send a rtx to a specific user" },
+    { shiro::permissions::perms::cmd_silence,       "!silence - Mutes a player" },
+};
+
 bool shiro::commands::help(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
     utils::bot::respond("Commands:", user, channel, true);
     utils::bot::respond("!classic - Switch current mode to Classic leaderboard and presence", user, channel, true);
@@ -28,20 +41,10 @@ bool shiro::commands::help(std::deque<std::string> &args, std::shared_ptr<shiro:
     utils::bot::respond("!relax - Switch current mode to Relax leaderboard and presence", user, channel, true);
     utils::bot::respond("!roll - Rolls a random number", user, channel, true);
 
-    // TODO: Check for permissions and then display admin commands
-    if (shiro::roles::manager::has_permission(user, shiro::permissions::perms::channel_console))
-    {
-        utils::bot::respond("Staff commands:", user, channel, true);
-        utils::bot::respond("!announce - Sends a announcement to everyone or a specific user", user, channel, true);
-        utils::bot::respond("!ban - Bans a player", user, channel, true);
-        utils::bot::respond("!clear - Clears the chat for everyone or a specific user", user, channel, true);
-        utils::bot::respond("!clients - Lists game versions of connected players", user, channel, true);
-        utils::bot::respond("!kick - Kicks a player from the server", user, channel, true);
-        utils::bot::respond("!recalculate - Starts pp recalculation service", user, channel, true);
-        utils::bot::respond("!restart - Restarts the server", user, channel, true);
-        utils::bot::respond("!restrict - Restricts a player", user, channel, true);
-        utils::bot::respond("!rtx - Send a rtx to a specific user", user, channel, true);
-        utils::bot::respond("!silence - Mutes a player", user, channel, true);
+    for (auto [permission, response] : staff_commands) {
+        if (shiro::roles::manager::has_permission(user, permission)) {
+            utils::bot::respond(response, user, channel, true);
+        }
     }
 
     return true;

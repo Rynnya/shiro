@@ -189,9 +189,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 }
 
 void shiro::pp::recalculator::end(shiro::utils::play_mode mode, bool is_relax) {
-    running_threads--;
-
-    if (running_threads > 0) {
+    if (--running_threads > 0) {
         LOG_F(INFO, "Still %lu threads running.", running_threads.load());
         return;
     }
