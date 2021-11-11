@@ -19,18 +19,17 @@
 #ifndef SHIRO_PP_RECALCULATOR_HH
 #define SHIRO_PP_RECALCULATOR_HH
 
+#include <atomic>
 #include <cstdint>
 #include <thread>
 #include <vector>
-#include <shared_mutex>
 
 #include "../utils/play_mode.hh"
 
 namespace shiro::pp::recalculator {
 
-    extern bool running;
-    extern size_t running_threads;
-    extern std::shared_timed_mutex mutex;
+    extern std::atomic_bool running;
+    extern std::atomic_size_t running_threads;
 
     void begin(utils::play_mode mode, bool is_relax, uint32_t threads = std::thread::hardware_concurrency());
 

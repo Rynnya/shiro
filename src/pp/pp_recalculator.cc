@@ -30,15 +30,20 @@
 #include "pp_recalculator.hh"
 #include "pp_score_metric.hh"
 
-bool shiro::pp::recalculator::running = false;
-size_t shiro::pp::recalculator::running_threads = 0;
-std::shared_timed_mutex shiro::pp::recalculator::mutex;
+// We don't need locks, because all critical variables are atomic
+// This also makes calculator works faster with more cores, as atomic always faster than locks
+std::atomic_bool shiro::pp::recalculator::running = false;
+std::atomic_size_t shiro::pp::recalculator::running_threads = 0;
 
 void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax, uint32_t threads) {
     if (running) {
         LOG_F(ERROR, "PP recalculation was called while already recalculating.");
         return;
     }
+
+    // According to https://en.cppreference.com/w/cpp/thread/thread/hardware_concurrency might return 0
+    if (threads <= 0)
+        threads = 1;
 
     if (threads >= 2)
         threads /= 2; // Only use half of the available threads for pp recalculation
@@ -131,9 +136,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
     if (users.empty())
         return;
 
-    std::unique_lock<std::shared_timed_mutex> lock(mutex);
     running = true;
-    lock.unlock(); // Unlock to avoid deadlocks
 
     LOG_F(INFO, "Starting pp recalculation in %s for %lu users with %u threads.", game_mode.c_str(), users.size(), threads);
 
@@ -163,9 +166,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
         std::stringstream stream;
         stream << "0x" << thread.get_id();
 
-        std::unique_lock<std::shared_timed_mutex> lock(mutex);
         running_threads++;
-        lock.unlock(); // Unlock to avoid deadlocks
 
         LOG_F(INFO, "Thread %s started recalculating with chunk %lu. (%lu users)", stream.str().c_str(), i, chunked_users.size());
 
@@ -188,12 +189,10 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 }
 
 void shiro::pp::recalculator::end(shiro::utils::play_mode mode, bool is_relax) {
-    std::unique_lock<std::shared_timed_mutex> shared_lock(mutex);
-
     running_threads--;
 
     if (running_threads > 0) {
-        LOG_F(INFO, "Still %lu threads running.", running_threads);
+        LOG_F(INFO, "Still %lu threads running.", running_threads.load());
         return;
     }
 
@@ -337,7 +336,6 @@ void shiro::pp::recalculator::end(shiro::utils::play_mode mode, bool is_relax) {
 }
 
 bool shiro::pp::recalculator::in_progress() {
-    std::shared_lock<std::shared_timed_mutex> lock(mutex);
     return running;
 }
 
