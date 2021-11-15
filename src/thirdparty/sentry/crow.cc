@@ -54,6 +54,7 @@ SOFTWARE.
 #include "../../native/system_info.hh"
 #include "../../native/system_statistics.hh"
 #include "../../thirdparty/loguru.hh"
+#include "../../thread/thread_pool.hh"
 
 using json = nlohmann::json;
 
@@ -251,11 +252,13 @@ void nlohmann::crow::add_breadcrumb(const std::string& message = "", const json&
         }
     }
 
-    std::lock_guard<std::mutex> lock(m_payload_mutex);
+    std::unique_lock<std::mutex> lock(m_payload_mutex);
     m_payload["breadcrumbs"]["values"].push_back(std::move(breadcrumb));
 }
 
 void nlohmann::crow::remove_breadcrumbs(size_t amount) noexcept {
+    std::unique_lock<std::mutex> lock(m_payload_mutex);
+
     const size_t current_size = m_payload["breadcrumbs"]["values"].size();
     if (current_size <= amount) {
         m_payload["breadcrumbs"]["values"].clear();
@@ -271,7 +274,7 @@ std::string nlohmann::crow::get_last_event_id() const {
         return "";
     }
 
-    std::lock_guard<std::mutex> lock(m_jobs_mutex);
+    std::unique_lock<std::mutex> lock(m_jobs_mutex);
     if (not m_jobs.empty() and m_jobs.back().valid()) {
         m_last_event_id = m_jobs.back().get();
         m_jobs.clear();
@@ -386,7 +389,7 @@ void nlohmann::crow::clear_context() {
     }
 }
 
-curl_wrapper::response nlohmann::crow::post(json payload) const {
+curl_wrapper::response nlohmann::crow::post(const json& payload) const {
     curl_wrapper curl;
 
     // add security header
@@ -415,7 +418,7 @@ void nlohmann::crow::enqueue_post(bool send_independently) {
     }
 
     // we want to change the job list
-    std::lock_guard<std::mutex> lock_jobs(m_jobs_mutex);
+    std::unique_lock<std::mutex> lock_jobs(m_jobs_mutex);
 
     // remember we made a post and now can rely on a last id
     m_posts = true;
@@ -429,12 +432,12 @@ void nlohmann::crow::enqueue_post(bool send_independently) {
     }
 
     // add the new job
-    m_jobs.emplace_back(std::async(std::launch::async, [this]() {
+    m_jobs.push_back(shiro::thread::curl_operations.push([this]() {
         this->wait_rate_limit(m_rate_limit_timer);
-        const curl_wrapper::response& response = post(m_payload);
+        curl_wrapper::response response = post(m_payload);
 
         {
-            std::lock_guard<std::mutex> lock_payload(m_payload_mutex);
+            std::unique_lock<std::mutex> lock_payload(m_payload_mutex);
             m_payload["breadcrumb"]["values"].clear();
         }
 
@@ -458,7 +461,7 @@ void nlohmann::crow::wait_rate_limit(const std::chrono::seconds& wait) {
     std::this_thread::sleep_for(wait);
 
     std::lock_guard<std::mutex> m_lock(m_rate_limit_mutex);
-    if (m_rate_limit_timer.count() != 0) {
+    if (m_rate_limit_timer.count() > 0) {
         m_rate_limit_timer -= wait;
     }
 }

@@ -248,7 +248,7 @@ namespace nlohmann {
          * @param[in] synchronous whether the payload should be sent immediately
          * @return result
          */
-        curl_wrapper::response post(json payload) const;
+        curl_wrapper::response post(const json& payload) const;
 
         void enqueue_post(bool send_independently = false);
         void wait_rate_limit(const std::chrono::seconds& wait);
