@@ -1,7 +1,7 @@
 ## FAQ
 **Question:** Any API or website?
 
-**Answer:** Currently only API available -> [Aru][7], website will become open-source later
+**Answer:** Currently only API available -> [Aru][1], website will become open-source later
 ##
 
 **Question:** Will this project became abandoned, as this was before?
@@ -16,6 +16,9 @@
 
 **Question:** Wiki?
 
-**Answer:** Soon. Currently you can use original wiki from [here][1]
+**Answer:** Soon. Currently you can use original wiki from [here][2]
 
 ##
+
+[1]: https://github.com/Rynnya/Aru
+[2]: https://github.com/Marc3842h/shiro/wiki
