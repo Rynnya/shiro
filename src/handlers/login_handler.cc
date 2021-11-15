@@ -189,6 +189,8 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         user->update_country(location_info.country_str);
     }
 
+    user->verify_address(request.get_ip_address());
+
     user->presence.time_zone = time_zone;
 
     users::manager::login_user(user);

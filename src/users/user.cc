@@ -447,16 +447,16 @@ void shiro::users::user::save_stats(bool to_relax) {
     }
 }
 
-void shiro::users::user::update_country(std::string country) {
+void shiro::users::user::update_country(const std::string& country) {
     this->country = country;
 
     sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::users user_table{};
+    const tables::users user_table {};
 
     db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
 }
 
-void shiro::users::user::update_counts(std::string rank) {
+void shiro::users::user::update_counts(const std::string& rank) {
     const static std::unordered_map<std::string, std::function<void()>> ranks = {
         { "A",  [&]() { this->stats.count_A++;  } },
         { "S",  [&]() { this->stats.count_S++;  } },
@@ -496,6 +496,20 @@ bool shiro::users::user::check_password(const std::string &password) {
     }
 
     return utils::crypto::pbkdf2_hmac_sha512::hash(password, this->salt) == this->password;
+}
+
+void shiro::users::user::verify_address(const std::string& address) {
+    sqlpp::mysql::connection db(db_connection->get_config());
+    const tables::users user_table {};
+
+    auto& ip = db(sqlpp::select(user_table.ip).from(user_table).where(user_table.id == this->user_id)).front().ip;
+    std::string ip_string = ip.value();
+    if (address == ip_string) {
+        return;
+    }
+
+    LOG_F(WARNING, "The IP address of user %s has been changed from %s to %s.", this->presence.username.c_str(), ip_string.c_str(), address.c_str());
+    db(sqlpp::update(user_table).set(user_table.ip = address).where(user_table.id == this->user_id));
 }
 
 shiro::users::user_preferences::user_preferences(int32_t id) {

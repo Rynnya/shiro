@@ -32,8 +32,7 @@
 
 namespace shiro::users {
 
-    class user_preferences
-    {
+    class user_preferences {
     public:
         bool display_classic = false;
         bool display_relax = false;
@@ -84,8 +83,8 @@ namespace shiro::users {
         bool init();
         void update(bool is_relax);
         void save_stats(bool to_relax);
-        void update_country(std::string country);
-        void update_counts(std::string rank);
+        void update_country(const std::string& country);
+        void update_counts(const std::string& rank);
 
         std::string get_url();
         std::string get_avatar_url();
@@ -94,6 +93,7 @@ namespace shiro::users {
         void refresh_stats();
 
         bool check_password(const std::string &password);
+        void verify_address(const std::string& address);
 
     };
 
