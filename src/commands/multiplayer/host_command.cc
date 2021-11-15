@@ -48,8 +48,9 @@ bool shiro::commands_mp::host(std::deque<std::string>& args, std::shared_ptr<shi
     io::layouts::multiplayer_match match = *optional;
     if (match.host_id == user->user_id) {
         for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
-            if (i == target->user_id) {
-                match.host_id = i;
+            int32_t user_id = match.multi_slot_id.at(i);
+            if (user_id == target->user_id) {
+                match.host_id = user_id;
                 match.send_update(true);
 
                 io::osu_writer writer;

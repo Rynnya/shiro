@@ -48,7 +48,7 @@ bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shi
 
     std::vector<std::shared_ptr<users::user>> removed_users = {};
 
-    shiro::multiplayer::match_manager::iterate([&removed_users, &user, &channel, size](shiro::io::layouts::multiplayer_match& match) -> bool {
+    shiro::multiplayer::match_manager::iterate([&removed_users, &user, &channel, size = static_cast<size_t>(size)](shiro::io::layouts::multiplayer_match& match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
         if (iterator == match.multi_slot_id.end()) {

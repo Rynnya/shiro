@@ -53,11 +53,11 @@ bool shiro::commands_mp::password(std::deque<std::string>& args, std::shared_ptr
             writer.match_change_password(password);
 
             for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
-                if (i == -1) {
+                if (match.multi_slot_id.at(i) == -1) {
                     continue;
                 }
 
-                std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(i);
+                std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(match.multi_slot_id.at(i));
 
                 if (lobby_user == nullptr) {
                     continue;

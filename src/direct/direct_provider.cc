@@ -19,6 +19,7 @@
 #include <stdexcept>
 
 #include "../config/direct_file.hh"
+#include "../logger/sentry_logger.hh"
 #include "../thirdparty/loguru.hh"
 #include "providers/beatconnect.hh"
 #include "providers/cheesegull.hh"
@@ -75,18 +76,29 @@ bool shiro::direct::sanity_check() {
         return false;
     }
 
-    auto [search_success, search_result] = provider->search({
-        { "q", "hitorigoto" }
-    });
+    // Everything might happend here, so wrap it
+    try {
+        auto [search_success, search_result] = provider->search({
+            { "q", "hitorigoto" }
+            });
 
-    if (!search_success || search_result.empty()) {
+        if (!search_success || search_result.empty()) {
+            return false;
+        }
+
+        /*auto [download_success, download_result] = provider->download(1262832, true);
+
+        if (!download_success || download_result.empty()) {
+            return false;
+        }*/
+
+    }
+    catch (const std::exception& ex) {
+        shiro::logging::sentry::exception(ex, __FILE__, __LINE__);
+        LOG_F(ERROR, "Sanity check threw an exception: %s", ex.what());
+
         return false;
     }
-
-    /*auto [download_success, download_result] = provider->download(1262832, true);
-
-    if (!download_success || download_result.empty())
-        return false;*/
 
     LOG_F(INFO, "Direct provider has been set to %s.", provider->name().c_str());
     return true;
