@@ -39,13 +39,12 @@ SOFTWARE.
 #include <string>
 #include "../json.hh"
 
-namespace nlohmann
-{
+namespace nlohmann {
 /*!
  * @brief helper functions for Crow
  */
-    namespace crow_utilities
-    {
+    namespace crow_utilities {
+
         nlohmann::json get_backtrace(int skip = 1);
 
 /*!

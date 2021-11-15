@@ -46,10 +46,10 @@ int64_t shiro::utils::time::get_current_time_ticks() {
     return ticks_since_epoch;
 }
 
-std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string &input)
-{
-    if (input.empty())
+std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string &input) {
+    if (input.empty()) {
         return std::nullopt;
+    }
 
     int64_t it = 0;
     int64_t size = input.size();
@@ -60,38 +60,39 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
     uint32_t time = 0;
 
     // Only parse the time suffix if we actually have one
-    for (char last_char = input[size - ++it]; std::isalpha(last_char);)
-    {
+    for (char last_char = input[size - ++it]; std::isalpha(last_char);) {
         chars.emplace_back(last_char);
         last_char = input[size - ++it];
     }
 
     // If non is alpha - don't touch anything
-    if (chars.size() != 0)
-    {
+    if (chars.size() != 0) {
         std::reverse(chars.begin(), chars.end());
         raw_unit = std::string(chars.begin(), chars.end());
         raw_time = input.substr(0, size - it);
     }
 
-    if (!strings::safe_uint(raw_time, time))
+    if (!strings::safe_uint(raw_time, time)) {
         return std::nullopt;
+    }
 
     auto iterator = duration_mapping.find(raw_unit);
 
-    if (iterator == duration_mapping.end())
+    if (iterator == duration_mapping.end()) {
         return std::nullopt;
+    }
 
     return time * iterator->second;
 }
 
-int32_t shiro::utils::time::adjusted_seconds(int32_t mods, int32_t time)
-{
-    if (mods & static_cast<int32_t>(shiro::utils::mods::double_time))
+int32_t shiro::utils::time::adjusted_seconds(int32_t mods, int32_t time) {
+    if (mods & static_cast<int32_t>(shiro::utils::mods::double_time)) {
         return time / 1.5;
+    }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::half_time))
+    if (mods & static_cast<int32_t>(shiro::utils::mods::half_time)) {
         return time / 0.75;
+    }
 
     return time;
 }

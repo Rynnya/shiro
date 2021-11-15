@@ -21,16 +21,16 @@
 #include "help_command.hh"
 
 const std::unordered_map<shiro::permissions::perms, std::string> shiro::commands::staff_commands = {
-    { shiro::permissions::perms::cmd_announce,      "!announce - Sends a announcement to everyone or a specific user" },
-    { shiro::permissions::perms::cmd_ban,           "!ban - Bans a player" },
-    { shiro::permissions::perms::cmd_clear,         "!clear - Clears the chat for everyone or a specific user" },
-    { shiro::permissions::perms::cmd_clients,       "!clients - Lists game versions of connected players" },
-    { shiro::permissions::perms::cmd_kick,          "!kick - Kicks a player from the server" },
-    { shiro::permissions::perms::cmd_recalculate,   "!recalculate - Starts pp recalculation service" },
-    { shiro::permissions::perms::cmd_restart,       "!restart - Restarts the server" },
-    { shiro::permissions::perms::cmd_restrict,      "!restrict - Restricts a player" },
-    { shiro::permissions::perms::cmd_rtx,           "!rtx - Send a rtx to a specific user" },
-    { shiro::permissions::perms::cmd_silence,       "!silence - Mutes a player" },
+    { shiro::permissions::perms::cmd_announce,      "!announce - Sends a announcement to everyone or a specific user"   },
+    { shiro::permissions::perms::cmd_ban,           "!ban - Bans a player"                                              },
+    { shiro::permissions::perms::cmd_clear,         "!clear - Clears the chat for everyone or a specific user"          },
+    { shiro::permissions::perms::cmd_clients,       "!clients - Lists game versions of connected players"               },
+    { shiro::permissions::perms::cmd_kick,          "!kick - Kicks a player from the server"                            },
+    { shiro::permissions::perms::cmd_recalculate,   "!recalculate - Starts pp recalculation service"                    },
+    { shiro::permissions::perms::cmd_restart,       "!restart - Restarts the server"                                    },
+    { shiro::permissions::perms::cmd_restrict,      "!restrict - Restricts a player"                                    },
+    { shiro::permissions::perms::cmd_rtx,           "!rtx - Send a rtx to a specific user"                              },
+    { shiro::permissions::perms::cmd_silence,       "!silence - Mutes a player"                                         },
 };
 
 bool shiro::commands::help(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {

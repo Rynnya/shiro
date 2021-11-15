@@ -31,29 +31,30 @@
 #include "string_utils.hh"
 
 void shiro::utils::bot::handle(shiro::io::layouts::message message, std::shared_ptr<users::user> user) {
-    //if (!boost::algorithm::starts_with(message.content, "!"))
-    if (message.content.length() > 0 && message.content[0] != '!')
+    if (message.content.length() > 0 && message.content[0] != '!') {
         return;
+    }
 
     std::string removed_index = message.content.substr(1);
 
     std::vector<std::string> splitted;
     boost::split(splitted, removed_index, boost::is_any_of(" "));
 
-    if (splitted.empty())
+    if (splitted.empty()) {
         return;
+    }
 
     std::string command = splitted.at(0);
     std::deque<std::string> args(splitted.begin(), splitted.end());
     args.pop_front(); // Remove command which is the first argument
 
-    for (auto& it : command) { it = std::tolower(it); }
+    // Workaround for MSVC which incorrectly overloads 'transform' and 'tolower'
+    std::transform(command.begin(), command.end(), command.begin(),
+        [](char c) { return static_cast<char>(std::tolower(c)); });
 
-    if (command == "mp")
-    {
+    if (command == "mp") {
         // If player just typed '!mp' then we returns help
-        if (args.size() > 0)
-        {
+        if (args.size() > 0) {
             command = args.at(0);
             args.pop_front();
         }
@@ -83,25 +84,29 @@ void shiro::utils::bot::respond(std::string message, std::shared_ptr<shiro::user
         user_id = user->user_id;
     }
 
-    if (!boost::algorithm::starts_with(channel, "#"))
+    if (channel.size() > 0 && channel[0] != '#') {
         return;
+    }
 
-    if (only_user)
+    if (only_user) {
         return;
+    }
 
     if (channel == "#spectator") {
         std::vector<std::shared_ptr<users::user>> spectators = spectating::manager::get_spectators(user);
         std::shared_ptr<users::user> host = spectating::manager::get_host(user);
 
         for (const std::shared_ptr<users::user> &spectator : spectators) {
-            if (spectator == user)
+            if (spectator == user) {
                 continue;
+            }
 
             spectator->queue.enqueue(buffer);
         }
 
-        if (host == nullptr)
+        if (host == nullptr) {
             return;
+        }
 
         host->queue.enqueue(buffer);
         return;
@@ -110,19 +115,22 @@ void shiro::utils::bot::respond(std::string message, std::shared_ptr<shiro::user
     if (channel == "#multiplayer") {
         std::optional<io::layouts::multiplayer_match> multi_match = multiplayer::match_manager::get_match(user);
 
-        if (!multi_match.has_value())
+        if (!multi_match.has_value()) {
             return;
+        }
 
         io::layouts::multiplayer_match match = multi_match.value();
 
         for (int32_t user_id : match.multi_slot_id) {
-            if (user_id == -1 || user_id == user->user_id)
+            if (user_id == -1 || user_id == user->user_id) {
                 continue;
+            }
 
             std::shared_ptr<users::user> target_user = users::manager::get_user_by_id(user_id);
 
-            if (target_user == nullptr)
+            if (target_user == nullptr) {
                 continue;
+            }
 
             target_user->queue.enqueue(buffer);
         }
@@ -133,8 +141,9 @@ void shiro::utils::bot::respond(std::string message, std::shared_ptr<shiro::user
     std::vector<std::shared_ptr<users::user>> users = channels::manager::get_users_in_channel(channel);
 
     for (const std::shared_ptr<users::user> &channel_user : users) {
-        if (channel_user == nullptr || channel_user->user_id == user_id || channel_user->user_id == 1)
+        if (channel_user == nullptr || channel_user->user_id == user_id || channel_user->user_id == 1) {
             continue;
+        }
 
         channel_user->queue.enqueue(buffer);
     }

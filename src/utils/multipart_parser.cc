@@ -32,13 +32,15 @@ shiro::utils::multipart_parser::multipart_parser(const std::string &body, const 
 }
 
 shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
-    if (this->content_type.find("multipart/form-data") == std::string::npos)
+    if (this->content_type.find("multipart/form-data") == std::string::npos) {
         return {};
+    }
 
     std::string::size_type boundary_pos = this->content_type.find("boundary=");
 
-    if (boundary_pos == std::string::npos)
+    if (boundary_pos == std::string::npos) {
         return {};
+    }
 
     std::string boundary = this->content_type.substr(boundary_pos + 9);
 
@@ -67,8 +69,9 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
         return 0;
     };
     const auto on_header_field = [&](multipartparser *parser, const char *data, size_t size) -> int {
-        if (!header_value.empty())
+        if (!header_value.empty()) {
             on_header_done();
+        }
 
         header_name.append(data, size);
         return 0;
@@ -78,8 +81,9 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
         return 0;
     };
     const auto on_headers_complete = [&](multipartparser *parser) -> int {
-        if (!header_value.empty())
+        if (!header_value.empty()) {
             on_header_done();
+        }
 
         return 0;
     };
@@ -112,8 +116,9 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
     multipartparser_init(&parser, boundary.c_str());
     size_t result = multipartparser_execute(&parser, &callbacks, this->body.c_str(), this->body.size());
 
-    if (result != this->body.size())
+    if (result != this->body.size()) {
         return {};
+    }
 
     return parts;
 }
@@ -123,8 +128,9 @@ shiro::utils::multipart_form_fields shiro::utils::multipart_parser::parse_fields
     multipart_form_fields fields {};
 
     for (const multipart_form_part &part : parts) {
-        if (part.headers.find("Content-Disposition") == part.headers.end())
+        if (part.headers.find("Content-Disposition") == part.headers.end()) {
             continue;
+        }
 
         static const std::regex field_name_regex(".+name=\"(.+)\"");
         static const std::regex field_filename_regex(".+filename=\"(.+)\"");
@@ -147,7 +153,8 @@ shiro::utils::multipart_form_fields shiro::utils::multipart_parser::parse_fields
 
                 fields.insert({ field_name, field });
             }
-        } else {
+        }
+        else {
             if (std::regex_match(part.headers.at("Content-Disposition"), field_name_regex_match, field_name_regex)) {
                 multipart_form_field field;
 

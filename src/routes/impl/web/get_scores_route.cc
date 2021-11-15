@@ -71,10 +71,9 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
     parse_result &= utils::strings::safe_int(type, scoreboard_type);
     beatmap.beatmap_md5 = md5sum;
 
-    if (!parse_result)
-    {
+    if (!parse_result) {
         LOG_F(ERROR, "Unable to convert sent values to beatmap metadata.");
-        logging::sentry::exception(std::invalid_argument("Sent values was not a numbers."));
+        logging::sentry::exception(std::invalid_argument("Sent values was not a numbers."), __FILE__, __LINE__);
 
         response.code = 500;
         response.end();
@@ -83,8 +82,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     beatmap.fetch();
 
-    if (beatmap.ranked_status == static_cast<int32_t>(shiro::beatmaps::status::unsubmitted) && beatmap.exist())
-    {
+    if (beatmap.ranked_status == static_cast<int32_t>(shiro::beatmaps::status::unsubmitted) && beatmap.exist()) {
         response.end("1|false");
         return;
     }
@@ -97,32 +95,28 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     std::vector<scores::score> score_list;
 
-    switch (scoreboard_type) 
-    {
-        case 1: 
-        {
+    switch (scoreboard_type) {
+        case 1: {
             score_list = scores::helper::fetch_all_scores(md5sum, is_relax);
             break;
         }
         case 2: {
             char *mods = request.url_params.get("mods");
 
-            if (mods == nullptr)
-            {
+            if (mods == nullptr) {
                 response.code = 400;
                 response.end();
                 return;
             }
 
-            if (utils::strings::safe_int(mods, mods_list))
-            {
+            if (utils::strings::safe_int(mods, mods_list)) {
                 is_relax = (mods_list & static_cast<uint32_t>(utils::mods::relax));
                 score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, is_relax);
                 break;
             }
 
             LOG_F(ERROR, "Unable to convert sent values (`%s`) to mods.", mods);
-            logging::sentry::exception(std::invalid_argument("Mods was not a number."));
+            logging::sentry::exception(std::invalid_argument("Mods was not a number."), __FILE__, __LINE__);
 
             response.code = 500;
             response.end();
@@ -150,10 +144,12 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
         if (top_score_user.id == -1) {
             res.append("\n");
-        } else {
+        }
+        else {
             if (scoreboard_type == 2 && top_score_user.mods != mods_list) {
                 res.append("\n");
-            } else {
+            }
+            else {
                 res.append(top_score_user.to_string(score_list, is_relax));
             }
         }

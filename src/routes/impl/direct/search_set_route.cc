@@ -20,14 +20,12 @@
 #include "../../../thirdparty/loguru.hh"
 #include "search_set_route.hh"
 
-void shiro::routes::direct::search::set::handle(const crow::request& request, crow::response& response)
-{
+void shiro::routes::direct::search::set::handle(const crow::request& request, crow::response& response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
     response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
 
     // Provider has failed sanity check, thus we can't provide Direct
-    if (shiro::direct::provider == nullptr)
-    {
+    if (shiro::direct::provider == nullptr) {
         response.code = 502;
         response.end();
         return;
@@ -35,8 +33,7 @@ void shiro::routes::direct::search::set::handle(const crow::request& request, cr
 
     auto [success, output] = shiro::direct::provider->search_np(request.url_params.get_all());
 
-    if (!success)
-    {
+    if (!success) {
         response.code = 504;
         response.end();
 

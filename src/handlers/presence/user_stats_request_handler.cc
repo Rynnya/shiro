@@ -25,8 +25,9 @@ void shiro::handler::stats::request_all::handle(shiro::io::osu_packet &in, shiro
     std::vector<int32_t> requested_users = in.data.read_array();
 
     for (int32_t requested_user : requested_users) {
-        if (requested_user == user->user_id || requested_user == 1)
+        if (requested_user == user->user_id || requested_user == 1) {
             continue;
+        }
 
         if (!users::manager::is_online(requested_user)) {
             io::layouts::user_quit quit;
@@ -39,8 +40,9 @@ void shiro::handler::stats::request_all::handle(shiro::io::osu_packet &in, shiro
 
         std::shared_ptr<users::user> target_user = users::manager::get_user_by_id(requested_user);
 
-        if (target_user == nullptr || target_user->hidden)
+        if (target_user == nullptr || target_user->hidden) {
             continue;
+        }
 
         out.user_stats(target_user->stats);
     }
@@ -49,8 +51,9 @@ void shiro::handler::stats::request_all::handle(shiro::io::osu_packet &in, shiro
     online_users.reserve(users::manager::online_users.size());
 
     users::manager::iterate([&online_users, user](std::shared_ptr<users::user> online_user) {
-        if (online_user->hidden || online_user->user_id == user->user_id)
+        if (online_user->hidden || online_user->user_id == user->user_id) {
             return;
+        }
 
         online_users.emplace_back(online_user->user_id);
     });

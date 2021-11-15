@@ -45,8 +45,8 @@ namespace shiro::io::layouts {
 
         int32_t get_size() override;
 
-        bool operator==(const channel &other_channel) const;
-        bool operator!=(const channel &other_channel) const;
+        bool operator==(const channel &other_channel) const noexcept;
+        bool operator!=(const channel &other_channel) const noexcept;
 
     };
 
@@ -57,7 +57,7 @@ namespace std {
     template <>
     struct hash<shiro::io::layouts::channel> {
 
-        size_t operator()(const shiro::io::layouts::channel &channel) const;
+        size_t operator()(const shiro::io::layouts::channel &channel) const noexcept;
 
     };
 

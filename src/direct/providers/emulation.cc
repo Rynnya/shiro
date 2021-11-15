@@ -23,12 +23,14 @@
 
 std::tuple<bool, std::string> shiro::direct::emulation::search(std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
-    if (parameters.find("u") != parameters.end())
+    if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
+    }
 
     // Remove password hash from the request so no credentials are leaked
-    if (parameters.find("h") != parameters.end())
+    if (parameters.find("h") != parameters.end()) {
         parameters.erase("h");
+    }
 
     std::string url = config::direct::base_url + (parameters.find("b") == parameters.end() ? "/web/osu-search-set.php?" : "/web/osu-search.php?");
 
@@ -42,16 +44,16 @@ std::tuple<bool, std::string> shiro::direct::emulation::search(std::unordered_ma
     return utils::curl::get_direct(url);
 }
 
-std::tuple<bool, std::string> shiro::direct::emulation::search_np(std::unordered_map<std::string, std::string> parameters)
-{
+std::tuple<bool, std::string> shiro::direct::emulation::search_np(std::unordered_map<std::string, std::string> parameters) {
     return this->search(parameters);
 }
 
 std::tuple<bool, std::string> shiro::direct::emulation::download(int32_t beatmap_id, bool no_video) {
     std::string url = config::direct::mirror_url + "/d/" + std::to_string(beatmap_id);
 
-    if (no_video)
+    if (no_video) {
         url.append("?novideo=yes");
+    }
 
     return utils::curl::get_direct(url);
 }

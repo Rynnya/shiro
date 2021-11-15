@@ -39,29 +39,14 @@ namespace shiro::tables {
     };
 
     database_table(channels,
-            channel_objects::id,
-            channel_objects::name,
-            channel_objects::description,
-            channel_objects::auto_join,
-            channel_objects::hidden,
-            channel_objects::read_only,
-            channel_objects::permission
+        channel_objects::id,
+        channel_objects::name,
+        channel_objects::description,
+        channel_objects::auto_join,
+        channel_objects::hidden,
+        channel_objects::read_only,
+        channel_objects::permission
     );
-
-    namespace migrations::channels {
-
-        inline void create(sqlpp::mysql::connection &db) {
-            db.execute(
-                    "CREATE TABLE IF NOT EXISTS `channels` "
-                    "(id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, "
-                    "name VARCHAR(32) NOT NULL, description VARCHAR(64) NOT NULL, "
-                    "auto_join BOOLEAN NOT NULL, hidden BOOLEAN NOT NULL, "
-                    "read_only BOOLEAN NOT NULL, permission BIGINT UNSIGNED NOT NULL);"
-            );
-        }
-
-    }
-
 }
 
 #endif  // SHIRO_CHANNEL_TABLE_HH

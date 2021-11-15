@@ -20,23 +20,20 @@
 #include "../../utils/bot_utils.hh"
 #include "lock_command.hh"
 
-bool shiro::commands_mp::lock(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
-    if (!shiro::multiplayer::match_manager::in_match(user))
-    {
+bool shiro::commands_mp::lock(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+    if (!shiro::multiplayer::match_manager::in_match(user)) {
         utils::bot::respond("You must be in room to perform this action!", user, channel, true);
         return true;
     }
 
-    shiro::multiplayer::match_manager::iterate([&user, &channel](shiro::io::layouts::multiplayer_match& match) -> bool
-    {
+    shiro::multiplayer::match_manager::iterate([&user, &channel](shiro::io::layouts::multiplayer_match& match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.host_id == user->user_id)
-        {
+        if (match.host_id == user->user_id) {
             match.slots_locked = true;
             utils::bot::respond("Slots was locked.", user, channel, true);
             return true;

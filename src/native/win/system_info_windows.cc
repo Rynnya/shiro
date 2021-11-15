@@ -38,8 +38,9 @@ std::string shiro::native::system_info::get_host_name() {
     char buffer[32767];
     unsigned long char_count = 32767;
 
-    if (!GetComputerName(buffer, &char_count))
+    if (!GetComputerName(buffer, &char_count)) {
         return "";
+    }
 
     return buffer;
 }

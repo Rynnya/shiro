@@ -40,29 +40,15 @@ namespace shiro::tables {
     };
 
     database_table(punishments,
-            punishments_objects::id,
-            punishments_objects::user_id,
-            punishments_objects::origin_id,
-            punishments_objects::type,
-            punishments_objects::time,
-            punishments_objects::duration,
-            punishments_objects::active,
-            punishments_objects::reason
+        punishments_objects::id,
+        punishments_objects::user_id,
+        punishments_objects::origin_id,
+        punishments_objects::type,
+        punishments_objects::time,
+        punishments_objects::duration,
+        punishments_objects::active,
+        punishments_objects::reason
     );
-
-    namespace migrations::punishments {
-
-        inline void create(sqlpp::mysql::connection &db) {
-            db.execute(
-                    "CREATE TABLE IF NOT EXISTS `punishments` "
-                    "(id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, user_id INT NOT NULL, origin_id INT NOT NULL, "
-                    "type TINYINT UNSIGNED NOT NULL, time INT NOT NULL, duration INT DEFAULT NULL, "
-                    "active BOOLEAN NOT NULL, reason VARCHAR(128) DEFAULT NULL);"
-            );
-        }
-
-    }
-
 }
 
 #endif  // SHIRO_PUNISHMENTS_TABLE_HH

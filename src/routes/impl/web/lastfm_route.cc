@@ -56,8 +56,7 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
     std::string beatmap_str = beatmap;
 
     // Stop processing normal requests
-    if (beatmap_str[0] != 'a')
-    {
+    if (beatmap_str[0] != 'a') {
         response.code = 200;
         response.end();
         return;
@@ -65,22 +64,21 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
 
     int32_t startup_value = 0;
 
-    if (!utils::strings::safe_int(beatmap_str.substr(1), startup_value))
-    {
+    if (!utils::strings::safe_int(beatmap_str.substr(1), startup_value)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", beatmap_str.substr(1).c_str());
-        logging::sentry::exception(std::invalid_argument("Unable to cast startup_value into int32_t."));
+        logging::sentry::exception(std::invalid_argument("Unable to cast startup_value into int32_t."), __FILE__, __LINE__);
 
         response.code = 500;
         response.end();
         return;
     }
 
-    for (utils::client_side_flags flag : utils::client_side_flags::_values())
-    {
+    for (utils::client_side_flags flag : utils::client_side_flags::_values()) {
         int32_t numeric_flag = flag;
 
-        if (!(startup_value & numeric_flag))
+        if (!(startup_value & numeric_flag)) {
             continue;
+        }
 
         std::string result = flag._to_string();
         std::replace(result.begin(), result.end(), '_', ' ');
@@ -88,13 +86,15 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
 
         std::string::size_type index = result.find(' ');
 
-        if (index != std::string::npos)
+        if (index != std::string::npos) {
             result.at(index + 1) = std::toupper(result.at(index + 1));
+        }
 
         LOG_F(WARNING, "%s has client flag set: %s (%i & %i).", username, result.c_str(), startup_value, numeric_flag);
 
-        if (!config::score_submission::consider_client_side_flags || numeric_flag < 8)
+        if (!config::score_submission::consider_client_side_flags || numeric_flag < 8) {
             continue;
+        }
 
         users::punishments::restrict(user->user_id, 10, "Detected client flag: " + result);
     }

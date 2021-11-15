@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Loguro settings
+// Loguru settings
 #if defined(_DEBUG)
     #define LOGURU_DEBUG_LOGGING 1
     #define LOGURU_DEBUG_CHECKS 1

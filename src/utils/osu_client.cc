@@ -23,63 +23,78 @@
 
 shiro::utils::clients::osu_client shiro::utils::clients::parse_version(const std::string &client_version, const int32_t &client_build) {
     // 3rd party osu! clients
-    if (client_build == 20161205 && client_version.find("cuttingedge"))
+    if (client_build == 20161205 && client_version.find("cuttingedge")) {
         return osu_client::osu_fx;
+    }
 
-    if (client_build == 20181018 && client_version.find("noxna") != std::string::npos)
+    if (client_build == 20181018 && client_version.find("noxna") != std::string::npos) {
         return osu_client::banana_client;
+    }
 
-    if (client_version.find("banana") != std::string::npos)
+    if (client_version.find("banana") != std::string::npos) {
         return osu_client::banana_client;
+    }
 
-    if (client_version.find("version") != std::string::npos)
+    if (client_version.find("version") != std::string::npos) {
         return osu_client::tsuki;
+    }
 
-    if (boost::algorithm::to_lower_copy(client_version).find("yozora") != std::string::npos)
+    if (boost::algorithm::to_lower_copy(client_version).find("yozora") != std::string::npos) {
         return osu_client::yozora;
+    }
 
     // osu!fallback and very outdated versions
-    if (client_build <= 20160403)
+    if (client_build <= 20160403) {
         return osu_client::fallback;
+    }
 
     std::string::size_type first_dot = client_version.find('.');
 
     // osu!lazer contains two dots in their version number, unlike stable clients
-    if (first_dot != std::string::npos && client_version.find('.', first_dot + 1) != std::string::npos)
+    if (first_dot != std::string::npos && client_version.find('.', first_dot + 1) != std::string::npos) {
         return osu_client::lazer;
+    }
 
     // Official osu! clients available for download on the osu! website
-    if (client_version.find("beta") != std::string::npos)
+    if (client_version.find("beta") != std::string::npos) {
         return osu_client::beta;
+    }
 
-    if (client_version.find("cuttingedge") != std::string::npos)
+    if (client_version.find("cuttingedge") != std::string::npos) {
         return osu_client::cutting_edge;
+    }
 
-    if (client_version.find("tourney") != std::string::npos)
+    if (client_version.find("tourney") != std::string::npos) {
         return osu_client::tournament;
+    }
 
     // Suspicious clients as these can't be obtained legit from the osu! website
-    if (client_version.find("dev") != std::string::npos)
+    if (client_version.find("dev") != std::string::npos) {
         return osu_client::dev;
+    }
 
-    if (client_version.find("public_test") != std::string::npos)
+    if (client_version.find("public_test") != std::string::npos) {
         return osu_client::public_test;
+    }
 
-    if (client_version.find("noxna") != std::string::npos)
+    if (client_version.find("noxna") != std::string::npos) {
         return osu_client::no_xna;
+    }
 
     // osu!Stable
     std::string subversion = client_version.substr(1);
 
-    if (subversion.find('.') != std::string::npos)
+    if (subversion.find('.') != std::string::npos) {
         subversion.erase(subversion.find('.'));
+    }
 
     subversion.erase(std::remove_if(subversion.begin(), subversion.end(), [](char c) {
         return std::isdigit(c);
     }), subversion.end());
 
-    if (subversion.empty())
+    if (subversion.empty()) {
         return osu_client::stable;
+    }
 
     LOG_F(INFO, "Tried to process osu! version with unknown version: %s (%i -> %s)", client_version.c_str(), client_build, subversion.c_str());
 
@@ -105,8 +120,9 @@ std::vector<std::shared_ptr<shiro::users::user>> shiro::utils::clients::get_user
     std::vector<std::shared_ptr<users::user>> result;
 
     users::manager::iterate([client, &result](std::shared_ptr<users::user> user) {
-        if (user->client_type != client)
+        if (user->client_type != client) {
             return;
+        }
 
         result.emplace_back(user);
     });
@@ -122,8 +138,9 @@ std::string shiro::utils::clients::to_pretty_string(const shiro::utils::clients:
 
     std::string::size_type index = result.find(' ');
 
-    if (index != std::string::npos)
+    if (index != std::string::npos) {
         result.at(index + 1) = std::toupper(result.at(index + 1));
+    }
 
     return result;
 }

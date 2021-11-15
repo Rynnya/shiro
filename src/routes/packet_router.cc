@@ -60,149 +60,208 @@
 
 void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
     switch (packet_id) {
-        case io::packet_id::in_send_user_status:
+        case io::packet_id::in_send_user_status: {
             handler::user_status::handle(in, out, user);
             break;
-        case io::packet_id::in_send_irc_message:
+        }
+        case io::packet_id::in_send_irc_message: {
             handler::chat::handle_public(in, out, user);
             break;
-        case io::packet_id::in_exit:
+        }
+        case io::packet_id::in_exit: {
             handler::logout::handle(in, out, user);
             break;
-        case io::packet_id::in_request_status_update:
+        }
+        case io::packet_id::in_request_status_update: {
             handler::request_status_update::handle(in, out, user);
             break;
-        case io::packet_id::in_pong:
+        }
+        case io::packet_id::in_pong: {
             handler::ping::handle(in, out, user);
             break;
-        case io::packet_id::in_start_spectating:
+        }
+        case io::packet_id::in_start_spectating: {
             handler::spectating::start::handle(in, out, user);
             break;
-        case io::packet_id::in_stop_spectating:
+        }
+        case io::packet_id::in_stop_spectating: {
             handler::spectating::stop::handle(in, out, user);
             break;
-        case io::packet_id::in_spectate_frames:
+        }
+        case io::packet_id::in_spectate_frames: {
             handler::spectating::frames::handle(in, out, user);
             break;
-        case io::packet_id::in_error_report:
+        }
+        case io::packet_id::in_error_report: {
+            // Shiro don't support this, because osu! client sends cfg file with this request
+            // This also sends crash log, but its fully obfustated, so useless
             break;
-        case io::packet_id::in_cant_spectate:
+        }
+        case io::packet_id::in_cant_spectate: {
             handler::spectating::cant_spectate::handle(in, out, user);
             break;
-        case io::packet_id::in_send_irc_message_private:
+        }
+        case io::packet_id::in_send_irc_message_private: {
             handler::chat::handle_private(in, out, user);
             break;
-        case io::packet_id::in_lobby_part:
+        }
+        case io::packet_id::in_lobby_part: {
             handler::multiplayer::lobby::leave::handle(in, out, user);
             break;
-        case io::packet_id::in_lobby_join:
+        }
+        case io::packet_id::in_lobby_join: {
             handler::multiplayer::lobby::join::handle(in, out, user);
             break;
-        case io::packet_id::in_match_create:
+        }
+        case io::packet_id::in_match_create: {
             handler::multiplayer::room::create::handle(in, out, user);
             break;
-        case io::packet_id::in_match_join:
+        }
+        case io::packet_id::in_match_join: {
             handler::multiplayer::room::join::handle(in, out, user);
             break;
-        case io::packet_id::in_match_part:
+        }
+        case io::packet_id::in_match_part: {
             handler::multiplayer::room::leave::handle(in, out, user);
             break;
-        case io::packet_id::in_match_change_slot:
+        }
+        case io::packet_id::in_match_change_slot: {
             handler::multiplayer::room::change_slot::handle(in, out, user);
             break;
-        case io::packet_id::in_match_ready:
+        }
+        case io::packet_id::in_match_ready: {
             handler::multiplayer::room::ready::handle_ready(in, out, user);
             break;
-        case io::packet_id::in_match_lock:
+        }
+        case io::packet_id::in_match_lock: {
             handler::multiplayer::room::lock_slot::handle(in, out, user);
             break;
-        case io::packet_id::in_match_change_settings:
+        }
+        case io::packet_id::in_match_change_settings: {
             handler::multiplayer::room::change_settings::handle(in, out, user);
             break;
-        case io::packet_id::in_match_start:
+        }
+        case io::packet_id::in_match_start: {
             handler::multiplayer::match::start::handle(in, out, user);
             break;
-        case io::packet_id::in_match_score_update:
+        }
+        case io::packet_id::in_match_score_update: {
             handler::multiplayer::match::score_update::handle(in, out, user);
             break;
-        case io::packet_id::in_match_complete:
+        }
+        case io::packet_id::in_match_complete: {
             handler::multiplayer::match::complete::handle(in, out, user);
             break;
-        case io::packet_id::in_match_change_mods:
+        }
+        case io::packet_id::in_match_change_mods: {
             handler::multiplayer::room::change_mods::handle(in, out, user);
             break;
-        case io::packet_id::in_match_load_complete:
+        }
+        case io::packet_id::in_match_load_complete: {
             handler::multiplayer::match::load::handle(in, out, user);
             break;
-        case io::packet_id::in_match_no_beatmap:
+        }
+        case io::packet_id::in_match_no_beatmap: {
             handler::multiplayer::room::beatmap::handle_no_beatmap(in, out, user);
             break;
-        case io::packet_id::in_match_not_ready:
+        }
+        case io::packet_id::in_match_not_ready: {
             handler::multiplayer::room::ready::handle_unready(in, out, user);
             break;
-        case io::packet_id::in_match_failed:
-            // TODO: Team SHOULD lose when everyone in party failed
+        }
+        case io::packet_id::in_match_failed: {
+            // TODO: Team should lose when everyone in party failed
             handler::multiplayer::match::player_failed::handle(in, out, user);
             break;
-        case io::packet_id::in_match_has_beatmap:
+        }
+        case io::packet_id::in_match_has_beatmap: {
             handler::multiplayer::room::beatmap::handle_has_beatmap(in, out, user);
             break;
-        case io::packet_id::in_match_skip_request:
+        }
+        case io::packet_id::in_match_skip_request: {
             handler::multiplayer::match::skip_request::handle(in, out, user);
             break;
-        case io::packet_id::in_channel_join:
+        }
+        case io::packet_id::in_channel_join: {
             handler::chat::join::handle(in, out, user);
             break;
-        case io::packet_id::in_beatmap_info_request:
+        }
+        case io::packet_id::in_beatmap_info_request: {
+            // Not used in newer clients
             break;
-        case io::packet_id::in_match_transfer_host:
+        }
+        case io::packet_id::in_match_transfer_host: {
             handler::multiplayer::room::change_host::handle(in, out, user);
             break;
-        case io::packet_id::in_friend_add:
+        }
+        case io::packet_id::in_friend_add: {
             handler::friends::add::handle(in, out, user);
             break;
-        case io::packet_id::in_friend_remove:
+        }
+        case io::packet_id::in_friend_remove: {
             handler::friends::remove::handle(in, out, user);
             break;
-        case io::packet_id::in_match_change_team:
+        }
+        case io::packet_id::in_match_change_team: {
             handler::multiplayer::room::change_team::handle(in, out, user);
             break;
-        case io::packet_id::in_channel_leave:
+        }
+        case io::packet_id::in_channel_leave: {
             handler::chat::leave::handle(in, out, user);
             break;
-        case io::packet_id::in_receive_updates:
-            // TODO
+        }
+        case io::packet_id::in_receive_updates: {
+            // Presence updates are not used now?
             break;
-        case io::packet_id::in_set_irc_away_message:
+        }
+        case io::packet_id::in_set_irc_away_message: {
+            // https://github.com/osuripple/pep.py/blob/master/events/setAwayMessageEvent.py
+            // https://github.com/osuripple/pep.py/blob/master/constants/clientPackets.py#L43
             break;
-        case io::packet_id::in_user_stats_request:
+        }
+        case io::packet_id::in_user_stats_request: {
             handler::stats::request_all::handle(in, out, user);
             break;
-        case io::packet_id::in_invite:
+        }
+        case io::packet_id::in_invite: {
             handler::invite::handle(in, out, user);
             break;
-        case io::packet_id::in_match_change_password:
+        }
+        case io::packet_id::in_match_change_password: {
             handler::multiplayer::room::change_password::handle(in, out, user);
             break;
-        case io::packet_id::in_special_match_info_request:
+        }
+        case io::packet_id::in_special_match_info_request: {
+            // https://github.com/osuripple/pep.py/blob/master/events/tournamentMatchInfoRequestEvent.py
+            // https://github.com/osuripple/pep.py/blob/master/constants/clientPackets.py#L166
             break;
-        case io::packet_id::in_user_presence_request:
+        }
+        case io::packet_id::in_user_presence_request: {
             handler::presence::request::handle(in, out, user);
             break;
-        case io::packet_id::in_user_presence_request_all:
+        }
+        case io::packet_id::in_user_presence_request_all: {
             handler::presence::request_all::handle(in, out, user);
             break;
-        case io::packet_id::in_user_toggle_block_non_friend_pm:
+        }
+        case io::packet_id::in_user_toggle_block_non_friend_pm: {
+            // ???
             break;
-        case io::packet_id::in_special_join_match_channel:
-            // TODO
+        }
+        case io::packet_id::in_special_join_match_channel: {
+            // https://github.com/osuripple/pep.py/blob/master/events/tournamentJoinMatchChannelEvent.py
+            // https://github.com/osuripple/pep.py/blob/master/constants/clientPackets.py#L169
             break;
-        case io::packet_id::in_special_leave_match_channel:
-            // TODO
+        }
+        case io::packet_id::in_special_leave_match_channel: {
+            // https://github.com/osuripple/pep.py/blob/master/events/tournamentLeaveMatchChannelEvent.py
+            // https://github.com/osuripple/pep.py/blob/master/constants/clientPackets.py#L172
             break;
-        default:
+        }
+        default: {
             LOG_F(WARNING, "Packet %i was sent for incoming packet handling while being outbound.", static_cast<uint16_t>(packet_id));
             return;
+        }
     }
 
     user->last_ping = utils::time::current_time();

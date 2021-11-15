@@ -40,8 +40,9 @@ void shiro::io::layouts::user_stats::recalculate_accuracy(bool is_relax) {
 
 void shiro::io::layouts::user_stats::recalculate_pp(bool is_relax) {
     // Global pp recalculation is currently in progress.
-    if (pp::recalculator::in_progress())
+    if (pp::recalculator::in_progress()) {
         return;
+    }
 
     std::vector<scores::score> scores = scores::helper::fetch_top100_user(static_cast<utils::play_mode>(this->play_mode), this->user_id, is_relax);
     float pp = 0; // Here it is a float to keep decimal points, round it when setting final pp value

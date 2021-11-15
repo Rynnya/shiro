@@ -68,11 +68,9 @@ void shiro::views::index::replace_time(std::string &view) {
     boost::replace_all(view, "{{uptime}}", buffer);
 }
 
-std::string shiro::views::index::get_view() 
-{
+std::string shiro::views::index::get_view() {
     static std::string view;
-    if (!ran_once)
-    {
+    if (!ran_once) {
         std::ifstream stream("shiro.html");
 
         std::stringstream buffer;

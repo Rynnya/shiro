@@ -19,8 +19,7 @@
 #include "../../utils/bot_utils.hh"
 #include "help_command.hh"
 
-bool shiro::commands_mp::help(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
+bool shiro::commands_mp::help(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
     utils::bot::respond("Commands:", user, channel, true);
     utils::bot::respond("!mp help - Shows list of commands", user, channel, true);
 

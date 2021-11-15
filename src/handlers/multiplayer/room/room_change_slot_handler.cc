@@ -23,17 +23,20 @@
 void shiro::handler::multiplayer::room::change_slot::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
     int32_t slot_id = in.data.read<int32_t>();
 
-    if (slot_id >= 16)
+    if (slot_id >= 16) {
         return;
+    }
 
     shiro::multiplayer::match_manager::iterate([user, slot_id](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.multi_slot_status.at(slot_id) != static_cast<uint8_t>(utils::slot_status::open) || match.slots_locked)
+        if (match.multi_slot_status.at(slot_id) != static_cast<uint8_t>(utils::slot_status::open) || match.slots_locked) {
             return true;
+        }
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 

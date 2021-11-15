@@ -29,12 +29,14 @@
 
 std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
-    if (parameters.find("u") != parameters.end())
+    if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
+    }
 
     // Remove password hash from the request so no credentials are leaked
-    if (parameters.find("h") != parameters.end())
+    if (parameters.find("h") != parameters.end()) {
         parameters.erase("h");
+    }
 
     std::string url = "https://beatconnect.io/api/search/?";
 
@@ -49,16 +51,18 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
 
     auto [success, output] = utils::curl::get_direct(url);
 
-    if (!success)
+    if (!success) {
         return { false, output };
+    }
 
     json json_result;
 
     try {
         json_result = json::parse(output);
-    } catch (const json::parse_error &ex) {
+    }
+    catch (const json::parse_error &ex) {
         LOG_F(ERROR, "Unable to parse json response from Beatconnect: %s.", ex.what());
-        logging::sentry::exception(ex);
+        logging::sentry::exception(ex, __FILE__, __LINE__);
 
         return { false, ex.what() };
     }
@@ -70,8 +74,9 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
         std::string beatmap_id = std::to_string(map_json["id"].get<int32_t>());
         std::string last_updated = "-";
 
-        if (map_json["last_updated"].is_string())
+        if (map_json["last_updated"].is_string()) {
             last_updated = map_json["last_updated"];
+        }
 
         out << beatmap_id << ".osz" << "|"; // Filename
         out << (std::string) map_json["artist"] << "|"; // Artist
@@ -101,8 +106,9 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
             int32_t minutes = total_length / 60;
             int32_t seconds = total_length % 60;
 
-            if (minutes > 0)
+            if (minutes > 0) {
                 difficulties << minutes << "m";
+            }
 
             difficulties << seconds << "s)" << "@";
             difficulties << diff_json["mode_int"].get<int32_t>() << ",";
@@ -119,19 +125,21 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
     return { true, out.str() };
 }
 
-std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unordered_map<std::string, std::string> parameters)
-{
+std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
-    if (b == parameters.end())
+    if (b == parameters.end()) {
         return { false, "b not provided" };
+    }
     
     // Remove username from the request so the requesting user stays anonymous
-    if (parameters.find("u") != parameters.end())
+    if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
+    }
 
     // Remove password hash from the request so no credentials are leaked
-    if (parameters.find("h") != parameters.end())
+    if (parameters.find("h") != parameters.end()) {
         parameters.erase("h");
+    }
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::beatmaps beatmaps_tables{};
@@ -139,8 +147,9 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     int32_t _beatmap_id = utils::strings::safe_ll(b->second);
     auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
-    if (result.empty())
+    if (result.empty()) {
         return { false, "Beatmap not loaded to database" };
+    }
 
     auto& _result = result.front();
     int32_t beatmapset_id = _result.beatmapset_id;
@@ -148,25 +157,25 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     std::string url = "https://beatconnect.io/api/beatmap/" + std::to_string(beatmapset_id) + "/";
     auto [success, output] = utils::curl::get_direct(url);
 
-    if (!success)
+    if (!success) {
         return { false, output };
+    }
 
     json json_result;
 
-    try
-    {
+    try {
         json_result = json::parse(output);
     }
-    catch (const json::parse_error& ex)
-    {
+    catch (const json::parse_error& ex) {
         LOG_F(ERROR, "Unable to parse json response from Beatconnect: %s.", ex.what());
-        logging::sentry::exception(ex);
+        logging::sentry::exception(ex, __FILE__, __LINE__);
 
         return { false, ex.what() };
     }
 
-    if (json_result["error"].is_object())
+    if (json_result["error"].is_object()) {
         return { false, "Beatconnect response contains error" };
+    }
 
     std::stringstream out;
 
@@ -174,19 +183,22 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     bool has_video = json_result["video"].get<bool>();
     std::string last_updated = "-";
     
-    if (json_result["last_updated"].is_string())
+    if (json_result["last_updated"].is_string()) {
         last_updated = json_result["last_updated"];
+    }
 
     out << beatmap_id << ".osz" << "|"; // Filename
     out << (std::string)json_result["artist"] << "|"; // Artist
     out << (std::string)json_result["title"] << "|"; // Song
     out << (std::string)json_result["creator"] << "|"; // Mapper
+
     // TODO: I really hope Beatconnect will fix this bug cuz this looks really shitty
     out << shiro::beatmaps::helper::fix_beatmap_status(
         json_result["ranked"].is_string()
         ? utils::strings::safe_int(json_result["ranked"].get<std::string>())
         : json_result["ranked"].get<int32_t>()
     ) << "|"; // Ranked status
+
     out << 0.0 << "|"; // Average Rating
     out << last_updated << "|"; // Last updated
     out << beatmap_id << "|"; // Beatmap id
@@ -204,23 +216,26 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::download(int32_t beatm
     std::string id = std::to_string(beatmap_id);
     auto [success, output] = utils::curl::get_direct("https://beatconnect.io/api/beatmap/" + id + "/");
 
-    if (!success)
+    if (!success) {
         return { success, output };
+    }
 
     json json_result;
 
     try {
         json_result = json::parse(output);
-    } catch (const json::parse_error &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const json::parse_error &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         return { false, ex.what() };
     }
 
     std::string unique_id = json_result["unique_id"];
     std::string url = "https://beatconnect.io/b/" + id + "/" + unique_id + "/";
 
-    if (no_video)
+    if (no_video) {
         url += "?novideo=1";
+    }
 
     return utils::curl::get_direct(url);
 }
@@ -230,16 +245,18 @@ const std::string shiro::direct::beatconnect::name() const {
 }
 
 std::tuple<std::string, std::string> shiro::direct::beatconnect::sanitize_args(std::string key, std::string value, bool url_escape) {
-    if (key == "m")
+    if (key == "m") {
         sanitize_mode(value);
+    }
 
     if (key == "r") {
         key = "s";
         sanitize_status(value);
     }
 
-    if (key == "q")
+    if (key == "q") {
         sanitize_query(value);
+    }
 
     // Escape parameters to be safely used in urls
     if (url_escape) {
@@ -250,14 +267,12 @@ std::tuple<std::string, std::string> shiro::direct::beatconnect::sanitize_args(s
     return { key, value };
 }
 
-void shiro::direct::beatconnect::sanitize_mode(std::string &value)
-{
+void shiro::direct::beatconnect::sanitize_mode(std::string &value) {
     int32_t mode = 0;
 
-    if (!utils::strings::safe_int(value, mode))
-    {
+    if (!utils::strings::safe_int(value, mode)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", value.c_str());
-        logging::sentry::exception(std::invalid_argument("Value was not a number or it was more than int32_t max."));
+        logging::sentry::exception(std::invalid_argument("Value was not a number or it was more than int32_t max."), __FILE__, __LINE__);
 
         return;
     }
@@ -273,12 +288,12 @@ void shiro::direct::beatconnect::sanitize_mode(std::string &value)
 
 void shiro::direct::beatconnect::sanitize_status(std::string &value) {
     static std::unordered_map<std::string, std::string> ranked_status_mapping = {
-            { "0", "ranked" },
-            { "1", "ranked" },
-            { "2", "loved" },
-            { "3", "qualified" },
-            { "4", "unranked" },
-            { "5", "unranked" }
+        { "0", "ranked" },
+        { "1", "ranked" },
+        { "2", "loved" },
+        { "3", "qualified" },
+        { "4", "unranked" },
+        { "5", "unranked" }
     };
 
     if (ranked_status_mapping.find(value) != ranked_status_mapping.end()) {

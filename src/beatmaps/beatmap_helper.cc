@@ -26,24 +26,27 @@
 static fs::path dir = fs::current_path() / "maps";
 
 void shiro::beatmaps::helper::init() {
-    if (!fs::exists(dir))
+    if (!fs::exists(dir)) {
         fs::create_directories(dir);
+    }
 }
 
 int32_t shiro::beatmaps::helper::fix_beatmap_status(int32_t status_code) {
-    if (status_code == static_cast<int32_t>(status::needs_update))
+    if (status_code == static_cast<int32_t>(status::needs_update)) {
         return static_cast<int32_t>(status::ranked);
+    }
 
-    if (status_code == static_cast<int32_t>(status::qualified))
+    if (status_code == static_cast<int32_t>(status::qualified)) {
         return static_cast<int32_t>(status::loved);
+    }
 
     return status_code;
 }
 
 bool shiro::beatmaps::helper::has_leaderboard(int32_t status_code) {
-    return status_code == static_cast<int32_t>(status::ranked) ||
-           status_code == static_cast<int32_t>(status::loved) ||
-           status_code == static_cast<int32_t>(status::qualified) ||
+    return status_code == static_cast<int32_t>(status::ranked)      ||
+           status_code == static_cast<int32_t>(status::loved)       ||
+           status_code == static_cast<int32_t>(status::qualified)   ||
            status_code == static_cast<int32_t>(status::approved);
 }
 
@@ -55,11 +58,13 @@ std::optional<std::string> shiro::beatmaps::helper::get_location(int32_t beatmap
     std::string beatmap_id_str = std::to_string(beatmap_id);
     fs::path filename = dir / std::string(beatmap_id_str + ".osu");
 
-    if (fs::exists(filename))
+    if (fs::exists(filename)) {
         return filename.u8string();
+    }
 
-    if (!download)
+    if (!download) {
         return std::nullopt;
+    }
 
     auto [success, output] = utils::curl::get("https://old.ppy.sh/osu/" + beatmap_id_str);
 
@@ -75,41 +80,42 @@ std::optional<std::string> shiro::beatmaps::helper::get_location(int32_t beatmap
     return filename.u8string();
 }
 
-float shiro::beatmaps::helper::score_to_difficulty(beatmaps::beatmap beatmap, utils::play_mode mode)
-{
-    switch (mode)
-    {
-        case utils::play_mode::taiko:
+float shiro::beatmaps::helper::score_to_difficulty(beatmaps::beatmap beatmap, utils::play_mode mode) {
+    switch (mode) {
+        case utils::play_mode::taiko: {
             return beatmap.difficulty_taiko;
-
-        case utils::play_mode::fruits:
+        }
+        case utils::play_mode::fruits: {
             return beatmap.difficulty_ctb;
-
-        case utils::play_mode::mania:
+        }
+        case utils::play_mode::mania: {
             return beatmap.difficulty_mania;
-
+        }
         case utils::play_mode::standard:
-        default:
+        default: {
             return beatmap.difficulty_std;
+        }
     }
 }
 
-std::string shiro::beatmaps::helper::build_difficulty_header(beatmaps::beatmap beatmap, utils::play_mode mode)
-{
+std::string shiro::beatmaps::helper::build_difficulty_header(beatmaps::beatmap beatmap, utils::play_mode mode) {
     char buffer[64];
-    switch (mode)
-    {
-        case utils::play_mode::taiko:
+
+    switch (mode) {
+        case utils::play_mode::taiko: {
             std::snprintf(buffer, sizeof(buffer), "OD %.1f | HP %.1f", beatmap.od, beatmap.hp);
             break;
-        case utils::play_mode::mania:
+        }
+        case utils::play_mode::mania: {
             std::snprintf(buffer, sizeof(buffer), "Keys %.1f | OD %.1f | HP %.1f", beatmap.cs, beatmap.od, beatmap.hp);
             break;
+        }
         case utils::play_mode::fruits:
         case utils::play_mode::standard:
-        default:
+        default: {
             std::snprintf(buffer, sizeof(buffer), "CS %.1f | AR %.1f | OD %.1f | HP %.1f", beatmap.cs, beatmap.ar, beatmap.od, beatmap.hp);
             break;
+        }
     }
 
     return std::string(buffer);

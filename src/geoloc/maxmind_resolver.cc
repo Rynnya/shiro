@@ -38,8 +38,9 @@ static MMDB_s mmdb;
 void shiro::geoloc::maxmind::init() {
     int32_t code = MMDB_open("geolite2_city.mmdb", MMDB_MODE_MMAP, &mmdb);
 
-    if (code == MMDB_SUCCESS)
+    if (code == MMDB_SUCCESS) {
         return;
+    }
 
     ABORT_F("Unable to open maxmind db database: %s", MMDB_strerror(code));
 }

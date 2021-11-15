@@ -26,8 +26,9 @@
 shiro::pp::oppai_wrapper::oppai_wrapper(shiro::beatmaps::beatmap beatmap, shiro::scores::score score) {
     std::optional<std::string> beatmap_file = beatmaps::helper::get_location(beatmap.beatmap_id);
 
-    if (!beatmap_file.has_value())
+    if (!beatmap_file.has_value()) {
         return;
+    }
 
     this->ez = ezpp_new();
 
@@ -50,15 +51,17 @@ shiro::pp::oppai_wrapper::oppai_wrapper(shiro::beatmaps::beatmap beatmap, shiro:
 }
 
 shiro::pp::oppai_wrapper::~oppai_wrapper() {
-    if (this->ez == nullptr)
+    if (this->ez == nullptr) {
         return;
+    }
 
     ezpp_free(this->ez);
 }
 
 float shiro::pp::oppai_wrapper::calculate() {
-    if (this->ez == nullptr)
+    if (this->ez == nullptr) {
         return 0.0f;
+    }
 
     return ezpp_pp(this->ez);
 }

@@ -35,8 +35,9 @@ void shiro::handler::chat::handle_private(shiro::io::osu_packet &in, shiro::io::
 
     std::shared_ptr<users::user> target_user = users::manager::get_user_by_username(message.channel);
 
-    if (target_user == nullptr)
+    if (target_user == nullptr) {
         return;
+    }
 
     // Bot user
     if (target_user->user_id == 1) {
@@ -49,13 +50,14 @@ void shiro::handler::chat::handle_private(shiro::io::osu_packet &in, shiro::io::
         return;
     }
 
-    if (!users::punishments::can_chat(target_user->user_id))
+    if (!users::punishments::can_chat(target_user->user_id)) {
         utils::bot::respond(
-                "The user you tried to chat is currently unable to reply because of a chat restriction.",
-                user,
-                message.channel,
-                true
+            "The user you tried to chat is currently unable to reply because of a chat restriction.",
+            user,
+            message.channel,
+            true
         );
+    }
 
     message.sender = user->presence.username;
     message.sender_id = user->user_id;

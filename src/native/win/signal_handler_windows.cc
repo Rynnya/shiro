@@ -26,19 +26,23 @@
 
 bool handle_signal(unsigned int signal) {
     switch (signal) {
-        case CTRL_C_EVENT:
+        case CTRL_C_EVENT: {
             LOG_F(INFO, "Shutting down...");
             exit(EXIT_SUCCESS);
-        case CTRL_CLOSE_EVENT:
+        }
+        case CTRL_CLOSE_EVENT: {
             return true;
-        default:
+        }
+        default: {
             return false;
+        }
     }
 }
 
 void shiro::native::signal_handler::install() {
-    if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE) handle_signal, true))
+    if (!SetConsoleCtrlHandler((PHANDLER_ROUTINE)handle_signal, true)) {
         ABORT_F("Unable to install signal handler.");
+    }
 
     LOG_F(INFO, "Signal handler was successfully installed.");
 }

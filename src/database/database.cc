@@ -40,8 +40,9 @@ shiro::database::database(const std::string &address, uint32_t port, const std::
 }
 
 void shiro::database::connect() {
-    if (this->is_connected())
+    if (this->is_connected()) {
         return;
+    }
 
     this->config = std::make_shared<sqlpp::mysql::connection_config>();
     this->config->host = this->address;
@@ -56,36 +57,22 @@ void shiro::database::connect() {
     #endif
 }
 
-void shiro::database::setup() {
-    if (!this->is_connected(true))
-        return;
-
-    sqlpp::mysql::connection db(this->config);
-
-    tables::migrations::beatmaps::create(db);
-    tables::migrations::channels::create(db);
-    tables::migrations::punishments::create(db);
-    tables::migrations::relationships::create(db);
-    tables::migrations::roles::create(db);
-    tables::migrations::scores::create(db);
-    tables::migrations::users::create(db);
-
-    LOG_F(INFO, "Successfully connected and structured MySQL database.");
-}
-
 bool shiro::database::is_connected(bool abort) {
-    if (this->config == nullptr)
+    if (this->config == nullptr) {
         return false;
+    }
 
     try {
         sqlpp::mysql::connection db(this->config);
 
         return db.is_valid();
-    } catch (const sqlpp::exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const sqlpp::exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
 
-        if (abort)
+        if (abort) {
             ABORT_F("Unable to connect to database: %s.", ex.what());
+        }
 
         return false;
     }

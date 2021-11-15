@@ -49,8 +49,9 @@ void shiro::routes::init() {
         server.port(config::bancho::port);
 
         server.run();
-    } catch (const boost::system::system_error &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const boost::system::system_error &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Unable to start server: %s.", ex.what());
     }
 }

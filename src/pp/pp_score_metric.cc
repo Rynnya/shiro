@@ -25,14 +25,18 @@
 
 float shiro::pp::calculate(shiro::beatmaps::beatmap beatmap, shiro::scores::score score) {
     switch (static_cast<utils::play_mode>(score.play_mode)) {
-        case utils::play_mode::standard:
+        case utils::play_mode::standard: {
             return calculate_std(std::move(beatmap), std::move(score));
-        case utils::play_mode::taiko:
+        }
+        case utils::play_mode::taiko: {
             return calculate_taiko(std::move(beatmap), std::move(score));
-        case utils::play_mode::fruits:
+        }
+        case utils::play_mode::fruits: {
             return calculate_ctb(std::move(beatmap), std::move(score));
-        case utils::play_mode::mania:
+        }
+        case utils::play_mode::mania: {
             return calculate_mania(std::move(beatmap), std::move(score));
+        }
     }
 
     return 0.0f;

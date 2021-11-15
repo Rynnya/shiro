@@ -27,25 +27,27 @@
 #include "invite_handler.hh"
 
 void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
-    if (user->hidden || users::punishments::is_silenced(user->user_id))
+    if (user->hidden || users::punishments::is_silenced(user->user_id)) {
         return;
+    }
 
     int32_t user_id = in.data.read<int32_t>();
     std::shared_ptr<users::user> target = users::manager::get_user_by_id(user_id);
 
-    if (target == nullptr || target->hidden)
+    if (target == nullptr || target->hidden) {
         return;
+    }
 
-    if (target->client_type == +utils::clients::osu_client::aschente)
-    {
+    if (target->client_type == +utils::clients::osu_client::aschente) {
         utils::bot::respond("Thanks for the invite but I have to decline :)", user, target->presence.username, true);
         return;
     }
 
     std::optional<io::layouts::multiplayer_match> optional = shiro::multiplayer::match_manager::get_match(user);
 
-    if (!optional.has_value())
+    if (!optional.has_value()) {
         return;
+    }
 
     io::layouts::multiplayer_match match = *optional;
     std::string url = "osump://" + std::to_string(match.match_id) + "/";
@@ -53,8 +55,9 @@ void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_wr
 
     // If the sending user is in the lobby themselves, we can send the password without a problem
     if (iterator != match.multi_slot_id.end()) {
-        if (!match.game_password.empty())
+        if (!match.game_password.empty()) {
             url.append(utils::curl::escape_url(match.game_password));
+        }
     }
 
     io::osu_writer writer;

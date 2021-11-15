@@ -28,14 +28,15 @@ std::tuple<bool, std::string> shiro::utils::curl::get(const std::string &url) {
     CURL *curl = curl_easy_init();
     CURLcode status_code;
 
-    if (curl == nullptr)
+    if (curl == nullptr) {
         return { false, "Unable to acquire curl handle." };
+    }
 
     std::string output;
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, internal_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Rynnya/shiro)");
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     status_code = curl_easy_perform(curl);
@@ -56,8 +57,9 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
     CURL *curl = curl_easy_init();
     CURLcode status_code;
 
-    if (curl == nullptr)
+    if (curl == nullptr) {
         return { false, "Unable to acquire curl handle." };
+    }
 
     std::string output;
 
@@ -66,13 +68,11 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     switch (config::direct::provider) {
-        case 0: 
-        {
+        case 0: {
             // Never happens as this provider uses a shared memory region
             break;
         }
-        case 1: 
-        {
+        case 1: {
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "osu!");
 
             // osu! mirrors use self signed certificates that don't pass SSL peer certificate check
@@ -82,28 +82,25 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
 
             break;
         }
-        case 2: 
-        {
-            curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
+        case 2: {
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Rynnya/shiro)");
 
             static std::string header = "Token: " + config::direct::api_key;
             struct curl_slist *chunk = nullptr;
 
-            chunk = curl_slist_append(chunk, "cho-server: shiro (https://github.com/Marc3842h/shiro)");
+            chunk = curl_slist_append(chunk, "cho-server: shiro (https://github.com/Rynnya/shiro)");
             chunk = curl_slist_append(chunk, "Content-Type: application/json");
             chunk = curl_slist_append(chunk, header.c_str());
 
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
             break;
         }
-        case 3:
-        {
-            curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
+        case 3: {
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Rynnya/shiro)");
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
             break;
         }
-        default: 
-        {
+        default: {
             // All valid cases are covered above
             break;
         }
@@ -123,17 +120,17 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
     return { false, output };
 }
 
-bool shiro::utils::curl::post_message(const std::string& url, const nlohmann::json& message)
-{
+bool shiro::utils::curl::post_message(const std::string& url, const nlohmann::json& message) {
     CURL* curl = curl_easy_init();
     CURLcode status_code;
 
-    if (curl == nullptr)
+    if (curl == nullptr) {
         return false;
+    }
 
     std::string output;
 
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Marc3842h/shiro)");
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Rynnya/shiro)");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, internal_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -156,8 +153,9 @@ bool shiro::utils::curl::post_message(const std::string& url, const nlohmann::js
 
     curl_easy_cleanup(curl);
 
-    if (status_code == CURLE_OK)
+    if (status_code == CURLE_OK) {
         return true;
+    }
 
     // Replace original url with fake to avoid leaks
     logging::sentry::http_request_out("https://discord.com/api/webhooks/id/token", "POST", http_status_code, output);
@@ -192,7 +190,7 @@ size_t shiro::utils::curl::internal_callback(void *raw_data, size_t size, size_t
         ptr->resize(old_length + new_length);
     } catch (const std::bad_alloc &ex) {
         LOG_F(ERROR, "Unable to allocate new memory for http response: %s.", ex.what());
-        logging::sentry::exception(ex);
+        logging::sentry::exception(ex, __FILE__, __LINE__);
 
         return 0;
     }

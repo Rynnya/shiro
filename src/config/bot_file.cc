@@ -27,13 +27,15 @@ static std::shared_ptr<cpptoml::table> config_file = nullptr;
 std::string shiro::config::bot::name = "Shiro";
 
 void shiro::config::bot::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing bot.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("bot.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse bot.toml file: %s.", ex.what());
     }
 

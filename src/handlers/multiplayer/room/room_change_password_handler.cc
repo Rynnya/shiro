@@ -24,19 +24,23 @@ void shiro::handler::multiplayer::room::change_password::handle(shiro::io::osu_p
     io::layouts::multiplayer_match match = in.unmarshal<io::layouts::multiplayer_match>();
 
     shiro::multiplayer::match_manager::iterate([&user, &out, match](io::layouts::multiplayer_match &global_match) -> bool {
-        if (global_match.match_id != match.match_id)
+        if (global_match.match_id != match.match_id) {
             return false;
+        }
 
-        if (global_match.game_password == match.game_password)
+        if (global_match.game_password == match.game_password) {
             return true;
+        }
 
         auto iterator = std::find(global_match.multi_slot_id.begin(), global_match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == global_match.multi_slot_id.end())
+        if (iterator == global_match.multi_slot_id.end()) {
             return true;
+        }
 
-        if (global_match.host_id != user->user_id)
+        if (global_match.host_id != user->user_id) {
             return true;
+        }
 
         global_match.game_password = match.game_password;
         global_match.send_update(true);
@@ -45,13 +49,15 @@ void shiro::handler::multiplayer::room::change_password::handle(shiro::io::osu_p
         writer.match_change_password(match.game_password);
 
         for (int32_t id : global_match.multi_slot_id) {
-            if (id == -1)
+            if (id == -1) {
                 continue;
+            }
 
             std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(id);
 
-            if (lobby_user == nullptr)
+            if (lobby_user == nullptr) {
                 continue;
+            }
 
             lobby_user->queue.enqueue(writer);
         }

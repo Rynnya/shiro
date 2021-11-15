@@ -43,7 +43,7 @@ namespace shiro::io {
         void enqueue_next(buffer &buffer);
 
         void clear();
-        bool is_empty();
+        bool is_empty() noexcept;
 
         // This function additionally clears the queue
         std::string serialize();

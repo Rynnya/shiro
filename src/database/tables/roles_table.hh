@@ -36,24 +36,11 @@ namespace shiro::tables {
     };
 
     database_table(roles,
-            roles_objects::id,
-            roles_objects::name,
-            roles_objects::permissions,
-            roles_objects::color
+        roles_objects::id,
+        roles_objects::name,
+        roles_objects::permissions,
+        roles_objects::color
     );
-
-    namespace migrations::roles {
-
-        inline void create(sqlpp::mysql::connection &db) {
-            db.execute(
-                    "CREATE TABLE IF NOT EXISTS `roles` "
-                    "(id INT UNSIGNED PRIMARY KEY NOT NULL, name VARCHAR(32) NOT NULL, "
-                    "permissions BIGINT UNSIGNED NOT NULL, color TINYINT UNSIGNED NOT NULL);"
-            );
-        }
-
-    }
-
 }
 
 #endif  // SHIRO_ROLES_TABLE_HH

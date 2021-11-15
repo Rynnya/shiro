@@ -35,22 +35,10 @@ namespace shiro::tables {
     };
 
     database_table(relationships,
-            relationships_objects::origin,
-            relationships_objects::target,
-            relationships_objects::blocked
+        relationships_objects::origin,
+        relationships_objects::target,
+        relationships_objects::blocked
     );
-
-    namespace migrations::relationships {
-
-        inline void create(sqlpp::mysql::connection &db) {
-            db.execute(
-                    "CREATE TABLE IF NOT EXISTS `relationships` "
-                    "(origin INT NOT NULL, target INT NOT NULL, blocked BOOLEAN NOT NULL);"
-            );
-        }
-
-    }
-
 }
 
 #endif  // SHIRO_RELATIONSHIP_TABLE_HH

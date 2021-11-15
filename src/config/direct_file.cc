@@ -40,46 +40,54 @@ std::string shiro::config::direct::mirror_url = "https://mirror.yukime.ml";
 std::string shiro::config::direct::api_key;
 
 // Provider 3: Cheesegull
-std::string shiro::config::direct::search_url = "https://api.chimu.moe/cheesegull";
-std::string shiro::config::direct::download_url = "https://chimu.moe";
+std::string shiro::config::direct::search_url = "https://storage.ripple.moe";
+std::string shiro::config::direct::download_url = "https://storage.ripple.moe";
 uint32_t shiro::config::direct::beatmaps_amount = 50;
 
 void shiro::config::direct::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing direct.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("direct.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse direct.toml file: %s.", ex.what());
     }
 
     enabled = config_file->get_qualified_as<bool>("direct.enabled").value_or(true);
 
-    if (!enabled)
+    if (!enabled) {
         return;
+    }
 
     provider = config_file->get_qualified_as<int32_t>("direct.provider").value_or(1);
 
     switch (provider) {
-        case 0:
+        case 0: {
             shm = config_file->get_qualified_as<uint64_t>("shirogane.shm").value_or(0x0);
             break;
-        case 1:
+        }
+        case 1: {
             base_url = config_file->get_qualified_as<std::string>("emulate.base_url").value_or("https://yukime.ml");
             mirror_url = config_file->get_qualified_as<std::string>("emulate.mirror_url").value_or("https://mirror.yukime.ml");
             break;
-        case 2:
+        }
+        case 2: {
             api_key = config_file->get_qualified_as<std::string>("beatconnect.api_key").value_or("");
             break;
-        case 3:
-            search_url = config_file->get_qualified_as<std::string>("cheesegull.search_url").value_or("https://api.chimu.moe/cheesegull");
-            download_url = config_file->get_qualified_as<std::string>("cheesegull.download_url").value_or("https://chimu.moe");
+        }
+        case 3: {
+            search_url = config_file->get_qualified_as<std::string>("cheesegull.search_url").value_or("https://storage.ripple.moe");
+            download_url = config_file->get_qualified_as<std::string>("cheesegull.download_url").value_or("https://storage.ripple.moe");
             beatmaps_amount = std::clamp(config_file->get_qualified_as<uint32_t>("cheesegull.beatmaps_amount").value_or(50), 1u, 100u);
             break;
-        default:
+        }
+        default: {
             ABORT_F("Invalid direct mode provided in direct.toml: %i", provider);
+        }
     }
 
     LOG_F(INFO, "Successfully parsed direct.toml.");

@@ -37,8 +37,9 @@ bool shiro::commands::announce(std::deque<std::string> &args, std::shared_ptr<sh
     if (args.size() >= 2) {
         target = users::manager::get_user_by_username(args.at(0));
 
-        if (target != nullptr && users::manager::is_online(target))
+        if (target != nullptr && users::manager::is_online(target)) {
             args.pop_front();
+        }
     }
 
     std::string announcement;

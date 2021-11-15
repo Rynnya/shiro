@@ -64,8 +64,9 @@ void shiro::native::system_stats::init() {
     file = std::fopen("/proc/cpuinfo", "r");
 
     while (std::fgets(buffer, sizeof(buffer), file) != nullptr) {
-        if (std::strncmp(buffer, "processor", 9) == 0)
+        if (std::strncmp(buffer, "processor", 9) == 0) {
             thread_count++;
+        }
     }
 
     std::fclose(file);
@@ -100,8 +101,9 @@ uint64_t shiro::native::system_stats::get_memory_usage() {
 uint64_t shiro::native::system_stats::get_process_memory_usage() {
     FILE *file = std::fopen("/proc/self/status", "r");
 
-    if (file == nullptr)
+    if (file == nullptr) {
         return 0;
+    }
 
     uint64_t result = 0;
     char buffer[128];
@@ -149,8 +151,9 @@ uint64_t shiro::native::system_stats::get_physical_memory_usage() {
 uint64_t shiro::native::system_stats::get_physical_process_memory_usage() {
     FILE *file = std::fopen("/proc/self/status", "r");
 
-    if (file == nullptr)
+    if (file == nullptr) {
         return 0;
+    }
 
     uint64_t result = 0;
     char buffer[128];

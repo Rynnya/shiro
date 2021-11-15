@@ -1,6 +1,6 @@
 <img width="180" align="left" style="float: left; margin: 0 10px 0 0;" alt="Shiro" src="https://i.imgur.com/NuDj76W.png">
 
-# Shiro [![Circle CI](https://circleci.com/gh/Marc3842h/shiro/tree/master.svg?style=svg&circle-token=0fa5a9831ee745859ebeda892af66705bb0443b9)][0]
+# Shiro
 
 Shiro is a server-side implementation of the osu! cho protocol.
 It delivers unmatched performance and features an accurate implementation
@@ -9,13 +9,15 @@ of the protocol.
 It outperforms Ripple, Gigamons and even Bancho itself.
 In terms of implementation accuracy, Shiro's implementation is
 more accurate than both of Ripple and Gigamons.
+<!-- TODO: Adding tests will make these words more weighty -->
+<!-- Also this server cannot be faster than Bancho when using Bancho's API, ironic -->
 
-Unlike other implementations, Shiro does not separate
+Shiro also does not separate
 Bancho and the Score Submission server.
 
-Currently WIP, may work but some features are not doing well...<br>
-Also ripple_migration replaced with full_schema<br>
-Can be used with [Aru](https://github.com/Rynnya/Aru)
+# Current state
+Currently WIP, previous owner left many non-tested features (like direct and replays before)<br>
+Some features not implementated at all (like Shirogane, which, I guess, not open-source)<br>
 
 ## Features
 
@@ -24,10 +26,10 @@ functioning osu! server, which includes:
 
 * Client login
 * IRC-less chat & chat bot
-* Leaderboards
-* Multiplayer
+* Leaderboards (Classic and Relax)
+* Multiplayer (Even !mp commands!)
 * Online user listing with their presence
-* osu!direct
+* osu!direct (Based on mirrors)
 * osu!tourney
 * Rankings
 * Replays
@@ -38,7 +40,8 @@ functioning osu! server, which includes:
 ## Documentation
 
 Documentation such as installation and usage of Shiro
-are available on the [Wiki][1].
+are available on the [Wiki][1].<br>
+There are also [FAQ's][8] here
 
 ## Docker [![Docker](https://img.shields.io/docker/pulls/marc3842h/shiro.svg?logo=docker)][2]
 
@@ -71,10 +74,11 @@ associated license for more information.
 The branding `osu!` and `ppy` are protected by
 trademark law. Fair use applies.
 
-[0]: https://circleci.com/gh/Marc3842h/shiro
 [1]: https://github.com/Marc3842h/shiro/wiki
 [2]: https://hub.docker.com/r/marc3842h/shiro/
 [3]: https://github.com/Marc3842h/shiro/wiki/Docker
-[4]: https://github.com/Marc3842h/shiro/issues/new
-[5]: https://github.com/Marc3842h/shiro/compare
-[6]: https://github.com/Marc3842h/shiro/blob/master/LICENSE.txt
+[4]: https://github.com/Rynnya/shiro/issues/new
+[5]: https://github.com/Rynnya/shiro/compare
+[6]: https://github.com/Rynnya/shiro/blob/master/LICENSE.txt
+[7]: https://github.com/Rynnya/Aru
+[8]: https://github.com/Rynnya/shiro/FAQ.md

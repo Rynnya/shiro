@@ -21,14 +21,16 @@
 #include "logout_handler.hh"
 
 void shiro::handler::logout::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    if (!users::manager::is_online(user))
+    if (!users::manager::is_online(user)) {
         return;
+    }
 
     shiro::multiplayer::match_manager::leave_match(user);
     users::manager::logout_user(user);
 
-    if (user->hidden)
+    if (user->hidden) {
         return;
+    }
 
     io::layouts::user_quit quit;
     io::osu_writer writer;
@@ -39,8 +41,9 @@ void shiro::handler::logout::handle(shiro::io::osu_packet &in, shiro::io::osu_wr
     writer.user_quit(quit);
 
     users::manager::iterate([user, &writer](std::shared_ptr<users::user> online_user) {
-        if (online_user->user_id == user->user_id)
+        if (online_user->user_id == user->user_id) {
             return;
+        }
 
         online_user->queue.enqueue(writer);
     }, true);

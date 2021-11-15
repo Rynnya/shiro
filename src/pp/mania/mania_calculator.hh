@@ -25,10 +25,9 @@
 #include "../../beatmaps/beatmap.hh"
 #include "../../scores/score.hh"
 
-namespace shiro::pp::mania
-{
-    class note
-    {
+namespace shiro::pp::mania {
+
+    class note {
     public:
         note() :
             contains_data(false),
@@ -52,21 +51,9 @@ namespace shiro::pp::mania
         double individual_strain;
         bool contains_data;
 
-        note& operator=(const note& other) noexcept
-        {
-            if (this == &other)
-                return *this;
+        note& operator=(const note& other) noexcept = default;
 
-            this->key = other.key;
-            this->start_t = other.start_t;
-            this->end_t = other.end_t;
-            this->individual_strain = other.individual_strain;
-            contains_data = true;
-            return *this;
-        };
-
-        note& operator=(std::nullptr_t) noexcept
-        {
+        note& operator=(std::nullptr_t) noexcept {
             key = 0;
             start_t = 0;
             end_t = 0;
@@ -75,14 +62,12 @@ namespace shiro::pp::mania
             return *this;
         };
 
-        operator bool() const noexcept
-        {
+        operator bool() const noexcept {
             return this->contains_data;
         };
     };
 
-    class mania_calculator
-    {
+    class mania_calculator {
     private:
         float od = 0;
         float stars = 0;
@@ -97,7 +82,6 @@ namespace shiro::pp::mania
 
     public:
         mania_calculator(beatmaps::beatmap beatmap, scores::score score);
-        ~mania_calculator();
 
         float calculate();
     };

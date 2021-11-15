@@ -32,8 +32,9 @@ std::string shiro::native::process_info::get_executable_location() {
     char buffer[MAX_PATH];
     HMODULE handle = GetModuleHandle(nullptr);
 
-    if (handle == nullptr)
+    if (handle == nullptr) {
         return "shiro"; // Fallback to our generic executable name
+    }
 
     GetModuleFileName(handle, buffer, sizeof(buffer));
 

@@ -23,8 +23,8 @@
 #include <string>
 #include <vector>
 
-namespace shiro::config::discord_webhook 
-{
+namespace shiro::config::discord_webhook {
+
     extern bool enabled;
     extern std::string url;
 

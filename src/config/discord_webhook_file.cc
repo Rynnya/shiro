@@ -31,27 +31,32 @@ bool shiro::config::discord_webhook::override_user = true;
 std::string shiro::config::discord_webhook::name = "Shiro";
 
 void shiro::config::discord_webhook::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing discord_webhook.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("discord_webhook.toml");
     }
     catch (const cpptoml::parse_exception& ex) {
-        logging::sentry::exception(ex);
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse discord_webhook.toml file: %s.", ex.what());
     }
 
     enabled = config_file->get_qualified_as<bool>("webhook.enabled").value_or(false);
     url = config_file->get_qualified_as<std::string>("webhook.url").value_or("");
 
-    if (!enabled || url == "")
+    if (!enabled || url == "") {
+        LOG_F(INFO, "Successfully parsed discord_webhook.toml.");
         return;
+    }
 
     override_user = config_file->get_qualified_as<bool>("webhook_user.override").value_or(false);
 
-    if (!override_user)
+    if (!override_user) {
+        LOG_F(INFO, "Successfully parsed discord_webhook.toml.");
         return;
+    }
 
     name = config_file->get_qualified_as<std::string>("webhook_user.username").value_or("Shiro");
 

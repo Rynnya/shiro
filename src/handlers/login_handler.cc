@@ -125,20 +125,19 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
     if (dot_index != std::string::npos) {
         parseable_version = version.substr(1, dot_index - 1);
-    } else {
+    }
+    else {
         parseable_version = version;
 
         parseable_version.erase(std::remove_if(parseable_version.begin(), parseable_version.end(), 
             [](char c) { return !std::isdigit(c); }), parseable_version.end());
     }
 
-    if (!utils::strings::safe_int(parseable_version, build))
-    {
+    if (!utils::strings::safe_int(parseable_version, build)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", version.c_str());
-        logging::sentry::exception(std::invalid_argument("Parseable version was invalid."));
+        logging::sentry::exception(std::invalid_argument("Parseable version was invalid."), __FILE__, __LINE__);
 
-        if (config::score_submission::restrict_mismatching_client_version)
-        {
+        if (config::score_submission::restrict_mismatching_client_version) {
             writer.login_reply(static_cast<int32_t>(utils::login_responses::server_error));
 
             response.end(writer.serialize());
@@ -171,14 +170,14 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     uint8_t time_zone = 9;
 
     int32_t parsed_time_zone = 0;
-    if (!utils::strings::safe_int(utc_offset, parsed_time_zone))
-    {
+    if (!utils::strings::safe_int(utc_offset, parsed_time_zone)) {
         LOG_F(WARNING, "Unable to cast %s to int32_t (uint8_t).", utc_offset.c_str());
-        logging::sentry::exception(std::invalid_argument("UTC Offset was not a number."));
+        logging::sentry::exception(std::invalid_argument("UTC Offset was not a number."), __FILE__, __LINE__);
     }
 
-    if (parsed_time_zone != 0)
+    if (parsed_time_zone != 0) {
         time_zone = static_cast<uint8_t>(parsed_time_zone + 24);
+    }
 
     geoloc::location_info location_info = geoloc::get_location(request.get_ip_address());
 
@@ -186,8 +185,9 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     user->presence.latitude = location_info.latitude;
     user->presence.longitude = location_info.longitude;
 
-    if (user->country == "XX")
+    if (user->country == "XX") {
         user->update_country(location_info.country_str);
+    }
 
     user->presence.time_zone = time_zone;
 
@@ -203,14 +203,17 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     static std::string title_image = config::bancho::title_image;
     static std::string title_url = config::bancho::title_url;
 
-    if (!alert.empty())
+    if (!alert.empty()) {
         writer.announce(alert);
+    }
 
-    if (!title_image.empty() || !title_url.empty())
+    if (!title_image.empty() || !title_url.empty()) {
         writer.title_update(title_image + "|" + title_url);
+    }
 
-    if (request.raw_url.find("ppy.sh") != std::string::npos)
+    if (request.raw_url.find("ppy.sh") != std::string::npos) {
         utils::bot::respond("Seems like you still use old type of connection. Please, read about (-devserver)[" + config::bancho::title_url + "] on our site.", user, config::bot::name, true);
+    }
 
     writer.friend_list(user->friends);
 
@@ -245,20 +248,23 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     users::manager::iterate([user, &writer, &global_writer](std::shared_ptr<users::user>& online_user) {
-        if (online_user == user)
+        if (online_user == user) {
             return;
+        }
 
         writer.user_presence(online_user->presence);
         writer.user_stats(online_user->stats);
 
-        if (!user->hidden)
+        if (!user->hidden) {
             online_user->queue.enqueue(global_writer);
+        }
     }, true);
 
     std::string result = writer.serialize();
 
-    if (!user->queue.is_empty())
+    if (!user->queue.is_empty()) {
         result.append(user->queue.serialize());
+    }
 
     response.end(result);
 }

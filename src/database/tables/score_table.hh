@@ -54,8 +54,7 @@ namespace shiro::tables {
         object_struct(is_relax, sqlpp::boolean);
     };
 
-    struct scores_first_objects
-    {
+    struct scores_first_objects {
         object_struct(score_id, sqlpp::integer);
         object_struct(user_id, sqlpp::integer);
         object_struct(beatmap_md5, sqlpp::varchar);
@@ -64,29 +63,29 @@ namespace shiro::tables {
     };
 
     database_table(scores,
-            scores_objects::id,
-            scores_objects::hash,
-            scores_objects::beatmap_md5,
-            scores_objects::user_id,
-            scores_objects::ranking,
-            scores_objects::score,
-            scores_objects::max_combo,
-            scores_objects::full_combo,
-            scores_objects::mods,
-            scores_objects::count_300,
-            scores_objects::count_100,
-            scores_objects::count_50,
-            scores_objects::count_katus,
-            scores_objects::count_gekis,
-            scores_objects::count_misses,
-            scores_objects::time,
-            scores_objects::play_mode,
-            scores_objects::completed,
-            scores_objects::accuracy,
-            scores_objects::pp,
-            scores_objects::play_time,
-            scores_objects::times_watched,
-            scores_objects::is_relax
+        scores_objects::id,
+        scores_objects::hash,
+        scores_objects::beatmap_md5,
+        scores_objects::user_id,
+        scores_objects::ranking,
+        scores_objects::score,
+        scores_objects::max_combo,
+        scores_objects::full_combo,
+        scores_objects::mods,
+        scores_objects::count_300,
+        scores_objects::count_100,
+        scores_objects::count_50,
+        scores_objects::count_katus,
+        scores_objects::count_gekis,
+        scores_objects::count_misses,
+        scores_objects::time,
+        scores_objects::play_mode,
+        scores_objects::completed,
+        scores_objects::accuracy,
+        scores_objects::pp,
+        scores_objects::play_time,
+        scores_objects::times_watched,
+        scores_objects::is_relax
     );
 
     database_table(scores_first,
@@ -96,24 +95,6 @@ namespace shiro::tables {
         scores_first_objects::play_mode,
         scores_first_objects::is_relax
     );
-
-    namespace migrations::scores {
-
-        inline void create(sqlpp::mysql::connection &db) {
-            //db.execute(
-            //        "CREATE TABLE IF NOT EXISTS `scores` "
-            //        "(id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, "
-            //        "beatmap_md5 VARCHAR(35) NOT NULL, hash VARCHAR(35) NOT NULL, user_id INT NOT NULL, ranking VARCHAR(2) NOT NULL, "
-            //        "score BIGINT NOT NULL, max_combo INT NOT NULL, fc BOOLEAN NOT NULL, mods INT NOT NULL, "
-            //        "300_count INT NOT NULL, 100_count INT NOT NULL, 50_count INT NOT NULL, "
-            //        "katus_count INT NOT NULL, gekis_count INT NOT NULL, miss_count INT NOT NULL, "
-            //        "time INT NOT NULL, play_mode TINYINT NOT NULL, passed BOOLEAN NOT NULL, "
-            //        "accuracy FLOAT NOT NULL, pp FLOAT NOT NULL, times_watched INT NOT NULL DEFAULT 0);"
-            //);
-        }
-
-    }
-
 }
 
 #endif  // SHIRO_SCORE_TABLE_HH

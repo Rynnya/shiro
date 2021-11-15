@@ -24,8 +24,9 @@ void shiro::handler::multiplayer::room::ready::handle_ready(shiro::io::osu_packe
     shiro::multiplayer::match_manager::iterate([user](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 
@@ -40,8 +41,9 @@ void shiro::handler::multiplayer::room::ready::handle_unready(shiro::io::osu_pac
     shiro::multiplayer::match_manager::iterate([user](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 

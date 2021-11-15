@@ -25,8 +25,9 @@
 #include "../signal_handler.hh"
 
 void handle_signal(int signal) {
-    if (signal != SIGINT)
+    if (signal != SIGINT) {
         return;
+    }
 
     LOG_F(INFO, "Shutting down...");
     std::exit(EXIT_SUCCESS);

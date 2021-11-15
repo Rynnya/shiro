@@ -123,15 +123,17 @@ void shiro::io::osu_writer::spectate_frames(layouts::spectate_frames frames) {
 }
 
 void shiro::io::osu_writer::match_new(shiro::io::layouts::multiplayer_match match, bool censor) {
-    if (censor && !match.game_password.empty())
+    if (censor && !match.game_password.empty()) {
         match.game_password = "turn my swag on"; // Set the password to non-sense to prevent eavesdropping
+    }
 
     this->write(packet_id::out_match_new, std::move(match));
 }
 
 void shiro::io::osu_writer::match_update(shiro::io::layouts::multiplayer_match match, bool censor) {
-    if (censor && !match.game_password.empty())
+    if (censor && !match.game_password.empty()) {
         match.game_password = "turn my swag on"; // Set the password to non-sense to prevent eavesdropping
+    }
 
     this->write(packet_id::out_match_update, std::move(match));
 }
@@ -149,8 +151,9 @@ void shiro::io::osu_writer::match_join_fail() {
 }
 
 void shiro::io::osu_writer::match_start(shiro::io::layouts::multiplayer_match match, bool censor) {
-    if (censor && !match.game_password.empty())
+    if (censor && !match.game_password.empty()) {
         match.game_password = "turn my swag on"; // Set the password to non-sense to prevent eavesdropping
+    }
 
     this->write(packet_id::out_match_start, std::move(match));
 }
@@ -195,6 +198,6 @@ std::string shiro::io::osu_writer::serialize() {
     return this->buf.serialize();
 }
 
-shiro::io::buffer &shiro::io::osu_writer::get_buffer() {
+shiro::io::buffer &shiro::io::osu_writer::get_buffer() noexcept {
     return this->buf;
 }

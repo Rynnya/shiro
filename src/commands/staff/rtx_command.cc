@@ -40,8 +40,9 @@ bool shiro::commands::rtx(std::deque<std::string> &args, std::shared_ptr<shiro::
     }
 
     // No reason has been provided, set default reason
-    if (args.size() == 1)
+    if (args.size() == 1) {
         args.emplace_back("rtx'ed by " + user->presence.username);
+    }
 
     args.pop_front();
 

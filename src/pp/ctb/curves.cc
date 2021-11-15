@@ -25,34 +25,33 @@
 
 // Bezier //////////////////////////////////////////////////////////////////////
 
-std::pair<float, float> shiro::pp::ctb::Bezier::point_at_distance(float distance)
-{
-    if (this->order == 0)
+std::pair<float, float> shiro::pp::ctb::bezier::point_at_distance(float distance) {
+    if (this->order == 0) {
         return std::make_pair(0, 0);
+    }
 
-    if (this->order == 1)
+    if (this->order == 1) {
         return this->points[0];
+    }
 
     return math::point_at_distance(this->points, distance);
 }
 
-void shiro::pp::ctb::Bezier::setup()
-{
-    if (this->points.size() != 0)
+void shiro::pp::ctb::bezier::setup() {
+    if (this->points.size() != 0) {
         return;
+    }
 
     std::vector<std::pair<float, float>> sub_points = {};
-    for (int32_t i = 0; i < this->curve_points.size(); i++)
-    {
-        if (i == this->curve_points.size() - 1)
-        {
+    for (int32_t i = 0; i < this->curve_points.size(); i++) {
+
+        if (i == this->curve_points.size() - 1) {
             sub_points.push_back(points[i]);
-            bezier(sub_points);
+            _bezier(sub_points);
             sub_points.clear();
         }
-        else if (sub_points.size() > 1 && this->curve_points[i] == sub_points[sub_points.size() - 1])
-        {
-            bezier(sub_points);
+        else if (sub_points.size() > 1 && this->curve_points[i] == sub_points[sub_points.size() - 1]) {
+            _bezier(sub_points);
             sub_points.clear();
         }
 
@@ -60,8 +59,7 @@ void shiro::pp::ctb::Bezier::setup()
     }
 }
 
-void shiro::pp::ctb::Bezier::bezier(std::vector<std::pair<float, float>> points)
-{
+void shiro::pp::ctb::bezier::_bezier(std::vector<std::pair<float, float>> points) {
     int32_t order = points.size();
     float step = 0.25 / constants::SLIDER_QUALITY / order;
     float i = 0;
@@ -69,13 +67,11 @@ void shiro::pp::ctb::Bezier::bezier(std::vector<std::pair<float, float>> points)
 
     float x, y;
 
-    while (i < 1 + step)
-    {
+    while (i < 1 + step) {
         x = 0;
         y = 0;
 
-        for (int32_t p = 0; p < n + 1; p++)
-        {
+        for (int32_t p = 0; p < n + 1; p++) {
             float a = cpn(p, n) * std::pow(1 - p, n - p) * std::pow(i, p);
             x += a * points[i].first;
             y += a * points[i].second;
@@ -86,51 +82,49 @@ void shiro::pp::ctb::Bezier::bezier(std::vector<std::pair<float, float>> points)
     }
 }
 
-float shiro::pp::ctb::Bezier::cpn(int32_t p, int32_t n)
-{
-    if (p < 0 || p > n)
+float shiro::pp::ctb::bezier::cpn(int32_t p, int32_t n) {
+    if (p < 0 || p > n) {
         return 0;
+    }
 
     p = std::min(p, n - p);
     float out = 1;
-    for (int32_t i = 1; i < p + 1; i++)
+
+    for (int32_t i = 1; i < p + 1; i++) {
         out = out * (n - p + i) / i;
+    }
 
     return out;
 }
 
 // Catmull /////////////////////////////////////////////////////////////////////
 
-std::pair<float, float> shiro::pp::ctb::Catmull::point_at_distance(float distance)
-{
-    if (this->order == 0)
+std::pair<float, float> shiro::pp::ctb::catmull::point_at_distance(float distance) {
+    if (this->order == 0) {
         return std::make_pair(0, 0);
+    }
 
-    if (this->order == 1)
+    if (this->order == 1) {
         return this->points[0];
+    }
 
     return math::point_at_distance(this->points, distance);
 }
 
-void shiro::pp::ctb::Catmull::setup()
-{
-    if (this->points.size() != 0)
+void shiro::pp::ctb::catmull::setup() {
+    if (this->points.size() != 0) {
         return;
+    }
 
     int32_t x = 0;
     float t = 0;
     std::pair<float, float> v1, v2, v3, v4;
-    for (; x < this->order - 1; x++)
-    {
+    for (; x < this->order - 1; x++) {
         t = 0;
-        while (t < this->step + 1)
-        {
+        while (t < this->step + 1) {
             v1 = x >= 1 ? this->curve_points[x - 1] : this->curve_points[x];
-
             v2 = this->curve_points[x];
-
             v3 = x + 1 < this->order ? this->curve_points[x + 1] : appvec(v2, 1, appvec(v2, -1, v1));
-
             v4 = x + 2 < this->order ? this->curve_points[x + 2] : appvec(v3, 1, appvec(v3, -1, v2));
 
             std::pair<float, float> point = get_point({ v1, v2, v3, v4 }, t);
@@ -140,17 +134,17 @@ void shiro::pp::ctb::Catmull::setup()
     }
 }
 
-std::pair<float, float> shiro::pp::ctb::Catmull::get_point(std::deque<std::pair<float, float>> points, float length)
-{
+std::pair<float, float> shiro::pp::ctb::catmull::get_point(std::deque<std::pair<float, float>> points, float length) {
     std::deque<float> x_points = { points[0].first, points[1].first, points[2].first, points[3].first };
     std::deque<float> y_points = { points[0].second, points[1].second, points[2].second, points[3].second };
-    float x = catmull(x_points, length);
-    float y = catmull(y_points, length);
+
+    float x = _catmull(x_points, length);
+    float y = _catmull(y_points, length);
+
     return std::make_pair(x, y);
 }
 
-float shiro::pp::ctb::Catmull::catmull(std::deque<float> p, float length)
-{
+float shiro::pp::ctb::catmull::_catmull(std::deque<float> p, float length) {
     // Holy crap who made this?
     return 0.5 * (
         (2 * p[1]) +
@@ -161,14 +155,12 @@ float shiro::pp::ctb::Catmull::catmull(std::deque<float> p, float length)
 
 // Perfect /////////////////////////////////////////////////////////////////////
 
-std::pair<float, float> shiro::pp::ctb::Perfect::point_at_distance(float distance)
-{
+std::pair<float, float> shiro::pp::ctb::perfect::point_at_distance(float distance) {
     float radians = distance / this->radius;
     return rotate(this->curve_points[0], radians);
 }
 
-void shiro::pp::ctb::Perfect::setup()
-{
+void shiro::pp::ctb::perfect::setup() {
     auto [x, y, r] = get_circum_circle();
 
     this->cx = x;
@@ -179,18 +171,19 @@ void shiro::pp::ctb::Perfect::setup()
         * (this->curve_points[2].second - this->curve_points[0].second)
         - (this->curve_points[1].second - this->curve_points[0].second)
         * (this->curve_points[2].first - this->curve_points[0].first))
-        < 0)
+        < 0) {
         this->radius *= -1;
+    }
 }
 
-std::tuple<float, float, float> shiro::pp::ctb::Perfect::get_circum_circle()
-{
+std::tuple<float, float, float> shiro::pp::ctb::perfect::get_circum_circle() {
     float d = 2 * (this->curve_points[0].first * (this->curve_points[1].second - this->curve_points[2].second)
         + this->curve_points[1].first * (this->curve_points[2].second - this->curve_points[0].second)
         + this->curve_points[2].first * (this->curve_points[0].second - this->curve_points[1].second));
 
-    if (d == 0)
+    if (d == 0) {
         throw std::invalid_argument("Invalid circle! Unable to chose angle.");
+    }
 
     float ux = ((std::pow(this->curve_points[0].first, 2) + std::pow(this->curve_points[0].second, 2))
         * (this->curve_points[1].first - this->curve_points[2].first)
@@ -214,13 +207,11 @@ std::tuple<float, float, float> shiro::pp::ctb::Perfect::get_circum_circle()
     return { ux, uy, r };
 }
 
-std::pair<float, float> shiro::pp::ctb::Perfect::rotate(std::pair<float, float> obj, float radians)
-{
+std::pair<float, float> shiro::pp::ctb::perfect::rotate(std::pair<float, float> obj, float radians) {
     float cos = std::cos(radians);
     float sin = std::sin(radians);
 
-    return std::pair<float, float>
-    (
+    return std::pair<float, float>(
         (cos * (obj.first - cx)) - (sin * (obj.second - cy)) + cx,
         (sin * (obj.first - cx)) + (cos * (obj.second - cy)) + cy
     );

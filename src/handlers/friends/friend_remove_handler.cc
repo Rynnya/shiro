@@ -26,14 +26,15 @@ void shiro::handler::friends::remove::handle(shiro::io::osu_packet &in, shiro::i
     const tables::relationships relationships_table {};
 
     db(remove_from(relationships_table).where(
-            relationships_table.origin == user->user_id and
-            relationships_table.target == target
+        relationships_table.origin == user->user_id and
+        relationships_table.target == target
     ));
 
     auto iterator = std::find(user->friends.begin(), user->friends.end(), target);
 
-    if (iterator == user->friends.end())
+    if (iterator == user->friends.end()) {
         return;
+    }
 
     user->friends.erase(iterator);
 

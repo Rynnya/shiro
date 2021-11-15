@@ -68,17 +68,20 @@ std::string shiro::io::buffer::read_string() {
 
         if ((byte & 0x80) == 0) {
             total |= ((byte & 0x7F) << shift);
-        } else {
+        }
+        else {
             bool end = false;
 
             do {
-                if (shift)
+                if (shift) {
                     byte = this->read<uint8_t>();
+                }
 
                 total |= ((byte & 0x7F) << shift);
 
-                if ((byte & 0x80) == 0)
+                if ((byte & 0x80) == 0) {
                     end = true;
+                }
 
                 shift += 7;
             } while (!end);
@@ -109,28 +112,28 @@ std::string shiro::io::buffer::serialize() {
     return std::string(this->bytes.begin(), this->bytes.end());
 }
 
-bool shiro::io::buffer::can_read(size_t amount) {
+bool shiro::io::buffer::can_read(size_t amount) noexcept {
     return amount <= this->written_size - this->position;
 }
 
-bool shiro::io::buffer::is_empty() {
+bool shiro::io::buffer::is_empty() noexcept {
     return this->written_size == 0;
 }
 
-void shiro::io::buffer::clear() {
+void shiro::io::buffer::clear() noexcept {
     this->bytes.clear();
     this->written_size = 0;
     this->position = 0;
 }
 
-void shiro::io::buffer::seek(size_t position) {
+void shiro::io::buffer::seek(size_t position) noexcept {
     this->position = position;
 }
 
-void shiro::io::buffer::advance(size_t amount) {
+void shiro::io::buffer::advance(size_t amount) noexcept {
     this->position += amount;
 }
 
-size_t shiro::io::buffer::get_size() {
+size_t shiro::io::buffer::get_size() noexcept {
     return this->written_size;
 }

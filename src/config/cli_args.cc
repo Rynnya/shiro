@@ -30,7 +30,8 @@ void shiro::config::cli::parse(int argc, char **argv) {
 
     try {
         cli_app.parse(argc, argv);
-    } catch (const CLI::ParseError &ex) {
+    }
+    catch (const CLI::ParseError &ex) {
         ABORT_F("Unable to parse command line arguments: %s.", ex.what());
     }
 }

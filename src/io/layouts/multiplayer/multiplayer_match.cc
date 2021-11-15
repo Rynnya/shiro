@@ -26,19 +26,22 @@ void shiro::io::layouts::multiplayer_match::send_update(bool global) {
     writer.match_update(*this);
 
     for (int32_t id : this->multi_slot_id) {
-        if (id == -1)
+        if (id == -1) {
             continue;
+        }
 
         std::shared_ptr<users::user> user = users::manager::get_user_by_id(id);
 
-        if (user == nullptr)
+        if (user == nullptr) {
             continue;
+        }
 
         user->queue.enqueue(writer);
     }
 
-    if (!global)
+    if (!global) {
         return;
+    }
 
     io::osu_writer global_writer;
     global_writer.match_update(*this, true);
@@ -46,8 +49,9 @@ void shiro::io::layouts::multiplayer_match::send_update(bool global) {
     multiplayer::lobby_manager::iterate([this, &global_writer](std::shared_ptr<users::user> user) {
         auto iterator = std::find(this->multi_slot_id.begin(), this->multi_slot_id.end(), user->user_id);
 
-        if (iterator != this->multi_slot_id.end())
+        if (iterator != this->multi_slot_id.end()) {
             return;
+        }
 
         user->queue.enqueue(global_writer);
     });
@@ -85,8 +89,9 @@ shiro::io::buffer shiro::io::layouts::multiplayer_match::marshal() {
     for (size_t i = 0; i < this->multi_slot_status.size(); i++) {
         int32_t status = this->multi_slot_status.at(i) & 0x7c;
 
-        if (status > 0)
+        if (status > 0) {
             buf.write<int32_t>(this->multi_slot_id[i]);
+        }
     }
 
     buf.write<int32_t>(this->host_id);

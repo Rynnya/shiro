@@ -28,6 +28,15 @@
 
 namespace shiro::utils::time {
 
+    namespace traits {
+
+        template <class T>
+        struct is_duration : std::false_type {};
+
+        template <class Rep, class Period>
+        struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type {};
+    }
+
     extern int64_t unix_epoch_ticks;
 
     extern std::unordered_map<std::string, uint32_t> duration_mapping;
@@ -35,8 +44,8 @@ namespace shiro::utils::time {
     int64_t get_current_time_ticks();
 
     template <typename T = std::chrono::seconds>
-    inline T current_time()
-    {
+    inline T current_time() {
+        static_assert(traits::is_duration<T>::value, "T must be std::chrono::duration");
         return std::chrono::duration_cast<T>(std::chrono::system_clock::now().time_since_epoch());
     }
 

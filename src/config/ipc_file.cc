@@ -30,13 +30,15 @@ std::string shiro::config::ipc::avatar_url = "https://a.yukime.ml/";
 std::string shiro::config::ipc::beatmap_url = "https://osu.ppy.sh/b/";
 
 void shiro::config::ipc::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing ipc.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("ipc.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse ipc.toml file: %s.", ex.what());
     }
 

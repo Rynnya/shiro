@@ -21,33 +21,30 @@
 #include "../../utils/bot_utils.hh"
 #include "password_command.hh"
 
-bool shiro::commands_mp::password(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
-    if (!shiro::multiplayer::match_manager::in_match(user))
-    {
-        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
+bool shiro::commands_mp::password(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+    if (args.size() < 1) {
+        utils::bot::respond("Usage: !mp password <password>", user, channel, true);
         return true;
     }
 
-    if (args.size() < 1)
-    {
-        utils::bot::respond("Usage: !mp password <password>", user, channel, true);
+    if (!shiro::multiplayer::match_manager::in_match(user)) {
+        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
         return true;
     }
 
     std::string password = args.at(0);
 
-    shiro::multiplayer::match_manager::iterate([&user, &channel, &password](shiro::io::layouts::multiplayer_match& match) -> bool
-    {
+    shiro::multiplayer::match_manager::iterate([&user, &channel, &password](shiro::io::layouts::multiplayer_match& match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.host_id == user->user_id)
-        {
-            if (match.game_password == password)
+        if (match.host_id == user->user_id) {
+            if (match.game_password == password) {
                 return true;
+            }
 
             match.game_password = password;
             match.send_update(true);
@@ -55,15 +52,16 @@ bool shiro::commands_mp::password(std::deque<std::string>& args, std::shared_ptr
             io::osu_writer writer;
             writer.match_change_password(password);
 
-            for (int32_t id : match.multi_slot_id)
-            {
-                if (id == -1)
+            for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
+                if (i == -1) {
                     continue;
+                }
 
-                std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(id);
+                std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(i);
 
-                if (lobby_user == nullptr)
+                if (lobby_user == nullptr) {
                     continue;
+                }
 
                 lobby_user->queue.enqueue(writer);
             }

@@ -62,8 +62,9 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
 
     std::unique_ptr<utils::multipart_parser> parser = std::make_unique<utils::multipart_parser>(request.body, content_type);
 
-    if (parser == nullptr)
+    if (parser == nullptr) {
         return;
+    }
 
     utils::multipart_form_fields fields = parser->parse_fields();
 
@@ -120,9 +121,9 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
     stream.close();
 
     fs::permissions(
-            shiro_executable,
-            fs::perms::owner_all | fs::perms::group_exec | fs::perms::others_exec,
-            fs::perm_options::add
+        shiro_executable,
+        fs::perms::owner_all | fs::perms::group_exec | fs::perms::others_exec,
+        fs::perm_options::add
     );
 
     std::string short_hash = fields.at("commit").body.substr(0, 7);
@@ -135,8 +136,8 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
 
     io::osu_writer announce_writer;
     announce_writer.announce(
-            "Shiro is deploying a new version (" + short_hash + "). "
-            "You will be automatically reconnected in a few seconds."
+        "Shiro is deploying a new version (" + short_hash + "). "
+        "You will be automatically reconnected in a few seconds."
     );
 
     io::osu_writer restart_writer;
@@ -152,8 +153,9 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
 
         int32_t exit_code = std::system(config::api::deploy_command.c_str());
 
-        if (exit_code == 0)
+        if (exit_code == 0) {
             return;
+        }
 
         LOG_F(ERROR, "Shiro was unable to invoke the deployment command. Process returned %i.", exit_code);
     });

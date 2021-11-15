@@ -26,10 +26,9 @@
 #include "../thirdparty/json.hh"
 #include "../users/user.hh"
 
-namespace shiro::channels::discord_webhook
-{
-    enum class colors : uint32_t
-    {
+namespace shiro::channels::discord_webhook {
+
+    enum class colors : uint32_t {
         OK = 64154,
         Blurple = 7506394,
         Error = 16711680,

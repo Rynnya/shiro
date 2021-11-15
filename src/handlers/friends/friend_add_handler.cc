@@ -26,9 +26,9 @@ void shiro::handler::friends::add::handle(shiro::io::osu_packet &in, shiro::io::
     const tables::relationships relationships_table {};
 
     db(insert_into(relationships_table).set(
-            relationships_table.origin = user->user_id,
-            relationships_table.target = target,
-            relationships_table.blocked = false
+        relationships_table.origin = user->user_id,
+        relationships_table.target = target,
+        relationships_table.blocked = false
     ));
 
     user->friends.emplace_back(target);

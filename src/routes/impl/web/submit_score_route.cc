@@ -27,6 +27,7 @@
 #include "../../../config/score_submission_file.hh"
 #include "../../../database/tables/score_table.hh"
 #include "../../../logger/sentry_logger.hh"
+#include "../../../thread/thread_pool.hh"
 #include "../../../pp/pp_score_metric.hh"
 #include "../../../ranking/ranking_helper.hh"
 #include "../../../replays/replay_manager.hh"
@@ -68,8 +69,9 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     std::unique_ptr<utils::multipart_parser> parser = std::make_unique<utils::multipart_parser>(request.body, content_type);
 
-    if (parser == nullptr)
+    if (parser == nullptr) {
         return;
+    }
 
     utils::multipart_form_fields fields = parser->parse_fields();
     std::string key = "h89f2-890h2h89b34g-h80g134n90133";
@@ -95,13 +97,14 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
-    if (fields.find("osuver") != fields.end())
+    if (fields.find("osuver") != fields.end()) {
         key = "osu!-scoreburgr---------" + fields.at("osuver").body;
+    }
 
     std::vector<unsigned char> decrypted = utils::crypto::rijndael256::decode(
-            utils::crypto::base64::decode(fields.at("iv").body.c_str()),
-            key,
-            utils::crypto::base64::decode(fields.at("score").body.c_str())
+        utils::crypto::base64::decode(fields.at("iv").body.c_str()),
+        key,
+        utils::crypto::base64::decode(fields.at("score").body.c_str())
     );
 
     if (decrypted.empty()) {
@@ -180,9 +183,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     parse_result &= utils::strings::safe_int  (score_metadata.at(13), score.mods);
     parse_result &= utils::strings::safe_uchar(score_metadata.at(15), score.play_mode);
 
-    if (!parse_result)
-    {
-        logging::sentry::exception(std::invalid_argument("Score submission arguments was invalid."));
+    if (!parse_result) {
+        logging::sentry::exception(std::invalid_argument("Score submission arguments was invalid."), __FILE__, __LINE__);
 
         response.end("error: invalid");
 
@@ -192,14 +194,12 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     parse_result &= utils::strings::safe_int(score_metadata.at(17), game_version);
 
-    if (!parse_result)
-    {
-        logging::sentry::exception(std::invalid_argument("Cannot convert game version into int32_t."));
+    if (!parse_result) {
+        logging::sentry::exception(std::invalid_argument("Cannot convert game version into int32_t."), __FILE__, __LINE__);
         LOG_F(WARNING, "Unable to convert %s to game version.", score_metadata.at(17).c_str());
 
         // Give the client a chance to resubmit so the player doesn't get restricted for a fail on our side.
-        if (config::score_submission::restrict_mismatching_client_version)
-        {
+        if (config::score_submission::restrict_mismatching_client_version) {
             response.end("error: invalid");
             return;
         }
@@ -207,14 +207,12 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     int32_t failtime = 0;
     bool failed = false;
-    if (fields.find("ft") != fields.end())
-    {
+    if (fields.find("ft") != fields.end()) {
         failtime = utils::strings::safe_int(fields.at("ft").body);
         failed = failtime > 0;
     }
 
-    if (score.play_mode > 3)
-    {
+    if (score.play_mode > 3) {
         response.end("error: invalid");
 
         LOG_F(WARNING, "%s submitted a score with a invalid play mode.", user->presence.username.c_str());
@@ -259,18 +257,19 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     beatmap.fetch();
 
-    if (score.passed)
+    if (score.passed) {
         beatmap.pass_count++;
+    }
 
     beatmap.play_count++;
     beatmap.update_play_metadata();
 
     score.play_time = beatmap.hit_length;
-    if (failed)
-    {
+    if (failed) {
         int32_t time = beatmap.hit_length;
-        if (failtime / 1000 < beatmap.hit_length * 1.33)
+        if (failtime / 1000 < beatmap.hit_length * 1.33) {
             time = failtime / 1000;
+        }
 
         score.play_time = shiro::utils::time::adjusted_seconds(score.mods, time);
     }
@@ -281,41 +280,38 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         response.code = 400;
         response.end("error: invalid");
 
-        if (config::score_submission::restrict_no_replay)
+        if (config::score_submission::restrict_no_replay) {
             users::punishments::restrict(user->user_id, 1, "No replay sent on score submission");
+        }
 
         LOG_F(WARNING, "Received score without replay data.");
         return;
     }
 
-    if (beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(beatmap.ranked_status)))
+    if (beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(beatmap.ranked_status))) {
         score.pp = pp::calculate(beatmap, score);
+    }
 
     std::vector<scores::score> previous_scores = scores::helper::fetch_user_scores(beatmap.beatmap_md5, user, score.is_relax);
     bool overwrite = score.passed;
 
     // User has previous scores on this map and this also pass, enable overwriting mode
-    if (!previous_scores.empty() && overwrite)
-    {
-        for (const scores::score &s : previous_scores)
-        {
+    if (!previous_scores.empty() && overwrite) {
+        for (const scores::score &s : previous_scores) {
             double factor_score;
             double factor_iterator;
 
-            // In relax only pp
-            if (score.is_relax || !user->preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode)))
-            {
+            // In relax only pp (Even if pp is 0 on relax this will be overwritten by new score with non-zero value)
+            if (score.is_relax || !user->preferences.is_overwrite(static_cast<shiro::utils::play_mode>(score.play_mode))) {
                 factor_score = score.pp;
                 factor_iterator = s.pp;
             }
-            else
-            {
+            else {
                 factor_score = score.total_score;
                 factor_iterator = s.total_score;
             }
 
-            if (factor_iterator > factor_score)
-            {
+            if (factor_iterator > factor_score) {
                 overwrite = false;
                 break;
             }
@@ -325,24 +321,28 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     // Auto restriction for weird things enabled in score_submission.toml
     auto [flagged, reason] = scores::helper::is_flagged(score, beatmap);
 
-    if (flagged)
+    if (flagged) {
         users::punishments::restrict(user->user_id, 1, reason);
+    }
 
     // Auto restriction for bad replay submitters that submit without editing username
-    if (config::score_submission::restrict_mismatching_username && score_metadata.at(1) != user->presence.username)
+    if (config::score_submission::restrict_mismatching_username && score_metadata.at(1) != user->presence.username) {
         users::punishments::restrict(user->user_id, 1, "Mismatching username on score submission (" + score_metadata.at(1) + " != " + user->presence.username + ")");
+    }
 
     // ...or the client build
-    if (config::score_submission::restrict_mismatching_client_version && game_version != user->client_build)
+    if (config::score_submission::restrict_mismatching_client_version && game_version != user->client_build) {
         users::punishments::restrict(user->user_id, 1, "Mismatching client version on score submission (" + std::to_string(game_version) + " != " + std::to_string(user->client_build) + ")");
+    }
 
     // Auto restriction for notepad hack
     if (config::score_submission::restrict_notepad_hack && fields.find("bmk") != fields.end() && fields.find("bml") != fields.end()) {
         std::string bmk = fields.at("bmk").body;
         std::string bml = fields.at("bml").body;
 
-        if (bmk != bml)
+        if (bmk != bml) {
             users::punishments::restrict(user->user_id, 1, "Mismatching bmk and bml (notepad hack, " + bmk + " != " + bml + ")");
+        }
     }
 
     // Legacy table display (<20181221.4)
@@ -352,42 +352,41 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     display->init();
 
     score.id = db(insert_into(score_table).set(
-            score_table.user_id = score.user_id,
-            score_table.hash = score.hash,
-            score_table.beatmap_md5 = score.beatmap_md5,
-            score_table.ranking = score.rank,
-            score_table.score = score.total_score,
-            score_table.max_combo = score.max_combo,
-            score_table.pp = score.pp,
-            score_table.accuracy = score.accuracy,
-            score_table.mods = score.mods,
-            score_table.full_combo = score.fc,
-            score_table.completed = score.passed,
-            score_table.count_300 = score.count_300,
-            score_table.count_100 = score.count_100,
-            score_table.count_50 = score.count_50,
-            score_table.count_katus = score.count_katus,
-            score_table.count_gekis = score.count_gekis,
-            score_table.count_misses = score.count_misses,
-            score_table.play_mode = score.play_mode,
-            score_table.time = score.time,
-            score_table.play_time = score.play_time,
-            score_table.is_relax = score.is_relax
+        score_table.user_id = score.user_id,
+        score_table.hash = score.hash,
+        score_table.beatmap_md5 = score.beatmap_md5,
+        score_table.ranking = score.rank,
+        score_table.score = score.total_score,
+        score_table.max_combo = score.max_combo,
+        score_table.pp = score.pp,
+        score_table.accuracy = score.accuracy,
+        score_table.mods = score.mods,
+        score_table.full_combo = score.fc,
+        score_table.completed = score.passed,
+        score_table.count_300 = score.count_300,
+        score_table.count_100 = score.count_100,
+        score_table.count_50 = score.count_50,
+        score_table.count_katus = score.count_katus,
+        score_table.count_gekis = score.count_gekis,
+        score_table.count_misses = score.count_misses,
+        score_table.play_mode = score.play_mode,
+        score_table.time = score.time,
+        score_table.play_time = score.play_time,
+        score_table.is_relax = score.is_relax
     ));
 
-    if (overwrite)
-    {
+    if (overwrite) {
         user->stats.total_score += score.total_score;
         user->update_counts(score.rank);
 
-        if (score.max_combo > user->stats.max_combo)
+        if (score.max_combo > user->stats.max_combo) {
             user->stats.max_combo = score.max_combo;
+        }
     }
 
     replays::save_replay(score, beatmap, fields.at("replay-bin").body);
 
-    if (!score.passed || !scores::helper::is_ranked(score, beatmap))
-    {
+    if (!score.passed || !scores::helper::is_ranked(score, beatmap)) {
         // We need save stats to keep play_time, counts and total_hits, also fixes 'sending statistics...' bug
         user->save_stats(score.is_relax);
         display->set_scoreboard_position(0);
@@ -403,24 +402,25 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         if (scoreboard_position == 1) {
             char buffer[1024];
             std::snprintf(
-                    buffer, sizeof(buffer),
-                    "[%s %s] achieved rank #1 on [%s %s] (%s)",
-                    user->get_url().c_str(), user->presence.username.c_str(),
-                    beatmap.get_url().c_str(), beatmap.song_name.c_str(),
-                    utils::play_mode_to_string(static_cast<utils::play_mode>(score.play_mode)).c_str()
+                buffer, sizeof(buffer),
+                "[%s %s] achieved rank #1 on [%s %s] (%s)",
+                user->get_url().c_str(), user->presence.username.c_str(),
+                beatmap.get_url().c_str(), beatmap.song_name.c_str(),
+                utils::play_mode_to_string(static_cast<utils::play_mode>(score.play_mode)).c_str()
             );
 
             utils::bot::respond(buffer, user, "#announce", false);
 
-            std::thread([](sqlpp::mysql::connection&& db, const std::shared_ptr<users::user>& user, const beatmaps::beatmap& beatmap, const scores::score& score)
-            {
+            // Bad thing that db creation might cost a lot, but moving cost a lot too because we need wrap it around shared_ptr...
+            // Creating new thread might cost even more, so let's stuck with this variant
+            shiro::thread::curl_operations.push_and_forgot(
+                [db = std::make_shared<decltype(db)>(std::move(db))](const std::shared_ptr<users::user>& user, const beatmaps::beatmap& beatmap, const scores::score& score) {
                 shiro::channels::discord_webhook::send_top1_message(user, beatmap, score);
 
                 const tables::scores_first scores_first_table {};
-                auto exist = db(sqlpp::select(scores_first_table.beatmap_md5).from(scores_first_table).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5).limit(1u));
-                if (exist.empty())
-                {
-                    db(sqlpp::insert_into(scores_first_table).set(
+                auto exist = (*db)(sqlpp::select(scores_first_table.beatmap_md5).from(scores_first_table).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5).limit(1u));
+                if (exist.empty()) {
+                    (*db)(sqlpp::insert_into(scores_first_table).set(
                         scores_first_table.score_id = score.id,
                         scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
                         scores_first_table.user_id = score.user_id,
@@ -432,29 +432,31 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
                 // One result exist, we need to pop it
                 exist.pop_front();
-                db(sqlpp::update(scores_first_table).set(
+                (*db)(sqlpp::update(scores_first_table).set(
                     scores_first_table.score_id = score.id,
                     scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
                     scores_first_table.user_id = score.user_id,
                     scores_first_table.play_mode = score.play_mode,
                     scores_first_table.is_relax = score.is_relax
                 ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
-            }, std::move(db) /* We don't manipulate with database anymore */, user, beatmap, score).detach();
+            }, user, beatmap, score);
         }
     }
 
     display->set_scoreboard_position(scoreboard_position);
 
-    if (overwrite)
+    if (overwrite) {
         user->stats.ranked_score += score.total_score;
+    }
 
     user->stats.recalculate_pp(score.is_relax);
     user->stats.recalculate_accuracy(score.is_relax);
 
     user->save_stats(score.is_relax);
 
-    if (overwrite && !user->hidden)
+    if (overwrite && !user->hidden) {
         ranking::helper::recalculate_ranks(static_cast<utils::play_mode>(score.play_mode), score.is_relax);
+    }
 
     response.end(display->build());
 }

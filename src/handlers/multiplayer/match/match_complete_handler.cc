@@ -25,8 +25,9 @@ void shiro::handler::multiplayer::match::complete::handle(shiro::io::osu_packet 
     shiro::multiplayer::match_manager::iterate([user](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 
@@ -37,8 +38,9 @@ void shiro::handler::multiplayer::match::complete::handle(shiro::io::osu_packet 
         size_t complete_count = std::count_if(match.finished_players.begin(), match.finished_players.end(), 
             [](bool complete) { return complete; });
 
-        if (player_count != complete_count)
+        if (player_count != complete_count) {
             return true;
+        }
 
         match.in_progress = false;
 
@@ -46,15 +48,17 @@ void shiro::handler::multiplayer::match::complete::handle(shiro::io::osu_packet 
         writer.match_complete();
 
         for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
-            if (match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::playing))
+            if (match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::playing)) {
                 continue;
+            }
 
             match.multi_slot_status.at(i) = static_cast<uint8_t>(utils::slot_status::not_ready);
 
             std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(match.multi_slot_id.at(i));
 
-            if (lobby_user == nullptr)
+            if (lobby_user == nullptr) {
                 continue;
+            }
 
             lobby_user->queue.enqueue(writer);
         }

@@ -46,20 +46,24 @@ void shiro::replays::init() {
 }
 
 void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::beatmap &beatmap, std::string replay) {
-    if (!s.passed && !config::score_submission::save_failed_scores)
+    if (!s.passed && !config::score_submission::save_failed_scores) {
         return;
+    }
 
-    if (!scores::helper::is_ranked(s, beatmap) && !config::score_submission::save_unranked_scores)
+    if (!scores::helper::is_ranked(s, beatmap) && !config::score_submission::save_unranked_scores) {
         return;
+    }
 
     fs::path filename = dir / std::string(std::to_string(s.id) + ".osr");
     std::shared_ptr<users::user> user = users::manager::get_user_by_id(s.user_id);
 
-    if (user == nullptr)
+    if (user == nullptr) {
         return;
+    }
 
-    if (fs::exists(filename))
+    if (fs::exists(filename)) {
         fs::remove(filename);
+    }
 
     // osu! requires raw replay in-game, to get full replay use /api/get_replay
     std::ofstream stream(filename, std::ofstream::trunc | std::ofstream::binary);
@@ -93,8 +97,9 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
 }
 
 std::string shiro::replays::get_replay(const shiro::scores::score &s) {
-    if (!has_replay(s))
+    if (!has_replay(s)) {
         return "";
+    }
 
     fs::path filename = dir / std::string(std::to_string(s.id) + ".osr.zz");
     std::stringstream result;
@@ -128,12 +133,12 @@ std::string shiro::replays::get_replay(const shiro::scores::score &s) {
     return result.str();
 }
 
-std::string shiro::replays::get_full_replay(const shiro::scores::score &s)
-{
+std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     std::shared_ptr<users::user> user = users::manager::get_user_by_id(s.user_id);
 
-    if (user == nullptr)
+    if (user == nullptr) {
         return "";
+    }
 
     // Convert raw replay into full osu! replay file
     // Reference: https://osu.ppy.sh/help/wiki/osu!_File_Formats/Osr_(file_format)
@@ -148,8 +153,9 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s)
 
     std::string raw_replay = get_replay(s);
 
-    if (raw_replay == "")
+    if (raw_replay == "") {
         return "";
+    }
 
     std::string beatmap_md5 = utils::osu_string(s.beatmap_md5);
     std::string username = utils::osu_string(user->presence.username);
@@ -189,8 +195,9 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s)
 }
 
 bool shiro::replays::has_replay(const shiro::scores::score &s) {
-    if (fs::exists(dir / std::string(std::to_string(s.id) + ".osr")))
+    if (fs::exists(dir / std::string(std::to_string(s.id) + ".osr"))) {
         return true;
+    }
 
     return fs::exists(dir / std::string(std::to_string(s.id) + ".osr.zz"));
 }

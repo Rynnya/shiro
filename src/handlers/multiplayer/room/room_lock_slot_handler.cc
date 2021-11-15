@@ -24,24 +24,28 @@
 void shiro::handler::multiplayer::room::lock_slot::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
     int32_t slot_id = in.data.read<int32_t>();
 
-    if (slot_id >= 16)
+    if (slot_id >= 16) {
         return;
+    }
 
     std::shared_ptr<users::user> kicking_user = nullptr;
 
-    shiro::multiplayer::match_manager::iterate([&user, &kicking_user, slot_id](io::layouts::multiplayer_match &match) -> bool {
+    shiro::multiplayer::match_manager::iterate([&user, &kicking_user, slot_id](io::layouts::multiplayer_match& match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.host_id != user->user_id)
+        if (match.host_id != user->user_id) {
             return true;
+        }
 
         int32_t kicking_user_id = match.multi_slot_id.at(slot_id);
 
-        if (kicking_user_id != -1)
+        if (kicking_user_id != -1) {
             kicking_user = users::manager::get_user_by_id(kicking_user_id);
+        }
 
         uint8_t &slot_status = match.multi_slot_status.at(slot_id);
 
@@ -53,8 +57,9 @@ void shiro::handler::multiplayer::room::lock_slot::handle(shiro::io::osu_packet 
         return true;
     });
 
-    if (kicking_user == nullptr)
+    if (kicking_user == nullptr) {
         return;
+    }
 
     // Kick the player outside of #iterate to prevent dead lock
     shiro::multiplayer::match_manager::leave_match(kicking_user);

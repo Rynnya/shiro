@@ -34,8 +34,9 @@ std::string shiro::native::process_info::get_executable_location() {
     #ifdef ARCH_darwin_14_i86
         uint32_t size = sizeof(buffer);
 
-        if (_NSGetExecutablePath(buffer, &size) != 0)
+        if (_NSGetExecutablePath(buffer, &size) != 0) {
             return "shiro"; // Fallback to our generic executable name
+        }
     #else
         return fs::read_symlink("/proc/self/exe").u8string();
     #endif

@@ -25,8 +25,9 @@ void shiro::handler::spectating::start::handle(shiro::io::osu_packet &in, shiro:
 
     std::shared_ptr<shiro::users::user> target_user = users::manager::get_user_by_id(target_id);
 
-    if (target_user == nullptr)
+    if (target_user == nullptr) {
         return;
+    }
 
     shiro::spectating::manager::start_spectating(user, target_user);
 
@@ -35,8 +36,9 @@ void shiro::handler::spectating::start::handle(shiro::io::osu_packet &in, shiro:
 
     target_user->queue.enqueue(host_writer);
 
-    if (user->hidden)
+    if (user->hidden) {
         return;
+    }
 
     io::osu_writer user_writer;
     user_writer.spectator_join_user(user->user_id);

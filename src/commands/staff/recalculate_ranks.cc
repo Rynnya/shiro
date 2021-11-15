@@ -34,11 +34,9 @@ bool shiro::commands::recalculate(std::deque<std::string> &args, std::shared_ptr
     utils::play_mode mode = static_cast<utils::play_mode>(user->stats.play_mode);
     bool is_relax = false;
 
-    if (args.size() >= 2)
-    {
+    if (args.size() >= 2) {
         int32_t parsed_mode = 0;
-        if (!utils::strings::safe_int(args.at(0), parsed_mode))
-        {
+        if (!utils::strings::safe_int(args.at(0), parsed_mode)) {
             utils::bot::respond("Unable to parse provided game mode into integer.", std::move(user), std::move(channel), true);
             return false;
         }

@@ -24,8 +24,9 @@ void shiro::handler::chat::leave::handle(shiro::io::osu_packet &in, shiro::io::o
     std::string channel = in.data.read_string();
     uint32_t target_channel = channels::manager::get_channel_id(channel);
 
-    if (target_channel == 0)
+    if (target_channel == 0) {
         return;
+    }
 
     if (!channels::manager::leave_channel(target_channel, std::move(user))) {
         out.channel_join(channel);

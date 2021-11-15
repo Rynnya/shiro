@@ -21,11 +21,13 @@
 
 void shiro::handler::presence::request_all::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
     users::manager::iterate([&out](std::shared_ptr<users::user> online_user) {
-        if (online_user->hidden)
+        if (online_user->hidden) {
             return;
+        }
 
-        if (online_user->user_id != -1)
+        if (online_user->user_id != -1) {
             out.user_stats(online_user->stats);
+        }
 
         out.user_presence(online_user->presence);
     });

@@ -44,8 +44,9 @@ bool shiro::users::user::init() {
 
     auto user_result = db(select(all_of(user_table)).from(user_table).where(user_table.id == this->user_id or user_table.username == this->presence.username).limit(1u));
 
-    if (user_result.empty())
+    if (user_result.empty()) {
         return false;
+    }
 
     const auto &row = user_result.front();
 
@@ -62,14 +63,14 @@ bool shiro::users::user::init() {
 
     auto relationship_result = db(select(all_of(relationships_table)).from(relationships_table).where(relationships_table.origin == this->user_id and relationships_table.blocked == false));
 
-    for (const auto &row : relationship_result)
+    for (const auto& row : relationship_result) {
         this->friends.emplace_back(row.target);
+    }
 
     this->hidden = users::punishments::is_restricted(this->user_id);
     this->preferences = std::move(user_preferences(this->user_id));
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax user_stats_table {};
 
         auto stats_result = db(sqlpp::select(
@@ -132,19 +133,18 @@ void shiro::users::user::update(bool is_relax) {
     const tables::users user_table {};
     db(sqlpp::update(user_table).set(user_table.is_relax = is_relax).where(user_table.id == this->user_id));
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax user_stats_table {};
         auto result = db(select(all_of(user_stats_table)).from(user_stats_table).where(user_stats_table.id == this->user_id).limit(1u));
 
-        if (result.empty())
+        if (result.empty()) {
             return;
+        }
 
         const auto& row = result.front();
 
-        switch (static_cast<utils::play_mode>(this->status.play_mode))
-        {
-            case utils::play_mode::standard:
+        switch (static_cast<utils::play_mode>(this->status.play_mode)) {
+            case utils::play_mode::standard: {
                 this->stats.pp = row.pp_std;
                 this->stats.total_score = row.total_score_std;
                 this->stats.ranked_score = row.ranked_score_std;
@@ -161,7 +161,8 @@ void shiro::users::user::update(bool is_relax) {
                 this->stats.count_SH = row.count_SH_std;
                 this->stats.count_XH = row.count_XH_std;
                 break;
-            case utils::play_mode::taiko:
+            }
+            case utils::play_mode::taiko: {
                 this->stats.pp = row.pp_taiko;
                 this->stats.total_score = row.total_score_taiko;
                 this->stats.ranked_score = row.ranked_score_taiko;
@@ -178,7 +179,8 @@ void shiro::users::user::update(bool is_relax) {
                 this->stats.count_SH = row.count_SH_taiko;
                 this->stats.count_XH = row.count_XH_taiko;
                 break;
-            case utils::play_mode::fruits:
+            }
+            case utils::play_mode::fruits: {
                 this->stats.pp = row.pp_ctb;
                 this->stats.total_score = row.total_score_ctb;
                 this->stats.ranked_score = row.ranked_score_ctb;
@@ -195,6 +197,10 @@ void shiro::users::user::update(bool is_relax) {
                 this->stats.count_SH = row.count_SH_ctb;
                 this->stats.count_XH = row.count_XH_ctb;
                 break;
+            }
+            case utils::play_mode::mania: {
+                break;
+            }
         }
 
         this->is_relax = true;
@@ -204,14 +210,14 @@ void shiro::users::user::update(bool is_relax) {
     const tables::users_stats user_stats_table {};
     auto result = db(select(all_of(user_stats_table)).from(user_stats_table).where(user_stats_table.id == this->user_id).limit(1u));
 
-    if (result.empty())
+    if (result.empty()) {
         return;
+    }
 
     const auto& row = result.front();
 
-    switch (static_cast<utils::play_mode>(this->status.play_mode))
-    {
-        case utils::play_mode::standard:
+    switch (static_cast<utils::play_mode>(this->status.play_mode)) {
+        case utils::play_mode::standard: {
             this->stats.pp = row.pp_std;
             this->stats.total_score = row.total_score_std;
             this->stats.ranked_score = row.ranked_score_std;
@@ -228,7 +234,8 @@ void shiro::users::user::update(bool is_relax) {
             this->stats.count_SH = row.count_SH_std;
             this->stats.count_XH = row.count_XH_std;
             break;
-        case utils::play_mode::taiko:
+        }
+        case utils::play_mode::taiko: {
             this->stats.pp = row.pp_taiko;
             this->stats.total_score = row.total_score_taiko;
             this->stats.ranked_score = row.ranked_score_taiko;
@@ -245,7 +252,8 @@ void shiro::users::user::update(bool is_relax) {
             this->stats.count_SH = row.count_SH_taiko;
             this->stats.count_XH = row.count_XH_taiko;
             break;
-        case utils::play_mode::fruits:
+        }
+        case utils::play_mode::fruits: {
             this->stats.pp = row.pp_ctb;
             this->stats.total_score = row.total_score_ctb;
             this->stats.ranked_score = row.ranked_score_ctb;
@@ -262,7 +270,8 @@ void shiro::users::user::update(bool is_relax) {
             this->stats.count_SH = row.count_SH_ctb;
             this->stats.count_XH = row.count_XH_ctb;
             break;
-        case utils::play_mode::mania:
+        }
+        case utils::play_mode::mania: {
             this->stats.pp = row.pp_mania;
             this->stats.total_score = row.total_score_mania;
             this->stats.ranked_score = row.ranked_score_mania;
@@ -279,21 +288,19 @@ void shiro::users::user::update(bool is_relax) {
             this->stats.count_SH = row.count_SH_mania;
             this->stats.count_XH = row.count_XH_mania;
             break;
+        }
     }
 
     this->is_relax = false;
 }
 
-void shiro::users::user::save_stats(bool to_relax)
-{
+void shiro::users::user::save_stats(bool to_relax) {
     sqlpp::mysql::connection db(db_connection->get_config());
     
-    if (to_relax)
-    {
+    if (to_relax) {
         const tables::users_stats_relax user_stats_table {};
-        switch (static_cast<utils::play_mode>(this->stats.play_mode))
-        {
-            case utils::play_mode::standard:
+        switch (static_cast<utils::play_mode>(this->stats.play_mode)) {
+            case utils::play_mode::standard: {
                 db(sqlpp::update(user_stats_table).set(
                     user_stats_table.pp_std = this->stats.pp,
                     user_stats_table.total_score_std = this->stats.total_score,
@@ -311,7 +318,8 @@ void shiro::users::user::save_stats(bool to_relax)
                     user_stats_table.count_XH_std = this->stats.count_XH
                 ).where(user_stats_table.id == this->user_id));
                 break;
-            case utils::play_mode::taiko:
+            }
+            case utils::play_mode::taiko: {
                 db(sqlpp::update(user_stats_table).set(
                     user_stats_table.pp_taiko = this->stats.pp,
                     user_stats_table.total_score_taiko = this->stats.total_score,
@@ -329,7 +337,8 @@ void shiro::users::user::save_stats(bool to_relax)
                     user_stats_table.count_XH_taiko = this->stats.count_XH
                 ).where(user_stats_table.id == this->user_id));
                 break;
-            case utils::play_mode::fruits:
+            }
+            case utils::play_mode::fruits: {
                 db(sqlpp::update(user_stats_table).set(
                     user_stats_table.pp_ctb = this->stats.pp,
                     user_stats_table.total_score_ctb = this->stats.total_score,
@@ -347,6 +356,10 @@ void shiro::users::user::save_stats(bool to_relax)
                     user_stats_table.count_XH_ctb = this->stats.count_XH
                 ).where(user_stats_table.id == this->user_id));
                 break;
+            }
+            case utils::play_mode::mania: {
+                break;
+            }
         }
 
         return;
@@ -354,9 +367,8 @@ void shiro::users::user::save_stats(bool to_relax)
 
     const tables::users_stats user_stats_table {};
 
-    switch (static_cast<utils::play_mode>(this->stats.play_mode)) 
-    {
-        case utils::play_mode::standard:
+    switch (static_cast<utils::play_mode>(this->stats.play_mode)) {
+        case utils::play_mode::standard: {
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_std = this->stats.pp,
                 user_stats_table.total_score_std = this->stats.total_score,
@@ -374,7 +386,8 @@ void shiro::users::user::save_stats(bool to_relax)
                 user_stats_table.count_XH_std = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
-        case utils::play_mode::taiko:
+        }
+        case utils::play_mode::taiko: {
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_taiko = this->stats.pp,
                 user_stats_table.total_score_taiko = this->stats.total_score,
@@ -392,7 +405,8 @@ void shiro::users::user::save_stats(bool to_relax)
                 user_stats_table.count_XH_taiko = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
-        case utils::play_mode::fruits:
+        }
+        case utils::play_mode::fruits: {
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_ctb = this->stats.pp,
                 user_stats_table.total_score_ctb = this->stats.total_score,
@@ -410,7 +424,8 @@ void shiro::users::user::save_stats(bool to_relax)
                 user_stats_table.count_XH_ctb = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
-        case utils::play_mode::mania:
+        }
+        case utils::play_mode::mania: {
             db(sqlpp::update(user_stats_table).set(
                 user_stats_table.pp_mania = this->stats.pp,
                 user_stats_table.total_score_mania = this->stats.total_score,
@@ -428,11 +443,11 @@ void shiro::users::user::save_stats(bool to_relax)
                 user_stats_table.count_XH_mania = this->stats.count_XH
             ).where(user_stats_table.id == this->user_id));
             break;
+        }
     }
 }
 
-void shiro::users::user::update_country(std::string country)
-{
+void shiro::users::user::update_country(std::string country) {
     this->country = country;
 
     sqlpp::mysql::connection db(db_connection->get_config());
@@ -441,19 +456,19 @@ void shiro::users::user::update_country(std::string country)
     db(sqlpp::update(user_table).set(user_table.country = country).where(user_table.id == this->user_id));
 }
 
-void shiro::users::user::update_counts(std::string rank)
-{
-    static std::unordered_map<std::string, std::function<void()>> ranks =
-    {
+void shiro::users::user::update_counts(std::string rank) {
+    const static std::unordered_map<std::string, std::function<void()>> ranks = {
         { "A",  [&]() { this->stats.count_A++;  } },
         { "S",  [&]() { this->stats.count_S++;  } },
         { "X",  [&]() { this->stats.count_X++;  } },
         { "SH", [&]() { this->stats.count_SH++; } },
         { "XH", [&]() { this->stats.count_XH++; } }
     };
+
     auto it = ranks.find(rank);
-    if (it != ranks.end())
+    if (it != ranks.end()) {
         it->second();
+    }
 }
 
 std::string shiro::users::user::get_url() {
@@ -461,8 +476,7 @@ std::string shiro::users::user::get_url() {
     return url;
 }
 
-std::string shiro::users::user::get_avatar_url() 
-{
+std::string shiro::users::user::get_avatar_url() {
     std::string url = config::ipc::avatar_url + std::to_string(this->user_id);
     return url;
 }
@@ -477,20 +491,21 @@ void shiro::users::user::refresh_stats() {
 }
 
 bool shiro::users::user::check_password(const std::string &password) {
-    if (this->password.empty() || password.empty())
+    if (this->password.empty() || password.empty()) {
         return false;
+    }
 
     return utils::crypto::pbkdf2_hmac_sha512::hash(password, this->salt) == this->password;
 }
 
-shiro::users::user_preferences::user_preferences(int32_t id)
-{
+shiro::users::user_preferences::user_preferences(int32_t id) {
     sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::users_preferences users_preferences_table{};
+    const tables::users_preferences users_preferences_table {};
 
     auto result = db(sqlpp::select(sqlpp::all_of(users_preferences_table)).from(users_preferences_table).where(users_preferences_table.id == id));
-    if (result.empty())
+    if (result.empty()) {
         return;
+    }
 
     auto& data = result.front();
     this->display_classic = data.scoreboard_display_classic;
@@ -503,18 +518,20 @@ shiro::users::user_preferences::user_preferences(int32_t id)
     this->score_ow_mania = data.score_overwrite_mania;
 }
 
-bool shiro::users::user_preferences::is_overwrite(shiro::utils::play_mode mode)
-{
-    switch (mode)
-    {
-        case shiro::utils::play_mode::standard:
+bool shiro::users::user_preferences::is_overwrite(shiro::utils::play_mode mode) {
+    switch (mode) {
+        case shiro::utils::play_mode::standard: {
             return this->score_ow_std;
-        case shiro::utils::play_mode::taiko:
+        }
+        case shiro::utils::play_mode::taiko: {
             return this->score_ow_taiko;
-        case shiro::utils::play_mode::fruits:
+        }
+        case shiro::utils::play_mode::fruits: {
             return this->score_ow_ctb;
-        case shiro::utils::play_mode::mania:
+        }
+        case shiro::utils::play_mode::mania: {
             return this->score_ow_mania;
+        }
     }
 
     return false;

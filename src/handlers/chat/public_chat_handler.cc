@@ -45,22 +45,25 @@ void shiro::handler::chat::handle_public(shiro::io::osu_packet &in, shiro::io::o
 
     message_buffer.send_message(message);
 
-    if (channels::manager::is_read_only(message.channel))
+    if (channels::manager::is_read_only(message.channel)) {
         return;
+    }
 
     if (message.channel == "#spectator") {
         std::vector<std::shared_ptr<users::user>> spectators = spectating::manager::get_spectators(user);
         std::shared_ptr<users::user> host = spectating::manager::get_host(user);
 
         for (const std::shared_ptr<users::user> &spectator : spectators) {
-            if (spectator == user)
+            if (spectator == user) {
                 continue;
+            }
 
             spectator->queue.enqueue(message_buffer);
         }
 
-        if (host != nullptr)
+        if (host != nullptr) {
             host->queue.enqueue(message_buffer);
+        }
 
         utils::bot::handle(message, user);
         return;
@@ -77,13 +80,15 @@ void shiro::handler::chat::handle_public(shiro::io::osu_packet &in, shiro::io::o
         io::layouts::multiplayer_match match = multi_match.value();
 
         for (int32_t user_id : match.multi_slot_id) {
-            if (user_id == -1 || user_id == user->user_id)
+            if (user_id == -1 || user_id == user->user_id) {
                 continue;
+            }
 
             std::shared_ptr<users::user> target_user = users::manager::get_user_by_id(user_id);
 
-            if (target_user == nullptr)
+            if (target_user == nullptr) {
                 continue;
+            }
 
             target_user->queue.enqueue(message_buffer);
         }
@@ -95,8 +100,9 @@ void shiro::handler::chat::handle_public(shiro::io::osu_packet &in, shiro::io::o
     std::vector<std::shared_ptr<users::user>> users = channels::manager::get_users_in_channel(message.channel);
 
     for (const std::shared_ptr<users::user> &channel_user : users) {
-        if (user->user_id == channel_user->user_id || user->user_id == 1)
+        if (user->user_id == channel_user->user_id || user->user_id == 1) {
             continue;
+        }
 
         channel_user->queue.enqueue(message_buffer);
     }

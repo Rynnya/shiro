@@ -90,8 +90,9 @@ std::string shiro::utils::crypto::lzma::decompress(std::string input) {
 
     lzma_ret decoder = lzma_alone_decoder(&stream, UINT64_MAX);
 
-    if (decoder != LZMA_OK)
+    if (decoder != LZMA_OK) {
         return "";
+    }
 
     std::string output;
     output.resize(BUFSIZ);
@@ -109,16 +110,18 @@ std::string shiro::utils::crypto::lzma::decompress(std::string input) {
         if (decoder == LZMA_STREAM_END) {
             amount += available - stream.avail_in;
 
-            if (stream.avail_in == 0)
+            if (stream.avail_in == 0) {
                 break;
+            }
 
             output.resize(amount);
             lzma_end(&stream);
             return output;
         }
 
-        if (decoder != LZMA_OK)
+        if (decoder != LZMA_OK) {
             break;
+        }
 
         if (stream.avail_out == 0) {
             amount += available - stream.avail_out;
@@ -132,8 +135,9 @@ std::string shiro::utils::crypto::lzma::decompress(std::string input) {
 }
 
 uint32_t shiro::utils::crypto::get_highest_bit(uint32_t bitwise) {
-    if (bitwise == 0)
+    if (bitwise == 0) {
         return 0;
+    }
 
     uint32_t result = 1;
 

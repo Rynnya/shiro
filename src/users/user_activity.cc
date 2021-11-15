@@ -47,8 +47,9 @@ bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mod
 
     std::optional<scores::score> score = scores::helper::get_latest_score(id, mode, is_relax);
 
-    if (!score.has_value())
+    if (!score.has_value()) {
         return false;
+    }
 
     scores::score latest_score = score.value();
 
@@ -59,8 +60,9 @@ bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mod
     int32_t difference = std::chrono::duration_cast<days>(difference_time).count();
     bool inactive = difference > 90; // Users which haven't submitted a score in 90 days are considered inactive
 
-    if (inactive)
+    if (inactive) {
         LOG_F(MAX, "User %i is inactive (%i days since last score submission)", id, difference);
+    }
 
     return inactive;
 }

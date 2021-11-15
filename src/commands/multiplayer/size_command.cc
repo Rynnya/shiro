@@ -23,74 +23,56 @@
 #include "../../utils/string_utils.hh"
 #include "size_command.hh"
 
-bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
-    if (!shiro::multiplayer::match_manager::in_match(user))
-    {
-        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
-        return true;
-    }
-
-    if (args.size() < 1)
-    {
+bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+    if (args.size() < 1) {
         utils::bot::respond("Usage: !mp size <number>", user, channel, true);
         return true;
     }
 
+    if (!shiro::multiplayer::match_manager::in_match(user)) {
+        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
+        return true;
+    }
+
     int32_t size;
-    if (!utils::strings::safe_int(args.at(0), size))
-    {
+    if (!utils::strings::safe_int(args.at(0), size)) {
         utils::bot::respond("You must provide a number!", user, channel, true);
         utils::bot::respond("Usage: !mp size <number>", user, channel, true);
         return true;
     }
 
-    if (size < 1 || size > 16)
-    {
+    if (size < 1 || size > 16) {
         utils::bot::respond("Number must be between 1 and 16.", user, channel, true);
         return true;
     }
 
-    shiro::multiplayer::match_manager::iterate([&user, &channel, size](shiro::io::layouts::multiplayer_match& match) -> bool
-    {
+    std::vector<std::shared_ptr<users::user>> removed_users = {};
+
+    shiro::multiplayer::match_manager::iterate([&removed_users, &user, &channel, size](shiro::io::layouts::multiplayer_match& match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.host_id == user->user_id)
-        {
-            std::shared_ptr<users::user> kicking_user = nullptr;
+        if (match.host_id == user->user_id) {
+            for (size_t i = 15; i >= size; i--) {
+                int32_t kicking_user_id = match.multi_slot_id.at(i);
 
-            for (int32_t slot_id = 15; slot_id >= size; slot_id--)
-            {
-                int32_t kicking_user_id = match.multi_slot_id.at(slot_id);
+                if (kicking_user_id != -1 && kicking_user_id != user->user_id) {
+                    removed_users.push_back(users::manager::get_user_by_id(kicking_user_id));
+                }
 
-                if (kicking_user_id != -1 && kicking_user_id != user->user_id)
-                    kicking_user = users::manager::get_user_by_id(kicking_user_id);
-
-                uint8_t& slot_status = match.multi_slot_status.at(slot_id);
+                uint8_t& slot_status = match.multi_slot_status.at(i);
                 slot_status = static_cast<uint8_t>(utils::slot_status::locked);
-
-                if (kicking_user == nullptr)
-                    continue;
-
-                // Kick the player outside of #iterate to prevent dead lock
-                shiro::multiplayer::match_manager::leave_match(kicking_user);
-
-                io::osu_writer writer;
-                writer.channel_revoked("#multiplayer");
-                writer.announce("You have been kicked from the match!");
-
-                kicking_user->queue.enqueue(writer);
             }
 
             // Unlock every slot that not in range but locked
-            for (int32_t slot_id = 0; slot_id < size; slot_id++)
-            {
-                uint8_t& slot_status = match.multi_slot_status.at(slot_id);
-                if (slot_status == static_cast<uint8_t>(utils::slot_status::locked))
+            for (size_t i = 0; i < size; i++) {
+                uint8_t& slot_status = match.multi_slot_status.at(i);
+                if (slot_status == static_cast<uint8_t>(utils::slot_status::locked)) {
                     slot_status = static_cast<uint8_t>(utils::slot_status::open);
+                }
             }
 
             match.send_update(true);
@@ -101,6 +83,25 @@ bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shi
         utils::bot::respond("You must be a host to perform this action!", user, channel, true);
         return true;
     });
+
+    // Kick players outside of #iterate to prevent dead lock
+    if (removed_users.size() == 0) {
+        return true;
+    }
+
+    for (const std::shared_ptr<shiro::users::user>& user : removed_users) {
+        if (user == nullptr) {
+            continue; // get_user_by_id might return nullptr
+        }
+
+        shiro::multiplayer::match_manager::leave_match(user);
+
+        shiro::io::osu_writer writer;
+        writer.channel_revoked("#multiplayer");
+        writer.announce("You have been kicked from the match!");
+
+        user->queue.enqueue(writer);
+    }
 
     return true;
 }

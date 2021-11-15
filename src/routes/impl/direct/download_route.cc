@@ -30,8 +30,7 @@ void shiro::routes::direct::download::handle(const crow::request &request, crow:
 
     int32_t id = 0;
 
-    if (!utils::strings::safe_int(no_video ? args.substr(0, args.length() - 1) : args, id))
-    {
+    if (!utils::strings::safe_int(no_video ? args.substr(0, args.length() - 1) : args, id)) {
         response.code = 400;
         response.end("Invalid beatmap id");
         return;

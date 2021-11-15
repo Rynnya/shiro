@@ -25,11 +25,13 @@ void shiro::handler::multiplayer::match::start::handle(shiro::io::osu_packet &in
     shiro::multiplayer::match_manager::iterate([user](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.host_id != user->user_id)
+        if (match.host_id != user->user_id) {
             return true;
+        }
 
         io::osu_writer writer;
         writer.match_start(match, false);
@@ -37,15 +39,17 @@ void shiro::handler::multiplayer::match::start::handle(shiro::io::osu_packet &in
         match.in_progress = true;
 
         for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
-            if (match.multi_slot_id.at(i) == -1)
+            if (match.multi_slot_id.at(i) == -1) {
                 continue;
+            }
 
             match.multi_slot_status.at(i) = static_cast<uint8_t>(utils::slot_status::playing);
 
             std::shared_ptr<users::user> lobby_user = users::manager::get_user_by_id(match.multi_slot_id.at(i));
 
-            if (lobby_user == nullptr)
+            if (lobby_user == nullptr) {
                 continue;
+            }
 
             lobby_user->queue.enqueue(writer);
         }

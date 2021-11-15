@@ -29,16 +29,18 @@ void shiro::geoloc::init() {
 
     auto [success, output] = utils::curl::get("https://api.ipify.org/");
 
-    if (!success)
+    if (!success) {
         LOG_F(WARNING, "Unable to resolve own local IP address: %s", output.c_str());
+    }
 
     localhost_ip = output;
 }
 
 shiro::geoloc::location_info shiro::geoloc::get_location(std::string ip_address) {
     // The IP address is localhost, set it to our external localhost IP
-    if (ip_address == "127.0.0.1" || ip_address.empty())
+    if (ip_address == "127.0.0.1" || ip_address.empty()) {
         ip_address = localhost_ip;
+    }
 
     auto [country, latitude, longitude] = maxmind::locate(ip_address);
     uint8_t country_id = get_country_id(country);

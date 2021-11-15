@@ -177,7 +177,8 @@ std::string nlohmann::crow_utilities::generate_uuid() {
         const char r = static_cast<char>(get_random_number(0, 15));
         if (r < 10) {
             result[i] = '0' + r;
-        } else {
+        }
+        else {
             result[i] = 'a' + r - static_cast<char>(10);
         }
     }

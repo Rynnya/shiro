@@ -31,8 +31,9 @@ std::string shiro::scores::score::to_string(std::vector<score> &scores, bool is_
 
     if (user == nullptr) {
         user = std::make_shared<users::user>(this->user_id);
-        if (!user->init())
+        if (!user->init()) {
             return "";
+        }
     }
 
     stream << this->id << "|";

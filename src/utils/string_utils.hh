@@ -27,12 +27,16 @@ namespace shiro::utils::strings {
 
     bool safe_uchar(const std::string& src, uint8_t& num);
     uint8_t safe_uchar(const std::string& src);
+
     bool safe_int(const std::string& src, int32_t& num);
     int32_t safe_int(const std::string& src);
+
     bool safe_uint(const std::string& src, uint32_t& num);
     uint32_t safe_uint(const std::string& src);
+
     bool safe_float(const std::string& src, float& num);
     float safe_float(const std::string& src);
+
     bool safe_ll(const std::string& src, int64_t& num);
     int64_t safe_ll(const std::string& src);
 

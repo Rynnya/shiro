@@ -30,8 +30,9 @@ std::shared_timed_mutex shiro::multiplayer::match_manager::mutex;
 uint16_t shiro::multiplayer::match_manager::highest_match_id = 0;
 
 void shiro::multiplayer::match_manager::create_match(shiro::io::layouts::multiplayer_match &match) {
-    if (match.game_name.length() > 50)
+    if (match.game_name.length() > 50) {
         match.game_name.resize(50);
+    }
 
     // Disallow other threads from both writing and reading
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -55,8 +56,9 @@ void shiro::multiplayer::match_manager::create_match(shiro::io::layouts::multipl
 
     lobby_manager::iterate([match, &global_writer](std::shared_ptr<users::user> user) {
         // The host literally created this and does implicitly know about this match already
-        if (user->user_id == match.host_id)
+        if (user->user_id == match.host_id) {
             return;
+        }
 
         user->queue.enqueue(global_writer);
     });
@@ -64,31 +66,36 @@ void shiro::multiplayer::match_manager::create_match(shiro::io::layouts::multipl
     std::shared_ptr<users::user> host = users::manager::get_user_by_id(match.host_id);
 
     // How does the host make a room and then don't exist?
-    if (host == nullptr)
+    if (host == nullptr) {
         return;
+    }
 
     LOG_F(INFO, "New multiplayer room (\"%s\" id %i) was initialized by %s.", match.game_name.c_str(), match.match_id, host->presence.username.c_str());
 }
 
 std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_manager::join_match(io::layouts::multiplayer_join request, std::shared_ptr<shiro::users::user> user) {
-    if (user == nullptr || user->hidden)
+    if (user == nullptr || user->hidden) {
         return std::nullopt;
+    }
 
-    if (in_match(user))
+    if (in_match(user)) {
         leave_match(user);
+    }
 
     // Disallow other threads from both writing and reading
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
 
     for (io::layouts::multiplayer_match &match : matches) {
-        if (match.match_id != request.match_id)
+        if (match.match_id != request.match_id) {
             continue;
+        }
 
         if (!match.game_password.empty()) {
             std::string password = utils::curl::unescape_url(request.password);
 
-            if (password != match.game_password)
+            if (password != match.game_password) {
                 return std::nullopt;
+            }
         }
 
         size_t index = 0xBADCAFE;
@@ -97,14 +104,16 @@ std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_m
             int32_t id = match.multi_slot_id.at(i);
             uint8_t status = match.multi_slot_status.at(i);
 
-            if (id != -1 || status != static_cast<uint8_t>(utils::slot_status::open))
+            if (id != -1 || status != static_cast<uint8_t>(utils::slot_status::open)) {
                 continue;
+            }
 
             index = i;
         }
 
-        if (index == 0xBADCAFE)
+        if (index == 0xBADCAFE) {
             return std::nullopt;
+        }
 
         uint8_t team = static_cast<uint8_t>(utils::is_team(match.multi_team_type) ? index % 2 + 1 : 0);
 
@@ -127,8 +136,9 @@ std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_m
 }
 
 bool shiro::multiplayer::match_manager::leave_match(std::shared_ptr<shiro::users::user> user) {
-    if (user == nullptr || user->hidden || !in_match(user))
+    if (user == nullptr || user->hidden || !in_match(user)) {
         return false;
+    }
 
     // Disallow other threads from both writing and reading
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -137,8 +147,9 @@ bool shiro::multiplayer::match_manager::leave_match(std::shared_ptr<shiro::users
     for (io::layouts::multiplayer_match &match : matches) {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             continue;
+        }
 
         ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
 
@@ -150,21 +161,24 @@ bool shiro::multiplayer::match_manager::leave_match(std::shared_ptr<shiro::users
 
         uint8_t &slot_status = match.multi_slot_status.at(index);
 
-        if (slot_status != static_cast<uint8_t>(utils::slot_status::locked))
+        if (slot_status != static_cast<uint8_t>(utils::slot_status::locked)) {
             slot_status = static_cast<uint8_t>(utils::slot_status::open);
+        }
 
         // If the parting player is the host, assign the first player which has the ability to be host
         if (match.host_id == user->user_id) {
             for (int32_t id : match.multi_slot_id) {
-                if (id == -1)
+                if (id == -1) {
                     continue;
+                }
 
                 match.host_id = id;
 
                 std::shared_ptr<users::user> host = users::manager::get_user_by_id(id);
 
-                if (host == nullptr)
+                if (host == nullptr) {
                     break;
+                }
 
                 io::osu_writer host_writer;
                 host_writer.match_transfer_host();
@@ -177,16 +191,18 @@ bool shiro::multiplayer::match_manager::leave_match(std::shared_ptr<shiro::users
         break;
     }
 
-    if (match_id == -1)
+    if (match_id == -1) {
         return false;
+    }
 
     auto iterator = std::find_if(matches.begin(), matches.end(), [match_id](const io::layouts::multiplayer_match &match) {
         return match.match_id == match_id;
     });
 
     // How does this even happen?
-    if (iterator == matches.end())
+    if (iterator == matches.end()) {
         return false;
+    }
 
     io::layouts::multiplayer_match match = *iterator;
 
@@ -221,8 +237,9 @@ bool shiro::multiplayer::match_manager::in_match(std::shared_ptr<shiro::users::u
     for (const io::layouts::multiplayer_match &match : matches) {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             continue;
+        }
 
         return true;
     }
@@ -235,8 +252,9 @@ std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_m
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
 
     for (const io::layouts::multiplayer_match &match : matches) {
-        if (match.match_id != match_id)
+        if (match.match_id != match_id) {
             continue;
+        }
 
         return match;
     }
@@ -251,8 +269,9 @@ std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_m
     for (const io::layouts::multiplayer_match &match : matches) {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             continue;
+        }
 
         return match;
     }
@@ -265,7 +284,8 @@ void shiro::multiplayer::match_manager::iterate(const std::function<bool(io::lay
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
 
     for (io::layouts::multiplayer_match &match : matches) {
-        if (callback(match))
+        if (callback(match)) {
             break;
+        }
     }
 }

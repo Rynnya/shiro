@@ -20,18 +20,21 @@
 #include "stop_spectating_handler.hh"
 
 void shiro::handler::spectating::stop::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    if (!shiro::spectating::manager::is_spectating(user))
+    if (!shiro::spectating::manager::is_spectating(user)) {
         return;
+    }
 
     std::shared_ptr<users::user> host = shiro::spectating::manager::get_host(user);
 
-    if (host == nullptr)
+    if (host == nullptr) {
         return;
+    }
 
     shiro::spectating::manager::stop_spectating(user);
 
-    if (user->hidden)
+    if (user->hidden) {
         return;
+    }
 
     io::osu_writer host_writer;
     host_writer.spectator_left_host(user->user_id);

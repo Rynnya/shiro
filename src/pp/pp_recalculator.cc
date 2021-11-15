@@ -42,11 +42,13 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
     }
 
     // According to https://en.cppreference.com/w/cpp/thread/thread/hardware_concurrency might return 0
-    if (threads <= 0)
+    if (threads <= 0) {
         threads = 1;
+    }
 
-    if (threads >= 2)
+    if (threads >= 2) {
         threads /= 2; // Only use half of the available threads for pp recalculation
+    }
 
     std::vector<int32_t> users;
     std::string game_mode = utils::play_mode_to_string(mode);
@@ -54,8 +56,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users users_table {};
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax users_stats_table {};
         auto result = db(select(
             users_table.id,
@@ -67,32 +68,39 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 
         for (const auto& row : result) {
             // Bots usually don't have scores, so let's skip them
-            if (row.roles.value() == 0xDEADCAFE)
+            if (row.roles.value() == 0xDEADCAFE) {
                 continue;
+            }
 
             int32_t play_count = 0;
 
             switch (mode) {
-            case utils::play_mode::standard:
-                play_count = row.play_count_std;
-                break;
-            case utils::play_mode::taiko:
-                play_count = row.play_count_taiko;
-                break;
-            case utils::play_mode::fruits:
-                play_count = row.play_count_ctb;
-                break;
+                case utils::play_mode::standard: {
+                    play_count = row.play_count_std;
+                    break;
+                }
+                case utils::play_mode::taiko: {
+                    play_count = row.play_count_taiko;
+                    break;
+                }
+                case utils::play_mode::fruits: {
+                    play_count = row.play_count_ctb;
+                    break;
+                }
+                case utils::play_mode::mania: {
+                    continue;
+                }
             }
 
             // No need to recalculate users that don't have any scores
-            if (play_count <= 0)
+            if (play_count <= 0) {
                 continue;
+            }
 
             users.emplace_back(row.id);
         }
     }
-    else
-    {
+    else {
         const tables::users_stats users_stats_table{};
         auto result = db(select(
             users_table.id,
@@ -105,36 +113,43 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 
         for (const auto& row : result) {
             // Bots usually don't have scores, so let's skip them
-            if (row.roles.value() == 0xDEADCAFE)
+            if (row.roles.value() == 0xDEADCAFE) {
                 continue;
+            }
 
             int32_t play_count = 0;
 
             switch (mode) {
-            case utils::play_mode::standard:
-                play_count = row.play_count_std;
-                break;
-            case utils::play_mode::taiko:
-                play_count = row.play_count_taiko;
-                break;
-            case utils::play_mode::fruits:
-                play_count = row.play_count_ctb;
-                break;
-            case utils::play_mode::mania:
-                play_count = row.play_count_mania;
-                break;
+                case utils::play_mode::standard: {
+                    play_count = row.play_count_std;
+                    break;
+                }
+                case utils::play_mode::taiko: {
+                    play_count = row.play_count_taiko;
+                    break;
+                }
+                case utils::play_mode::fruits: {
+                    play_count = row.play_count_ctb;
+                    break;
+                }
+                case utils::play_mode::mania: {
+                    play_count = row.play_count_mania;
+                    break;
+                }
             }
 
             // No need to recalculate users that don't have any scores
-            if (play_count <= 0)
+            if (play_count <= 0) {
                 continue;
+            }
 
             users.emplace_back(row.id);
         }
     }
 
-    if (users.empty())
+    if (users.empty()) {
         return;
+    }
 
     running = true;
 
@@ -143,8 +158,9 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
     bool evenly_distributable = users.size() % threads == 0;
     ptrdiff_t chunk_size = users.size() / threads;
 
-    if (!evenly_distributable)
+    if (!evenly_distributable) {
         chunk_size += 1;
+    }
 
     // If there are more (or equal the amount of) users than threads, every thread can calculate up to one user.
     if (threads >= users.size()) {
@@ -154,13 +170,15 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 
     auto chunks = utils::chunk(users.begin(), users.end(), chunk_size);
 
-    if (threads < users.size())
+    if (threads < users.size()) {
         LOG_F(INFO, "Distributing work across %u threads: every thread calculates up to %lu users. (%lu chunks)", threads, chunk_size, chunks.size());
+    }
 
     for (size_t i = 0; i < chunks.size(); i++) {
         auto [begin, end] = chunks.at(i);
 
         std::vector<int32_t> chunked_users(begin, end);
+        // We don't use thread_pool here because we need don't know amount of threads on compile-time
         std::thread thread(recalculate, mode, chunked_users, is_relax);
 
         std::stringstream stream;
@@ -200,8 +218,7 @@ void shiro::pp::recalculator::end(shiro::utils::play_mode mode, bool is_relax) {
     // TODO: This code is repeated in user_stats.cc, needs to be refactored asap
     sqlpp::mysql::connection db(db_connection->get_config());
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax users_stats_table {};
         auto result = db(select(
             users_stats_table.id,
@@ -222,41 +239,30 @@ void shiro::pp::recalculator::end(shiro::utils::play_mode mode, bool is_relax) {
 
             std::shared_ptr<users::user> user = users::manager::get_user_by_id(row.id);
             int16_t pp = std::clamp(static_cast<int16_t>(raw_pp), static_cast<int16_t>(0), std::numeric_limits<int16_t>::max());
+            if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(mode)) {
+                user->stats.pp = pp;
+            }
 
-            switch (mode)
-            {
-                case utils::play_mode::standard:
-                {
+            switch (mode) {
+                case utils::play_mode::standard: {
                     db(update(users_stats_table).set(users_stats_table.pp_std = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::standard))
-                        user->stats.pp = pp;
-
                     break;
                 }
-                case utils::play_mode::taiko:
-                {
+                case utils::play_mode::taiko: {
                     db(update(users_stats_table).set(users_stats_table.pp_taiko = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::taiko))
-                        user->stats.pp = pp;
-
                     break;
                 }
-                case utils::play_mode::fruits:
-                {
+                case utils::play_mode::fruits: {
                     db(update(users_stats_table).set(users_stats_table.pp_ctb = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::fruits))
-                        user->stats.pp = pp;
-
                     break;
+                }
+                case utils::play_mode::mania: {
+                    return;
                 }
             }
         }
     }
-    else
-    {
+    else {
         const tables::users_stats users_stats_table{};
         auto result = db(select(
             users_stats_table.id,
@@ -278,43 +284,25 @@ void shiro::pp::recalculator::end(shiro::utils::play_mode mode, bool is_relax) {
 
             std::shared_ptr<users::user> user = users::manager::get_user_by_id(row.id);
             int16_t pp = std::clamp(static_cast<int16_t>(raw_pp), static_cast<int16_t>(0), std::numeric_limits<int16_t>::max());
+            if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(mode)) {
+                user->stats.pp = pp;
+            }
 
-            switch (mode)
-            {
-                case utils::play_mode::standard:
-                {
+            switch (mode) {
+                case utils::play_mode::standard: {
                     db(update(users_stats_table).set(users_stats_table.pp_std = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::standard))
-                        user->stats.pp = pp;
-
                     break;
                 }
-                case utils::play_mode::taiko:
-                {
+                case utils::play_mode::taiko: {
                     db(update(users_stats_table).set(users_stats_table.pp_taiko = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::taiko))
-                        user->stats.pp = pp;
-
                     break;
                 }
-                case utils::play_mode::fruits:
-                {
+                case utils::play_mode::fruits: {
                     db(update(users_stats_table).set(users_stats_table.pp_ctb = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::fruits))
-                        user->stats.pp = pp;
-
                     break;
                 }
-                case utils::play_mode::mania:
-                {
+                case utils::play_mode::mania: {
                     db(update(users_stats_table).set(users_stats_table.pp_mania = pp).where(users_stats_table.id == row.id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::mania))
-                        user->stats.pp = pp;
-
                     break;
                 }
             }
@@ -344,8 +332,9 @@ void shiro::pp::recalculator::recalculate(shiro::utils::play_mode mode, std::vec
     for (int32_t user_id : users) {
         std::vector<scores::score> scores = scores::helper::fetch_all_user_scores(user_id, is_relax);
 
-        if (scores.empty())
+        if (scores.empty()) {
             continue;
+        }
 
         for (const scores::score &score : scores) {
             beatmaps::beatmap map;
@@ -353,12 +342,14 @@ void shiro::pp::recalculator::recalculate(shiro::utils::play_mode mode, std::vec
 
             // On recalculation we would hit osu! API too often so we exclusively allow database fetching
             if (!map.fetch_db()) {
+                // TODO: Create cache system that will download these maps after recalculate
                 LOG_F(WARNING, "Score #%i was set on a beatmap that is not in the database. Skipping...", score.id);
                 continue;
             }
 
-            if (!beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(map.ranked_status)))
+            if (!beatmaps::helper::awards_pp(beatmaps::helper::fix_beatmap_status(map.ranked_status))) {
                 continue;
+            }
 
             float pp = pp::calculate(map, score);
             float abs_difference = std::fabs(pp - score.pp);
@@ -366,8 +357,9 @@ void shiro::pp::recalculator::recalculate(shiro::utils::play_mode mode, std::vec
             bool increase = pp > score.pp;
             const char *prefix = increase ? "+" : "-";
 
-            if (abs_difference > 1)
+            if (abs_difference > 1) {
                 LOG_F(MAX, "Recalculation: Score #%i (user id %i): %fpp -> %fpp (%s%fpp)", score.id, user_id, score.pp, pp, prefix, abs_difference);
+            }
 
             db(update(score_table).set(score_table.pp = pp).where(score_table.id == score.id));
         }

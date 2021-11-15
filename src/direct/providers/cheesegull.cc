@@ -28,15 +28,16 @@
 #include "../../shiro.hh"
 #include "cheesegull.hh"
 
-std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_map<std::string, std::string> parameters)
-{
+std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
-    if (parameters.find("u") != parameters.end())
+    if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
+    }
 
     // Remove password hash from the request so no credentials are leaked
-    if (parameters.find("h") != parameters.end())
+    if (parameters.find("h") != parameters.end()) {
         parameters.erase("h");
+    }
 
     std::string url = config::direct::search_url + "/search?";
 
@@ -50,19 +51,18 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
 
     auto [success, output] = utils::curl::get_direct(url);
 
-    if (!success)
+    if (!success) {
         return { false, output };
+    }
 
     json json_result;
 
-    try
-    {
+    try {
         json_result = json::parse(output);
     }
-    catch (const json::parse_error& ex) 
-    {
+    catch (const json::parse_error& ex) {
         LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
-        logging::sentry::exception(ex);
+        logging::sentry::exception(ex, __FILE__, __LINE__);
 
         return { false, ex.what() };
     }
@@ -70,13 +70,13 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
     std::stringstream out;
     out << 1000 << std::endl;
 
-    for (auto& map_json : json_result)
-    {
+    for (auto& map_json : json_result) {
         std::string beatmap_id = std::to_string(map_json["SetID"].get<int32_t>());
         std::string last_updated = "-";
 
-        if (map_json["LastUpdate"].is_string())
+        if (map_json["LastUpdate"].is_string()) {
             last_updated = map_json["LastUpdate"];
+        }
 
         out << beatmap_id << ".osz" << "|"; // Filename
         out << (std::string)map_json["Artist"] << "|"; // Artist
@@ -95,8 +95,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
         std::stringstream difficulties;
         difficulties << std::setprecision(2);
 
-        for (auto& diff_json : map_json["ChildrenBeatmaps"]) 
-        {
+        for (auto& diff_json : map_json["ChildrenBeatmaps"]) {
             difficulties << (std::string)diff_json["DiffName"] << " (";
             difficulties << (float)diff_json["DifficultyRating"] << "★~";
             difficulties << "AR" << (float)diff_json["AR"] << "~";
@@ -107,8 +106,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
             int32_t minutes = total_length / 60;
             int32_t seconds = total_length % 60;
 
-            if (minutes > 0)
+            if (minutes > 0) {
                 difficulties << minutes << "m";
+            }
 
             difficulties << seconds << "s)" << "@";
             difficulties << diff_json["Mode"].get<int32_t>() << ",";
@@ -125,19 +125,21 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
     return { true, out.str() };
 }
 
-std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters)
-{
+std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
-    if (b == parameters.end())
+    if (b == parameters.end()) {
         return { false, "'beatmap_id' not provided" };
+    }
 
     // Remove username from the request so the requesting user stays anonymous
-    if (parameters.find("u") != parameters.end())
+    if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
+    }
 
     // Remove password hash from the request so no credentials are leaked
-    if (parameters.find("h") != parameters.end())
+    if (parameters.find("h") != parameters.end()) {
         parameters.erase("h");
+    }
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::beatmaps beatmaps_tables{};
@@ -145,8 +147,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     int32_t _beatmap_id = utils::strings::safe_ll(b->second);
     auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
-    if (result.empty())
+    if (result.empty()) {
         return { false, "Beatmap not loaded to database" };
+    }
 
     auto& _result = result.front();
     int32_t beatmapset_id = _result.beatmapset_id;
@@ -154,25 +157,25 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     std::string url = config::direct::search_url + "/s/" + std::to_string(beatmapset_id);
     auto [success, output] = utils::curl::get_direct(url);
 
-    if (!success)
+    if (!success) {
         return { false, output };
+    }
 
     json json_result;
 
-    try
-    {
+    try {
         json_result = json::parse(output);
     }
-    catch (const json::parse_error& ex)
-    {
+    catch (const json::parse_error& ex) {
         LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
-        logging::sentry::exception(ex);
+        logging::sentry::exception(ex, __FILE__, __LINE__);
 
         return { false, ex.what() };
     }
 
-    if (json_result.is_null())
+    if (json_result.is_null()) {
         return { false, "Cheesegull response was null" };
+    }
 
     std::stringstream out;
 
@@ -180,8 +183,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     bool has_video = json_result["HasVideo"].get<bool>();
     std::string last_updated = "-";
 
-    if (json_result["LastUpdate"].is_string())
+    if (json_result["LastUpdate"].is_string()) {
         last_updated = json_result["LastUpdate"];
+    }
 
     out << beatmap_id << ".osz" << "|"; // Filename
     out << (std::string)json_result["Artist"] << "|"; // Artist
@@ -202,51 +206,44 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     return { true, out.str() };
 }
 
-std::tuple<bool, std::string> shiro::direct::cheesegull::download(int32_t beatmap_id, bool no_video)
-{
+std::tuple<bool, std::string> shiro::direct::cheesegull::download(int32_t beatmap_id, bool no_video) {
     std::string id = std::to_string(beatmap_id);
     std::string url = config::direct::download_url + "/d/" + id;
 
-    if (no_video)
+    if (no_video) {
         url += "?n=1";
+    }
 
     return utils::curl::get_direct(url);
 }
 
-const std::string shiro::direct::cheesegull::name() const
-{
+const std::string shiro::direct::cheesegull::name() const {
 	return "Cheesegull";
 }
 
-std::tuple<std::string, std::string> shiro::direct::cheesegull::sanitize_args(std::string key, std::string value, bool url_escape)
-{
-    if (key == "m")
-    {
+std::tuple<std::string, std::string> shiro::direct::cheesegull::sanitize_args(std::string key, std::string value, bool url_escape) {
+    if (key == "m") {
         key = "mode";
         sanitize_mode(value);
     }
 
-    if (key == "r")
-    {
+    if (key == "r") {
         key = "status";
         sanitize_status(value);
     }
 
-    if (key == "q")
-    {
+    if (key == "q") {
         key = "query";
         sanitize_query(value);
     }
 
-    if (key == "p")
-    {
+    if (key == "p") {
         key = "offset";
         sanitize_offset(value);
     }
 
     // Escape parameters to be safely used in urls
-    if (url_escape) 
-    {
+    if (url_escape) {
         key = utils::curl::escape_url(key);
         value = utils::curl::escape_url(value);
     }
@@ -254,46 +251,40 @@ std::tuple<std::string, std::string> shiro::direct::cheesegull::sanitize_args(st
     return { key, value };
 }
 
-void shiro::direct::cheesegull::sanitize_mode(std::string& value)
-{
-    int mode = utils::strings::safe_int(value);
-    if (mode == -1 || mode < 0 || mode > 3)
+void shiro::direct::cheesegull::sanitize_mode(std::string& value) {
+    int32_t mode = utils::strings::safe_int(value);
+    if (mode == -1 || mode < 0 || mode > 3) {
         value = "-1";
+    }
 }
 
-void shiro::direct::cheesegull::sanitize_status(std::string& value)
-{
-    int status = utils::strings::safe_int(value);
-    if (status == -1)
+void shiro::direct::cheesegull::sanitize_status(std::string& value) {
+    int32_t status = utils::strings::safe_int(value);
+    if (status == -1) {
         return;
+    }
 
-    switch (status)
-    {
-        case 8:
-        {
+    switch (status) {
+        case 8: {
             value = "4";
             return;
         }
-        case 2:
-        {
+        case 2: {
             value = "0";
             return;
         }
-        case 5:
-        {
+        case 5: {
             value = "-2";
             return;
         }
-        default:
-        {
+        default: {
             value = "1";
             return;
         }
     }
 }
 
-void shiro::direct::cheesegull::sanitize_query(std::string& value)
-{
+void shiro::direct::cheesegull::sanitize_query(std::string& value) {
     std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 
     boost::replace_all(value, "newest", "");
@@ -301,11 +292,11 @@ void shiro::direct::cheesegull::sanitize_query(std::string& value)
     boost::replace_all(value, "top rated", "");
 }
 
-void shiro::direct::cheesegull::sanitize_offset(std::string& value)
-{
-    int page = utils::strings::safe_int(value);
-    if (page == -1)
+void shiro::direct::cheesegull::sanitize_offset(std::string& value) {
+    int32_t page = utils::strings::safe_int(value);
+    if (page == -1) {
         return;
+    }
 
     value = std::to_string(page * config::direct::beatmaps_amount);
 }

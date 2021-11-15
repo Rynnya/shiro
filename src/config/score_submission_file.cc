@@ -92,13 +92,15 @@ bool shiro::config::score_submission::key_9_ranked = false;
 bool shiro::config::score_submission::key_coop_ranked = false;
 
 void shiro::config::score_submission::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing score_submission.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("score_submission.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse score_submission.toml file: %s.", ex.what());
     }
 

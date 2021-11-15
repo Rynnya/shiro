@@ -40,7 +40,7 @@ namespace shiro::routes {
         try {                                                                                                                       \
             handler(request, response);                                                                                             \
         } catch (...) {                                                                                                             \
-            logging::sentry::exception(std::current_exception());                                                                   \
+            logging::sentry::exception(std::current_exception(), __FILE__, __LINE__);                                               \
             LOG_F(ERROR, "A exception occurred in %s: %s", #handler, boost::current_exception_diagnostic_information().c_str());    \
                                                                                                                                     \
             response.code = 500;                                                                                                    \
@@ -56,7 +56,7 @@ namespace shiro::routes {
         try {                                                                                                                       \
             handler(request, response, param);                                                                                      \
         } catch (...) {                                                                                                             \
-            logging::sentry::exception(std::current_exception());                                                                   \
+            logging::sentry::exception(std::current_exception(), __FILE__, __LINE__);                                               \
             LOG_F(ERROR, "A exception occurred in %s: %s", #handler, boost::current_exception_diagnostic_information().c_str());    \
                                                                                                                                     \
             response.code = 500;                                                                                                    \

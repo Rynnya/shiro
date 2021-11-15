@@ -25,15 +25,15 @@
 #include "ranking_helper.hh"
 
 int32_t shiro::ranking::helper::get_leaderboard_position(uint8_t mode, std::string username, bool is_relax) {
-    if (username.empty())
+    if (username.empty()) {
         return 0;
+    }
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users user_table {};
     std::vector<std::pair<std::string, float>> users;
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax user_stats_table {};
 
         auto result = db(select(
@@ -44,33 +44,39 @@ int32_t shiro::ranking::helper::get_leaderboard_position(uint8_t mode, std::stri
             user_stats_table.pp_ctb
         ).from(user_stats_table.join(user_table).on(user_stats_table.id == user_table.id)).unconditionally());
 
-        if (result.empty())
+        if (result.empty()) {
             return 0;
-
-        for (const auto& row : result) {
-            if (row.id.value() == 1)
-                continue;
-
-            if (!users::punishments::has_scores(row.id))
-                continue;
-
-            switch (static_cast<utils::play_mode>(mode))
-            {
-                case utils::play_mode::standard:
-                    users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_std));
-                    break;
-                case utils::play_mode::taiko:
-                    users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_taiko));
-                    break;
-                case utils::play_mode::fruits:
-                    users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_ctb));
-                    break;
-            }
         }
 
+        for (const auto& row : result) {
+            if (row.id.value() == 1) {
+                continue;
+            }
+
+            if (!users::punishments::has_scores(row.id)) {
+                continue;
+            }
+
+            switch (static_cast<utils::play_mode>(mode)) {
+                case utils::play_mode::standard: {
+                    users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_std));
+                    break;
+                }
+                case utils::play_mode::taiko: {
+                    users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_taiko));
+                    break;
+                }
+                case utils::play_mode::fruits: {
+                    users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_ctb));
+                    break;
+                }
+                case utils::play_mode::mania: {
+                    return 0;
+                }
+            }
+        }
     }
-    else
-    {
+    else {
         const tables::users_stats user_stats_table {};
 
         auto result = db(select(
@@ -82,30 +88,36 @@ int32_t shiro::ranking::helper::get_leaderboard_position(uint8_t mode, std::stri
             user_stats_table.pp_mania
         ).from(user_stats_table.join(user_table).on(user_stats_table.id == user_table.id)).unconditionally());
 
-        if (result.empty())
+        if (result.empty()) {
             return 0;
+        }
 
         for (const auto& row : result) {
-            if (row.id.value() == 1)
+            if (row.id.value() == 1) {
                 continue;
+            }
 
-            if (!users::punishments::has_scores(row.id))
+            if (!users::punishments::has_scores(row.id)) {
                 continue;
+            }
 
-            switch (static_cast<utils::play_mode>(mode))
-            {
-                case utils::play_mode::standard:
+            switch (static_cast<utils::play_mode>(mode)) {
+                case utils::play_mode::standard: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_std));
                     break;
-                case utils::play_mode::taiko:
+                }
+                case utils::play_mode::taiko: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_taiko));
                     break;
-                case utils::play_mode::fruits:
+                }
+                case utils::play_mode::fruits: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_ctb));
                     break;
-                case utils::play_mode::mania:
+                }
+                case utils::play_mode::mania: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_mania));
                     break;
+                }
             }
         }
     }
@@ -117,23 +129,24 @@ int32_t shiro::ranking::helper::get_leaderboard_position(uint8_t mode, std::stri
     for (size_t i = 0; i < users.size(); i++) {
         const auto &[name, _] = users.at(i);
 
-        if (username == name)
+        if (username == name) {
             return i + 1;
+        }
     }
 
     return 0;
 }
 
 std::string shiro::ranking::helper::get_leaderboard_user(uint8_t mode, int32_t pos, bool is_relax) {
-    if (pos < 1)
+    if (pos < 1) {
         return "";
+    }
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users user_table {};
     std::vector<std::pair<std::string, float>> users;
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax user_stats_table {};
         auto result = db(select(
             user_stats_table.id,
@@ -143,33 +156,40 @@ std::string shiro::ranking::helper::get_leaderboard_user(uint8_t mode, int32_t p
             user_stats_table.pp_ctb
         ).from(user_stats_table.join(user_table).on(user_stats_table.id == user_table.id)).unconditionally());
 
-        if (result.empty())
+        if (result.empty()) {
             return "";
+        }
 
 
         for (const auto& row : result) {
-            if (row.id.value() == 1)
+            if (row.id.value() == 1) {
                 continue;
+            }
 
-            if (!users::punishments::has_scores(row.id))
+            if (!users::punishments::has_scores(row.id)) {
                 continue;
+            }
 
-            switch (static_cast<utils::play_mode>(mode))
-            {
-                case utils::play_mode::standard:
+            switch (static_cast<utils::play_mode>(mode)) {
+                case utils::play_mode::standard: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_std));
                     break;
-                case utils::play_mode::taiko:
+                }
+                case utils::play_mode::taiko: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_taiko));
                     break;
-                case utils::play_mode::fruits:
+                }
+                case utils::play_mode::fruits: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_ctb));
                     break;
+                }
+                case utils::play_mode::mania: {
+                    return "";
+                }
             }
         }
     }
-    else
-    {
+    else {
         const tables::users_stats user_stats_table{};
 
         auto result = db(select(
@@ -181,31 +201,37 @@ std::string shiro::ranking::helper::get_leaderboard_user(uint8_t mode, int32_t p
             user_stats_table.pp_mania
         ).from(user_stats_table.join(user_table).on(user_stats_table.id == user_table.id)).unconditionally());
 
-        if (result.empty())
+        if (result.empty()) {
             return "";
+        }
 
 
         for (const auto& row : result) {
-            if (row.id.value() == 1)
+            if (row.id.value() == 1) {
                 continue;
+            }
 
-            if (!users::punishments::has_scores(row.id))
+            if (!users::punishments::has_scores(row.id)) {
                 continue;
+            }
 
-            switch (static_cast<utils::play_mode>(mode))
-            {
-                case utils::play_mode::standard:
+            switch (static_cast<utils::play_mode>(mode)) {
+                case utils::play_mode::standard: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_std));
                     break;
-                case utils::play_mode::taiko:
+                }
+                case utils::play_mode::taiko: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_taiko));
                     break;
-                case utils::play_mode::fruits:
+                }
+                case utils::play_mode::fruits: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_ctb));
                     break;
-                case utils::play_mode::mania:
+                }
+                case utils::play_mode::mania: {
                     users.emplace_back(std::make_pair<std::string, float>(row.username, row.pp_mania));
                     break;
+                }
             }
         }
     }
@@ -214,21 +240,22 @@ std::string shiro::ranking::helper::get_leaderboard_user(uint8_t mode, int32_t p
         return s_left.second > s_right.second;
     });
 
-    if (users.size() < pos)
+    if (users.size() < pos) {
         return "";
+    }
 
     return users.at(pos - 1).first;
 }
 
 int16_t shiro::ranking::helper::get_pp_for_user(uint8_t mode, std::string username, bool is_relax) {
-    if (username.empty())
+    if (username.empty()) {
         return 0;
+    }
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users user_table {};
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax user_stats_table {};
 
         auto result = db(select(
@@ -239,23 +266,28 @@ int16_t shiro::ranking::helper::get_pp_for_user(uint8_t mode, std::string userna
         ).from(user_table.join(user_stats_table).on(user_table.id == user_stats_table.id))
             .where(user_table.username == username).limit(1u));
 
-        if (result.empty())
+        if (result.empty()) {
             return 0;
+        }
 
         const auto& row = result.front();
 
-        switch (static_cast<utils::play_mode>(mode))
-        {
-            case utils::play_mode::standard:
+        switch (static_cast<utils::play_mode>(mode)) {
+            case utils::play_mode::standard: {
                 return row.pp_std;
-            case utils::play_mode::taiko:
+            }
+            case utils::play_mode::taiko: {
                 return row.pp_taiko;
-            case utils::play_mode::fruits:
+            }
+            case utils::play_mode::fruits: {
                 return row.pp_ctb;
+            }
+            case utils::play_mode::mania: {
+                return 0;
+            }
         }
     }
-    else
-    {
+    else {
         const tables::users_stats user_stats_table {};
 
         auto result = db(select(
@@ -267,21 +299,25 @@ int16_t shiro::ranking::helper::get_pp_for_user(uint8_t mode, std::string userna
         ).from(user_table.join(user_stats_table).on(user_table.id == user_stats_table.id))
             .where(user_table.username == username).limit(1u));
 
-        if (result.empty())
+        if (result.empty()) {
             return 0;
+        }
 
         const auto& row = result.front();
 
-        switch (static_cast<utils::play_mode>(mode))
-        {
-            case utils::play_mode::standard:
+        switch (static_cast<utils::play_mode>(mode)) {
+            case utils::play_mode::standard: {
                 return row.pp_std;
-            case utils::play_mode::taiko:
+            }
+            case utils::play_mode::taiko: {
                 return row.pp_taiko;
-            case utils::play_mode::fruits:
+            }
+            case utils::play_mode::fruits: {
                 return row.pp_ctb;
-            case utils::play_mode::mania:
+            }
+            case utils::play_mode::mania: {
                 return row.pp_mania;
+            }
         }
     }
 
@@ -290,15 +326,15 @@ int16_t shiro::ranking::helper::get_pp_for_user(uint8_t mode, std::string userna
 
 void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mode, bool is_relax) {
     // Global pp recalculation is currently in progress.
-    if (pp::recalculator::in_progress())
+    if (pp::recalculator::in_progress()) {
         return;
+    }
 
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::users user_table {};
     std::vector<std::pair<int32_t, float>> users;
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax users_stats_table {};
         auto result = db(select(
             users_stats_table.id,
@@ -310,12 +346,14 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
             users_stats_table.play_count_ctb
         ).from(users_stats_table).unconditionally());
 
-        if (result.empty())
+        if (result.empty()) {
             return;
+        }
 
         for (const auto& row : result) {
-            if (row.id.value() == 1)
+            if (row.id.value() == 1) {
                 continue;
+            }
 
             // This needs to be configurable for future updates
             // Users should be purged once there is a update to the performance calculator
@@ -323,33 +361,43 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
             //if (users::activity::is_inactive(row.id, mode))
             //    continue;
 
-            if (!users::punishments::has_scores(row.id))
+            if (!users::punishments::has_scores(row.id)) {
                 continue;
+            }
 
             switch (mode) {
-            case utils::play_mode::standard:
-                if (row.play_count_std.value() <= 0)
-                    continue;
+                case utils::play_mode::standard: {
+                    if (row.play_count_std.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_std));
-                break;
-            case utils::play_mode::taiko:
-                if (row.play_count_taiko.value() <= 0)
-                    continue;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_std));
+                    break;
+                }
+                case utils::play_mode::taiko: {
+                    if (row.play_count_taiko.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_taiko));
-                break;
-            case utils::play_mode::fruits:
-                if (row.play_count_ctb.value() <= 0)
-                    continue;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_taiko));
+                    break;
+                }
+                case utils::play_mode::fruits: {
+                    if (row.play_count_ctb.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_ctb));
-                break;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_ctb));
+                    break;
+                }
+                case utils::play_mode::mania: {
+                    // Useless calculations
+                    return;
+                }
             }
         }
     }
-    else
-    {
+    else {
         const tables::users_stats users_stats_table{};
         auto result = db(select(
             users_stats_table.id,
@@ -363,12 +411,14 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
             users_stats_table.play_count_mania
         ).from(users_stats_table).unconditionally());
 
-        if (result.empty())
+        if (result.empty()) {
             return;
+        }
 
         for (const auto& row : result) {
-            if (row.id.value() == 1)
+            if (row.id.value() == 1) {
                 continue;
+            }
 
             // This needs to be configurable for future updates
             // Users should be purged once there is a update to the performance calculator
@@ -376,34 +426,43 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
             //if (users::activity::is_inactive(row.id, mode))
             //    continue;
 
-            if (!users::punishments::has_scores(row.id))
+            if (!users::punishments::has_scores(row.id)) {
                 continue;
+            }
 
             switch (mode) {
-            case utils::play_mode::standard:
-                if (row.play_count_std.value() <= 0)
-                    continue;
+                case utils::play_mode::standard: {
+                    if (row.play_count_std.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_std));
-                break;
-            case utils::play_mode::taiko:
-                if (row.play_count_taiko.value() <= 0)
-                    continue;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_std));
+                    break;
+                }
+                case utils::play_mode::taiko: {
+                    if (row.play_count_taiko.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_taiko));
-                break;
-            case utils::play_mode::fruits:
-                if (row.play_count_ctb.value() <= 0)
-                    continue;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_taiko));
+                    break;
+                }
+                case utils::play_mode::fruits: {
+                    if (row.play_count_ctb.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_ctb));
-                break;
-            case utils::play_mode::mania:
-                if (row.play_count_mania.value() <= 0)
-                    continue;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_ctb));
+                    break;
+                }
+                case utils::play_mode::mania: {
+                    if (row.play_count_mania.value() <= 0) {
+                        continue;
+                    }
 
-                users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_mania));
-                break;
+                    users.emplace_back(std::make_pair<int32_t, float>(row.id, row.pp_mania));
+                    break;
+                }
             }
         }
     }
@@ -414,105 +473,65 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
 
     // At this point, the users array is sorted by rank, this means the 0th element is rank #1
 
-    if (is_relax)
-    {
+    if (is_relax) {
         const tables::users_stats_relax users_stats_table {};
         for (size_t i = 0; i < users.size(); i++) {
             auto [user_id, pp] = users.at(i);
             int32_t rank = static_cast<int32_t>(i) + 1;
 
             std::shared_ptr<users::user> user = users::manager::get_user_by_id(user_id);
+            if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(mode)) {
+                user->stats.rank = rank;
+                user->presence.rank = rank;
+            }
 
-            switch (mode)
-            {
-                case utils::play_mode::standard:
-                {
+            switch (mode) {
+                case utils::play_mode::standard: {
                     db(update(users_stats_table).set(users_stats_table.rank_std = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::standard))
-                    {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
                 }
-                case utils::play_mode::taiko:
-                {
+                case utils::play_mode::taiko: {
                     db(update(users_stats_table).set(users_stats_table.rank_taiko = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::taiko))
-                    {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
                 }
-                case utils::play_mode::fruits:
-                {
+                case utils::play_mode::fruits: {
                     db(update(users_stats_table).set(users_stats_table.rank_ctb = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::fruits))
-                    {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
+                }
+                case utils::play_mode::mania: {
+                    // Useless calculations
+                    return;
                 }
             }
         }
     }
-    else
-    {
-        const tables::users_stats users_stats_table{};
+    else {
+        const tables::users_stats users_stats_table {};
         for (size_t i = 0; i < users.size(); i++) {
             auto [user_id, pp] = users.at(i);
             int32_t rank = static_cast<int32_t>(i) + 1;
 
             std::shared_ptr<users::user> user = users::manager::get_user_by_id(user_id);
+            if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(mode)) {
+                user->stats.rank = rank;
+                user->presence.rank = rank;
+            }
 
-            switch (mode)
-            {
-                case utils::play_mode::standard:
-                {
+            switch (mode) {
+                case utils::play_mode::standard: {
                     db(update(users_stats_table).set(users_stats_table.rank_std = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::standard))
-                    {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
                 }
-                case utils::play_mode::taiko:
-                {
+                case utils::play_mode::taiko: {
                     db(update(users_stats_table).set(users_stats_table.rank_taiko = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::taiko))
-                    {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
                 }
-                case utils::play_mode::fruits:
-                {
+                case utils::play_mode::fruits: {
                     db(update(users_stats_table).set(users_stats_table.rank_ctb = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::fruits))
-                    {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
                 }
-                case utils::play_mode::mania:
-                {
+                case utils::play_mode::mania: {
                     db(update(users_stats_table).set(users_stats_table.rank_mania = rank).where(users_stats_table.id == user_id));
-
-                    if (user != nullptr && user->stats.play_mode == static_cast<uint8_t>(utils::play_mode::mania)) {
-                        user->stats.rank = rank;
-                        user->presence.rank = rank;
-                    }
                     break;
                 }
             }
@@ -523,8 +542,9 @@ void shiro::ranking::helper::recalculate_ranks(const shiro::utils::play_mode &mo
 
     // First we add all user stats/presence updates to the global writer
     users::manager::iterate([&writer](std::shared_ptr<users::user> online_user) {
-        if (online_user->hidden)
+        if (online_user->hidden) {
             return;
+        }
 
         writer.user_stats(online_user->stats);
         writer.user_presence(online_user->presence);

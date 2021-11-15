@@ -32,85 +32,93 @@ void shiro::logging::sentry::init() {
     client = std::make_shared<nlohmann::crow>(config::bancho::sentry_dsn);
     loguru::add_callback("sentry.io", logging::sentry::callback, nullptr, loguru::Verbosity_INFO);
     loguru::set_fatal_handler(logging::sentry::fatal_callback);
-    scheduler.Schedule(std::chrono::hours(48), [](tsc::TaskContext ctx) {
-        client->remove_breadcrumbs(25);
 
-        ctx.Repeat(std::chrono::hours(48));
-    });
-    client->add_breadcrumb("Successfully started communication with sentry.io.");
     LOG_F(INFO, "Sentry successfully started.");
-    if (config::bancho::enable_breadcrumb)
+    if (config::bancho::enable_breadcrumb) {
         LOG_F(WARNING, "Please note that breadcrumbs might take a lot of RAM!");
+
+        scheduler.Schedule(std::chrono::hours(48), [](tsc::TaskContext ctx) {
+            client->remove_breadcrumbs(25);
+
+            ctx.Repeat(std::chrono::hours(48));
+        });
+        client->add_breadcrumb("Successfully started communication with sentry.io.");
+    }
 }
 
 void shiro::logging::sentry::callback(void *user_data, const loguru::Message &message) {
     switch (message.verbosity) {
         case loguru::Verbosity_ERROR:
-        case loguru::Verbosity_FATAL:
+        case loguru::Verbosity_FATAL: {
             client->capture_message(message.message, {
-                    { "level", verbosity_to_sentry_level(message.verbosity) },
-                    { "extra",
-                        {
-                            { "verbosity", message.verbosity },
-                            { "filename", message.filename },
-                            { "line", message.line },
-                            { "prefix", message.prefix }
-                        }
+                { "level", verbosity_to_sentry_level(message.verbosity) },
+                { "extra",
+                    {
+                        { "verbosity", message.verbosity },
+                        { "filename", message.filename },
+                        { "line", message.line },
+                        { "prefix", message.prefix }
                     }
+                }
             });
             break;
-        default:
+        }
+        default: {
             client->add_breadcrumb(message.message, {
-                    { "level", verbosity_to_sentry_level(message.verbosity) },
-                    { "data",
-                        {
-                            { "verbosity", message.verbosity },
-                            { "filename", message.filename },
-                            { "line", message.line },
-                            { "prefix", message.prefix }
-                        }
+                { "level", verbosity_to_sentry_level(message.verbosity) },
+                { "data",
+                    {
+                        { "verbosity", message.verbosity },
+                        { "filename", message.filename },
+                        { "line", message.line },
+                        { "prefix", message.prefix }
                     }
+                }
             });
             break;
+        }
     }
 }
 
 void shiro::logging::sentry::fatal_callback(const loguru::Message &message) {
     client->add_breadcrumb("!! FATAL ERROR OCCURRED, EXITING NOW !!");
     client->capture_message(message.message, {
-            { "level", "fatal" },
-            { "extra",
-                {
-                    { "verbosity", message.verbosity },
-                    { "filename", message.filename },
-                    { "line", message.line },
-                    { "prefix", message.prefix }
-                }
+        { "level", "fatal" },
+        { "extra",
+            {
+                { "verbosity", message.verbosity },
+                { "filename", message.filename },
+                { "line", message.line },
+                { "prefix", message.prefix }
             }
+        }
     });
 }
 
-void shiro::logging::sentry::exception(const std::exception &ex) {
-    if (!config::bancho::sentry_integration)
+void shiro::logging::sentry::exception(const std::exception &ex, const char* file, const unsigned int line) {
+    if (!config::bancho::sentry_integration) {
         return;
+    }
 
-    client->capture_exception(ex);
+    client->capture_exception(ex, file, line);
 }
 
-void shiro::logging::sentry::exception(const std::exception_ptr &ptr) {
-    if (!config::bancho::sentry_integration)
+void shiro::logging::sentry::exception(const std::exception_ptr &ptr, const char* file, const unsigned int line) {
+    if (!config::bancho::sentry_integration) {
         return;
+    }
 
     try {
         std::rethrow_exception(ptr);
     } catch (const std::exception &ex) {
-        client->capture_exception(ex, nullptr, false);
+        client->capture_exception(ex, file, line, nullptr, false);
     }
 }
 
 void shiro::logging::sentry::http_request_out(const std::string &url, const std::string &method, int32_t status_code, const std::string &reason) {
-    if (!config::bancho::sentry_integration)
+    if (!config::bancho::sentry_integration) {
         return;
+    }
 
     json req = {
         { "url", url },
@@ -118,27 +126,28 @@ void shiro::logging::sentry::http_request_out(const std::string &url, const std:
         { "status_code", status_code }
     };
 
-    if (!reason.empty())
+    if (!reason.empty()) {
         req["reason"] = reason;
+    }
 
     client->add_breadcrumb("", {
-            { "level", "info" },
-            { "type", "http" },
-            { "data", req }
+        { "level", "info" },
+        { "type", "http" },
+        { "data", req }
     });
 }
 
 void shiro::logging::sentry::http_request_in(const ::crow::request &request) {
-    if (!config::bancho::sentry_integration)
+    if (!config::bancho::sentry_integration) {
         return;
+    }
 
     json req = {
         { "url", request.url },
         { "method", ::crow::method_name(request.method) },
         { "data", request.body },
         { "query_string", request.raw_url },
-        { "env",
-            {
+        { "env", {
                 "REMOTE_ADDR", request.get_ip_address()
             }
         }
@@ -154,23 +163,29 @@ void shiro::logging::sentry::http_request_in(const ::crow::request &request) {
 
     std::string cookie = request.get_header_value("cookie");
 
-    if (!cookie.empty())
+    if (!cookie.empty()) {
         req["cookies"] = cookie;
+    }
 
     client->add_request_context(req);
 }
 
 std::string shiro::logging::sentry::verbosity_to_sentry_level(const loguru::Verbosity &verbosity) {
     switch (verbosity) {
-        case loguru::Verbosity_ERROR:
+        case loguru::Verbosity_ERROR: {
             return "error";
-        case loguru::Verbosity_FATAL:
+        }
+        case loguru::Verbosity_FATAL: {
             return "fatal";
-        case loguru::Verbosity_WARNING:
+        }
+        case loguru::Verbosity_WARNING: {
             return "warning";
-        case loguru::Verbosity_INFO:
+        }
+        case loguru::Verbosity_INFO: {
             return "info";
-        default:
+        }
+        default: {
             return "debug";
+        }
     }
 }

@@ -20,8 +20,9 @@
 #include "lobby_leave_handler.hh"
 
 void shiro::handler::multiplayer::lobby::leave::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    if (!shiro::multiplayer::lobby_manager::in_lobby(user))
+    if (!shiro::multiplayer::lobby_manager::in_lobby(user)) {
         return;
+    }
 
     shiro::multiplayer::lobby_manager::remove_user(user);
 }

@@ -24,8 +24,7 @@
 
 #include "../../users/user.hh"
 
-namespace shiro::commands_mp
-{
+namespace shiro::commands_mp {
 
     bool lock(std::deque<std::string>& args, std::shared_ptr<users::user> user, std::string channel);
 

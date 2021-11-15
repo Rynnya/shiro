@@ -42,13 +42,15 @@ bool shiro::config::bancho::enable_breadcrumb = true;
 int32_t shiro::config::bancho::breadcrumb_limit = 100;
 
 void shiro::config::bancho::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing bancho.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("bancho.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse bancho.toml file: %s.", ex.what());
     }
 

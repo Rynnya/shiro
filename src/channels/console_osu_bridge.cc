@@ -30,8 +30,9 @@ void shiro::channels::bridge::install() {
 void shiro::channels::bridge::callback(void *user_data, const loguru::Message &log_message) {
     std::shared_ptr<users::user> bot_user = bot::bot_user;
 
-    if (bot_user == nullptr)
+    if (bot_user == nullptr) {
         return;
+    }
 
     io::osu_writer writer;
     io::osu_writer future_writer;
@@ -51,25 +52,28 @@ void shiro::channels::bridge::callback(void *user_data, const loguru::Message &l
     future_writer.user_presence(bot_user->presence);
 
     for (const std::shared_ptr<users::user> &user : channels::manager::get_users_in_channel("#console")) {
-        if (user == nullptr || user->user_id == 1)
+        if (user == nullptr || user->user_id == 1) {
             continue;
+        }
 
         user->queue.enqueue(writer);
         user->queue.enqueue_next(future_writer);
     }
 }
 
-uint8_t shiro::channels::bridge::get_permission(loguru::Verbosity verbosity)
-{
-    switch (verbosity)
-    {
-        case loguru::Verbosity_WARNING:
+uint8_t shiro::channels::bridge::get_permission(loguru::Verbosity verbosity) {
+    switch (verbosity) {
+        case loguru::Verbosity_WARNING: {
             return static_cast<uint8_t>(utils::osu_permissions::supporter);
-        case loguru::Verbosity_ERROR:
+        }
+        case loguru::Verbosity_ERROR: {
             return static_cast<uint8_t>(utils::osu_permissions::bat);
-        case loguru::Verbosity_FATAL:
+        }
+        case loguru::Verbosity_FATAL: {
             return static_cast<uint8_t>(utils::osu_permissions::peppy);
-        default:
+        }
+        default: {
             return static_cast<uint8_t>(utils::osu_permissions::friend_);
+        }
     }
 }

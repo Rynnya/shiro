@@ -37,9 +37,9 @@ namespace shiro::logging::sentry {
 
     void fatal_callback(const loguru::Message& message);
 
-    void exception(const std::exception &ex);
+    void exception(const std::exception &ex, const char* file, const unsigned int line);
 
-    void exception(const std::exception_ptr &ptr);
+    void exception(const std::exception_ptr &ptr, const char* file, const unsigned int line);
 
     void http_request_out(const std::string &url, const std::string &method = "GET", int32_t status_code = 200, const std::string &reason = "OK");
 

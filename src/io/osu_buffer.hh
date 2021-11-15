@@ -43,19 +43,20 @@ namespace shiro::io {
         void append(std::string data);
         void append(buffer &buf);
 
-        template <typename t = uint8_t>
-        void write(t data) {
-            this->allocate(sizeof(t));
+        template <typename T = uint8_t>
+        void write(T data) {
+            this->allocate(sizeof(T));
             uint8_t *data_arr = reinterpret_cast<uint8_t*>(&data);
 
-            for (size_t i = 0; i < sizeof(t); i++)
+            for (size_t i = 0; i < sizeof(T); i++) {
                 this->bytes.at(this->written_size++) = data_arr[i];
+            }
         }
 
-        template <typename t = uint8_t>
-        t read() {
-            t data = *reinterpret_cast<t*>((uintptr_t)this->bytes.data() + this->position);
-            this->position += sizeof(t);
+        template <typename T = uint8_t>
+        T read() {
+            T data = *reinterpret_cast<T*>((uintptr_t)this->bytes.data() + this->position);
+            this->position += sizeof(T);
 
             return data;
         }
@@ -68,14 +69,14 @@ namespace shiro::io {
 
         std::string serialize();
 
-        bool can_read(size_t amount);
-        bool is_empty();
+        bool can_read(size_t amount) noexcept;
+        bool is_empty() noexcept;
 
-        void clear();
-        void seek(size_t position);
-        void advance(size_t amount);
+        void clear() noexcept;
+        void seek(size_t position) noexcept;
+        void advance(size_t amount) noexcept;
 
-        size_t get_size();
+        size_t get_size() noexcept;
 
     };
 

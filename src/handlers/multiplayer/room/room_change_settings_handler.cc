@@ -25,15 +25,18 @@ void shiro::handler::multiplayer::room::change_settings::handle(shiro::io::osu_p
     io::layouts::multiplayer_match match = in.unmarshal<io::layouts::multiplayer_match>();
 
     shiro::multiplayer::match_manager::iterate([&user, match](io::layouts::multiplayer_match &global_match) -> bool {
-        if (match.match_id != global_match.match_id)
+        if (match.match_id != global_match.match_id) {
             return false;
+        }
 
-        if (global_match.host_id != user->user_id)
+        if (global_match.host_id != user->user_id) {
             return true;
+        }
 
         bool changed_beatmap = global_match.beatmap_id != match.beatmap_id;
         bool changed_win_condition = global_match.multi_win_condition != match.multi_win_condition;
         bool changed_team_type = global_match.multi_team_type != match.multi_team_type;
+        bool changed_mods = global_match.multi_special_modes != match.multi_special_modes;
 
         global_match.multi_team_type = match.multi_team_type;
         global_match.multi_win_condition = match.multi_win_condition;
@@ -45,37 +48,46 @@ void shiro::handler::multiplayer::room::change_settings::handle(shiro::io::osu_p
         global_match.beatmap_name = match.beatmap_name;
         global_match.beatmap_checksum = match.beatmap_checksum;
 
-        if (global_match.multi_special_modes == 0) {
-            std::fill(global_match.multi_slot_mods.begin(), global_match.multi_slot_mods.end(), 0);
-        } else if (global_match.multi_special_modes == 1) {
-            for (size_t i = 0; i < global_match.multi_slot_mods.size(); i++) {
-                if (global_match.multi_slot_id.at(i) == -1)
-                    continue;
-
-                global_match.multi_slot_mods.at(i) = global_match.active_mods & utils::free_mods;
+        // This will prevent mods drop when map changed
+        if (changed_mods) {
+            if (global_match.multi_special_modes == 0) {
+                std::fill(global_match.multi_slot_mods.begin(), global_match.multi_slot_mods.end(), 0);
             }
+            else if (global_match.multi_special_modes == 1) {
+                for (size_t i = 0; i < global_match.multi_slot_mods.size(); i++) {
+                    if (global_match.multi_slot_id.at(i) == -1) {
+                        continue;
+                    }
 
-            global_match.active_mods &= ~utils::free_mods;
+                    global_match.multi_slot_mods.at(i) = global_match.active_mods & utils::free_mods;
+                }
+
+                global_match.active_mods &= ~utils::free_mods;
+            }
         }
 
         if (utils::is_team(global_match.multi_team_type)) {
             for (size_t i = 0; i < global_match.multi_slot_id.size(); i++) {
-                if (global_match.multi_slot_id.at(i) == -1)
+                if (global_match.multi_slot_id.at(i) == -1) {
                     continue;
+                }
 
                 global_match.multi_slot_team.at(i) = i % 2 + 1;
             }
-        } else {
+        }
+        else {
             std::fill(global_match.multi_slot_team.begin(), global_match.multi_slot_team.end(), 0);
         }
 
         if (changed_beatmap || changed_win_condition || changed_team_type) {
             for (size_t i = 0; i < global_match.multi_slot_id.size(); i++) {
-                if (global_match.multi_slot_id.at(i) == -1)
+                if (global_match.multi_slot_id.at(i) == -1) {
                     continue;
+                }
 
-                if (global_match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::ready))
+                if (global_match.multi_slot_status.at(i) != static_cast<uint8_t>(utils::slot_status::not_ready)) {
                     continue;
+                }
 
                 global_match.multi_slot_status.at(i) = static_cast<uint8_t>(utils::slot_status::not_ready);
             }

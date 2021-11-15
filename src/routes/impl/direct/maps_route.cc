@@ -20,23 +20,21 @@
 #include "../../../thirdparty/loguru.hh"
 #include "maps_route.hh"
 
-void shiro::routes::direct::maps::handle(const crow::request& request, crow::response& response, std::string args)
-{
-	response.set_header("Content-Type", "text/plain; charset=UTF-8");
-	response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+void shiro::routes::direct::maps::handle(const crow::request& request, crow::response& response, std::string args) {
+    response.set_header("Content-Type", "text/plain; charset=UTF-8");
+    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
 
-	auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
+    auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
 
-	if (!success)
-	{
-		response.code = 504;
-		response.end();
+    if (!success) {
+        response.code = 504;
+        response.end();
 
-		LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
+        LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
 
-		return;
-	}
+        return;
+    }
 
-	response.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-	response.end(result);
+    response.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+    response.end(result);
 }

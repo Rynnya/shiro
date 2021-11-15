@@ -23,30 +23,35 @@
 void shiro::handler::multiplayer::room::change_host::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
     int32_t slot_id = in.data.read<int32_t>();
 
-    if (slot_id >= 16)
+    if (slot_id >= 16) {
         return;
+    }
 
     shiro::multiplayer::match_manager::iterate([&user, slot_id](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
-        if (match.host_id != user->user_id)
+        if (match.host_id != user->user_id) {
             return true;
+        }
 
         int32_t new_host_id = match.multi_slot_id.at(slot_id);
 
-        if (new_host_id == -1)
+        if (new_host_id == -1) {
             return true;
+        }
 
         match.host_id = new_host_id;
         match.send_update(true);
 
         std::shared_ptr<users::user> new_host = users::manager::get_user_by_id(new_host_id);
 
-        if (new_host == nullptr)
+        if (new_host == nullptr) {
             return true;
+        }
 
         io::osu_writer writer;
         writer.match_transfer_host();

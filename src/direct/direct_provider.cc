@@ -28,28 +28,39 @@
 std::shared_ptr<shiro::direct::direct_provider> shiro::direct::provider = nullptr;
 
 void shiro::direct::init() {
-    if (!config::direct::enabled)
+    if (!config::direct::enabled) {
         return;
-
-    switch (config::direct::provider) {
-        case 0: // Localhost Shirogane via shm
-            throw std::runtime_error("Direct provider 0 (Shirogane via shared memory region) is currently not implemented.");
-        case 1: // Client request emulation
-            provider = std::make_shared<emulation>();
-            break;
-        case 2: // Beatconnect
-            provider = std::make_shared<beatconnect>();
-            break;
-        case 3: // Cheesegull
-            provider = std::make_shared<cheesegull>();
-            break;
-        default:
-            LOG_F(ERROR, "Invalid direct mode has been provided in bancho.toml: %u.", config::direct::provider);
-            break;
     }
 
-    if (sanity_check())
+    switch (config::direct::provider) {
+        case 0: {
+            // Localhost Shirogane via shm
+            throw std::runtime_error("Direct provider 0 (Shirogane via shared memory region) is currently not implemented.");
+        }
+        case 1: {
+            // Client request emulation
+            provider = std::make_shared<emulation>();
+            break;
+        }
+        case 2: {
+            // Beatconnect
+            provider = std::make_shared<beatconnect>();
+            break;
+        }
+        case 3: {
+            // Cheesegull
+            provider = std::make_shared<cheesegull>();
+            break;
+        }
+        default: {
+            LOG_F(ERROR, "Invalid direct mode has been provided in bancho.toml: %u.", config::direct::provider);
+            break;
+        }
+    }
+
+    if (sanity_check()) {
         return;
+    }
 
     if (provider != nullptr) {
         provider.reset();
@@ -60,15 +71,17 @@ void shiro::direct::init() {
 }
 
 bool shiro::direct::sanity_check() {
-    if (provider == nullptr)
+    if (provider == nullptr) {
         return false;
+    }
 
     auto [search_success, search_result] = provider->search({
         { "q", "hitorigoto" }
     });
 
-    if (!search_success || search_result.empty())
+    if (!search_success || search_result.empty()) {
         return false;
+    }
 
     /*auto [download_success, download_result] = provider->download(1262832, true);
 

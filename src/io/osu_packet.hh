@@ -31,9 +31,9 @@ namespace shiro::io {
 
         explicit osu_packet(buffer &data);
 
-        template<typename l>
-        l unmarshal() {
-            l result;
+        template <typename T>
+        T unmarshal() {
+            T result;
             result.unmarshal(this->data);
 
             return result;

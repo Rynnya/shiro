@@ -4,8 +4,14 @@
 /*
  _____ _____ _____ _ _ _
 |     | __  |     | | | |  Crow - a Sentry client for C++
-|   --|    -|  |  | | | |  version 0.0.6
+|   --|    -|  |  | | | |  version 0.0.6+
 |_____|__|__|_____|_____|  https://github.com/nlohmann/crow
+
+Modified by Rynnya, to make sure that new version of Sentry will work with this code.
+List of changes:
+ - Upgraded client version from 5 to 7
+ - Allowed to recreate m_payload, which don't create memory leaks anymore
+ - Changed from asserts and exceptions to exception-free standard (as Sentry requests from clients)
 
 Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 SPDX-License-Identifier: MIT
@@ -46,13 +52,11 @@ using json = nlohmann::json;
 /*!
  * @brief namespace for Niels Lohmann
  */
-namespace nlohmann
-{
+namespace nlohmann {
 /*!
  * @brief a C++ client for Sentry
  */
-    class crow
-    {
+    class crow {
     public:
         /*!
          * @brief create a client
@@ -120,6 +124,8 @@ namespace nlohmann
          * @since 0.0.1, context added with 0.0.3
          */
         void capture_exception(const std::exception& exception,
+                               const char* file = "",
+                               const unsigned int line = 0,
                                const json& context = nullptr,
                                bool handled = true);
 

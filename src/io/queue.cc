@@ -42,7 +42,7 @@ void shiro::io::queue::clear() {
     this->next_queue.clear();
 }
 
-bool shiro::io::queue::is_empty() {
+bool shiro::io::queue::is_empty() noexcept {
     return this->packet_queue.is_empty();
 }
 

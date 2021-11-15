@@ -43,8 +43,9 @@ shiro::replays::replay::replay(shiro::scores::score s, std::string replay)
 void shiro::replays::replay::parse() {
     std::string decompressed = utils::crypto::lzma::decompress(this->raw_replay);
 
-    if (decompressed.empty())
+    if (decompressed.empty()) {
         return;
+    }
 
     std::vector<std::string> parts;
     boost::split(parts, decompressed, boost::is_any_of(","));
@@ -55,8 +56,9 @@ void shiro::replays::replay::parse() {
         std::vector<std::string> pieces;
         boost::split(pieces, part, boost::is_any_of("|"));
 
-        if (pieces.size() < 4)
+        if (pieces.size() < 4) {
             continue;
+        }
 
         bool parse_result = true;
         parse_result &= utils::strings::safe_ll(pieces.at(0), a.w);
@@ -64,10 +66,9 @@ void shiro::replays::replay::parse() {
         parse_result &= utils::strings::safe_float(pieces.at(2), a.y);
         parse_result &= utils::strings::safe_int(pieces.at(3), a.z);
 
-        if (!parse_result)
-        {
+        if (!parse_result) {
             LOG_F(ERROR, "Unable to cast action values into correct data types.");
-            logging::sentry::exception(std::invalid_argument("Action string was invalid."));
+            logging::sentry::exception(std::invalid_argument("Action string was invalid."), __FILE__, __LINE__);
             continue;
         }
 
@@ -79,13 +80,13 @@ std::vector<shiro::replays::action> shiro::replays::replay::get_actions() {
     return this->actions;
 }
 
-std::string shiro::replays::replay::to_string() const
-{
+std::string shiro::replays::replay::to_string() const {
     static std::stringstream stream;
     stream.clear();
 
-    for (const action &a : this->actions)
+    for (const action& a : this->actions) {
         stream << a.to_string();
+    }
 
     return stream.str();
 }

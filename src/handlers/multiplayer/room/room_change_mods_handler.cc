@@ -25,28 +25,34 @@ void shiro::handler::multiplayer::room::change_mods::handle(shiro::io::osu_packe
     shiro::multiplayer::match_manager::iterate([user, &mods](io::layouts::multiplayer_match &match) -> bool {
         auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
-        if (iterator == match.multi_slot_id.end())
+        if (iterator == match.multi_slot_id.end()) {
             return false;
+        }
 
         if (match.multi_special_modes == 1) { // Free Mod
             if (match.host_id == user->user_id) {
                 if (mods & static_cast<uint32_t>(utils::mods::double_time)) {
                     match.active_mods = static_cast<uint32_t>(utils::mods::double_time);
 
-                    if (mods & static_cast<uint32_t>(utils::mods::nightcore))
+                    if (mods & static_cast<uint32_t>(utils::mods::nightcore)) {
                         match.active_mods |= static_cast<uint32_t>(utils::mods::nightcore);
-                } else if (mods & static_cast<uint32_t>(utils::mods::half_time)) {
+                    }
+                }
+                else if (mods & static_cast<uint32_t>(utils::mods::half_time)) {
                     match.active_mods = static_cast<uint32_t>(utils::mods::half_time);
-                } else {
+                }
+                else {
                     match.active_mods = static_cast<uint32_t>(utils::mods::none);
                 }
             }
 
             ptrdiff_t index = std::distance(match.multi_slot_id.begin(), iterator);
             match.multi_slot_mods.at(index) = (mods & utils::free_mods);
-        } else if (match.multi_special_modes == 0) { // Host sets global mods
-            if (match.host_id != user->user_id)
+        }
+        else if (match.multi_special_modes == 0) { // Host sets global mods
+            if (match.host_id != user->user_id) {
                 return true;
+            }
 
             match.active_mods = mods;
         }

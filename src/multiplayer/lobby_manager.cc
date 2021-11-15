@@ -22,8 +22,9 @@ std::vector<std::shared_ptr<shiro::users::user>> shiro::multiplayer::lobby_manag
 std::shared_timed_mutex shiro::multiplayer::lobby_manager::mutex;
 
 void shiro::multiplayer::lobby_manager::add_user(std::shared_ptr<shiro::users::user> user) {
-    if (user == nullptr || in_lobby(user))
+    if (user == nullptr || in_lobby(user)) {
         return;
+    }
 
     // Disallow other threads from both writing and reading
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -32,8 +33,9 @@ void shiro::multiplayer::lobby_manager::add_user(std::shared_ptr<shiro::users::u
 }
 
 void shiro::multiplayer::lobby_manager::remove_user(std::shared_ptr<shiro::users::user> user) {
-    if (user == nullptr || !in_lobby(user))
+    if (user == nullptr || !in_lobby(user)) {
         return;
+    }
 
     // Disallow other threads from both writing and reading
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -47,8 +49,9 @@ void shiro::multiplayer::lobby_manager::remove_user(std::shared_ptr<shiro::users
 }
 
 bool shiro::multiplayer::lobby_manager::in_lobby(std::shared_ptr<shiro::users::user> user) {
-    if (user == nullptr)
+    if (user == nullptr) {
         return false;
+    }
 
     // Disallow other threads from writing (but not from reading)
     std::shared_lock<std::shared_timed_mutex> lock(mutex);

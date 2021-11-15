@@ -31,22 +31,23 @@ shiro::redis::redis(const std::string& address, uint32_t port, const std::string
 }
 
 void shiro::redis::connect() {
-    if (is_connected())
+    if (is_connected()) {
         return;
+    }
 
     this->client = std::make_shared<cpp_redis::client>();
     this->sub = std::make_shared<cpp_redis::subscriber>();
     this->client->connect(this->address, this->port);
     this->sub->connect(this->address, this->port);
 
-    if (!this->password.empty())
-    {
+    if (!this->password.empty()) {
         this->client->auth(this->password);
         this->sub->auth(this->password);
     }
 
-    if (!is_connected())
+    if (!is_connected()) {
         ABORT_F("Unable to connect to Redis instance.");
+    }
 
     LOG_F(INFO, "Successfully connected to Redis.");
 }
@@ -58,8 +59,9 @@ void shiro::redis::disconnect() {
 
     this->client->sync_commit();
 
-    if (!is_connected())
+    if (!is_connected()) {
         return;
+    }
 
     this->client->disconnect();
     this->sub->disconnect();
@@ -86,8 +88,9 @@ bool shiro::redis::is_connected() {
 }
 
 std::shared_ptr<cpp_redis::client> shiro::redis::get() {
-    if (!is_connected())
+    if (!is_connected()) {
         ABORT_F("Tried to acquire redis connection while not being connected.");
+    }
 
     return this->client;
 }

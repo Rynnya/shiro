@@ -56,10 +56,9 @@ void shiro::routes::web::get_replay::handle(const crow::request &request, crow::
 
     int32_t id = 0;
 
-    if (!utils::strings::safe_int(score_id, id))
-    {
+    if (!utils::strings::safe_int(score_id, id)) {
         LOG_F(WARNING, "Unable to convert score id %s to int32_t.", score_id);
-        logging::sentry::exception(std::invalid_argument("Unable to cast score id to int32_t."));
+        logging::sentry::exception(std::invalid_argument("Unable to cast score id to int32_t."), __FILE__, __LINE__);
 
         response.code = 500;
         response.end();
@@ -86,7 +85,7 @@ void shiro::routes::web::get_replay::handle(const crow::request &request, crow::
     const tables::scores score_table {};
 
     db(update(score_table).set(
-            score_table.times_watched += 1
+        score_table.times_watched += 1
     ).where(score_table.id == s.id));
 
     response.set_header("Content-Type", "application/octet-stream");
@@ -108,10 +107,9 @@ void shiro::routes::web::get_replay::handle_full(const crow::request& request, c
 
     int32_t id = 0;
 
-    if (!utils::strings::safe_int(score_id, id))
-    {
+    if (!utils::strings::safe_int(score_id, id)) {
         LOG_F(WARNING, "Unable to convert score id %s to int32_t.", score_id);
-        logging::sentry::exception(std::invalid_argument("Unable to cast score id to int32_t."));
+        logging::sentry::exception(std::invalid_argument("Unable to cast score id to int32_t."), __FILE__, __LINE__);
 
         response.code = 500;
         response.end();

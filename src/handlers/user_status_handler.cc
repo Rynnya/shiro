@@ -32,8 +32,9 @@ void shiro::handler::user_status::handle(shiro::io::osu_packet &in, shiro::io::o
     user->stats.play_mode = status.play_mode;
     user->stats.current_mods = status.current_mods;
 
-    if (!changed_mode)
+    if (!changed_mode) {
         return;
+    }
 
     user->update(user->stats.current_mods & static_cast<int32_t>(utils::mods::relax));
 }

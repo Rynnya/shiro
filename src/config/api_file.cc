@@ -28,13 +28,15 @@ std::string shiro::config::api::deploy_key = "";
 std::string shiro::config::api::deploy_command = "";
 
 void shiro::config::api::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing api.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("api.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse api.toml file: %s.", ex.what());
     }
 
@@ -46,8 +48,9 @@ void shiro::config::api::parse() {
     // Thus, these options can't be configured like that.
     // Needs fixing in the future.
 
-    if (!deploy_key.empty() || !deploy_enabled)
+    if (!deploy_key.empty() || !deploy_enabled) {
         return;
+    }
 
     deploy_enabled = false;
     LOG_F(WARNING, "Deployment has been activated but no deploy keys have been specified. Disabling deployment.");

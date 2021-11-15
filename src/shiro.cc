@@ -89,16 +89,15 @@ int shiro::init(int argc, char **argv) {
     channels::discord_webhook::init();
 
     db_connection = std::make_shared<database>(
-            config::database::address, config::database::port, config::database::database,
-            config::database::username, config::database::password
+        config::database::address, config::database::port, config::database::database,
+        config::database::username, config::database::password
     );
     db_connection->connect();
-    db_connection->setup();
 
     redis_connection = std::make_shared<redis>(
-            config::database::redis_address,
-            config::database::redis_port,
-            config::database::redis_password
+        config::database::redis_address,
+        config::database::redis_port,
+        config::database::redis_password
     );
     redis_connection->connect();
     redis_connection->setup();
@@ -147,8 +146,7 @@ void shiro::destroy() {
     scheduler.CancelAll();
 
     using namespace shiro::channels;
-    if (shiro::config::discord_webhook::enabled)
-    {
+    if (shiro::config::discord_webhook::enabled) {
         nlohmann::json message = discord_webhook::create_basis();
         message["embeds"].push_back(discord_webhook::create_embed("Shiro is shutting down... Bye!", "", static_cast<uint32_t>(discord_webhook::colors::Blurple)));
         shiro::utils::curl::post_message(shiro::config::discord_webhook::url, message);

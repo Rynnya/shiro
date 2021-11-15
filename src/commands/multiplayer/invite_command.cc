@@ -23,47 +23,44 @@
 #include "../../utils/osu_client.hh"
 #include "invite_command.hh"
 
-bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
-    if (!shiro::multiplayer::match_manager::in_match(user))
-    {
-        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
+bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+    if (args.size() < 1) {
+        utils::bot::respond("Usage: !mp invite <username>", user, channel, true);
         return true;
     }
 
-    if (args.size() < 1)
-    {
-        utils::bot::respond("Usage: !mp invite <username>", user, channel, true);
+    if (!shiro::multiplayer::match_manager::in_match(user)) {
+        utils::bot::respond("You must be in room to perform this action!", user, channel, true);
         return true;
     }
 
     std::shared_ptr<users::user> target = shiro::users::manager::get_user_by_username(args.at(0));
 
-    if (target == nullptr || target->hidden)
-    {
+    if (target == nullptr || target->hidden) {
         utils::bot::respond("User not found :c", user, channel, true);
         return true;
     }
 
-    if (target->client_type == +utils::clients::osu_client::aschente)
-    {
+    if (target->client_type == +utils::clients::osu_client::aschente) {
         utils::bot::respond("Thanks for the invite but I have to decline :)", user, target->presence.username, true);
         return true;
     }
 
     std::optional<io::layouts::multiplayer_match> optional = shiro::multiplayer::match_manager::get_match(user);
 
-    // Some how user left lobby after invite almost instantly
-    if (!optional.has_value())
+    // Somehow user left lobby after invite almost instantly
+    if (!optional.has_value()) {
         return true;
+    }
 
     io::layouts::multiplayer_match match = *optional;
     std::string url = "osump://" + std::to_string(match.match_id) + "/";
     auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
     // If the sending user is in the lobby themselves, we can send the password without a problem
-    if (iterator != match.multi_slot_id.end() && !match.game_password.empty())
+    if (iterator != match.multi_slot_id.end() && !match.game_password.empty()) {
         url.append(utils::curl::escape_url(match.game_password));
+    }
 
     io::osu_writer writer;
     io::layouts::message message;

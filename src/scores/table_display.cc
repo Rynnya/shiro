@@ -39,8 +39,9 @@ void shiro::scores::table_display::init() {
     this->old_top_score = old_top_score;
     this->old_scoreboard_pos = helper::get_scoreboard_position(old_top_score, first_scores);
 
-    if (this->old_scoreboard_pos == -1)
+    if (this->old_scoreboard_pos == -1) {
         this->old_scoreboard_pos = 0;
+    }
 
     this->old_max_combo = this->user->stats.max_combo;
     this->old_acc = this->user->stats.accuracy;
@@ -115,8 +116,9 @@ std::string shiro::scores::table_display::build_legacy() {
 
     int32_t to_next_rank = user_above_pp - this->user->stats.pp;
 
-    if (to_next_rank < 0)
+    if (to_next_rank < 0) {
         to_next_rank = 0;
+    }
 
     push("chartId", "overall");
     push("chartName", "Overall Ranking");

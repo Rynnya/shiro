@@ -35,13 +35,15 @@ uint32_t shiro::config::database::redis_port = 6379;
 std::string shiro::config::database::redis_password = "";
 
 void shiro::config::database::parse() {
-    if (config_file != nullptr)
+    if (config_file != nullptr) {
         LOG_F(INFO, "Re-parsing database.toml file...");
+    }
 
     try {
         config_file = cpptoml::parse_file("database.toml");
-    } catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex);
+    }
+    catch (const cpptoml::parse_exception &ex) {
+        logging::sentry::exception(ex, __FILE__, __LINE__);
         ABORT_F("Failed to parse database.toml file: %s.", ex.what());
     }
 

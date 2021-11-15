@@ -71,11 +71,12 @@ void shiro::bot::init() {
     const tables::users_stats users_stats_table{};
     const tables::users_stats_relax users_stats_relax_table {};
 
-    auto result1 = db(select(all_of(user_table)).from(user_table).where(user_table.id == 1).limit(1u));
+    {
+        auto result = db(select(all_of(user_table)).from(user_table).where(user_table.id == 1).limit(1u));
 
-    // Check if the bot user exists, if not insert it into the db
-    if (result1.empty())
-        db(insert_into(user_table).set(
+        // Check if the bot user exists, if not insert it into the db
+        if (result.empty()) {
+            db(insert_into(user_table).set(
                 user_table.id = 1,
                 user_table.username = config::bot::name,
                 user_table.safe_username = utils::escaper::make_safe(config::bot::name),
@@ -89,22 +90,33 @@ void shiro::bot::init() {
                 user_table.roles = 0xDEADCAFE, // Special role for robots
                 user_table.userpage = "beep boop",
                 user_table.country = "JP"
-        ));
+            ));
+        }
+    }
 
-    auto result2 = db(select(all_of(users_stats_table)).from(users_stats_table).where(users_stats_table.id == 1).limit(1u));
+    // Creates user stats in Classic table
+    {
+        auto result = db(select(all_of(users_stats_table)).from(users_stats_table).where(users_stats_table.id == 1).limit(1u));
 
-    if (result2.empty())
-        db(insert_into(users_stats_table).set(users_stats_table.id = 1));
+        if (result.empty()) {
+            db(insert_into(users_stats_table).set(users_stats_table.id = 1));
+        }
+    }
 
-    auto result3 = db(select(all_of(users_stats_relax_table)).from(users_stats_relax_table).where(users_stats_relax_table.id == 1).limit(1u));
+    // Creates user stats in Relax table
+    {
+        auto result = db(select(all_of(users_stats_relax_table)).from(users_stats_relax_table).where(users_stats_relax_table.id == 1).limit(1u));
 
-    if (result3.empty())
-        db(insert_into(users_stats_relax_table).set(users_stats_relax_table.id = 1));
+        if (result.empty()) {
+            db(insert_into(users_stats_relax_table).set(users_stats_relax_table.id = 1));
+        }
+    }
 
     std::shared_ptr<users::user> bot_user = std::make_shared<users::user>(1);
 
-    if (!bot_user->init())
+    if (!bot_user->init()) {
         ABORT_F("Unable to initialize chat bot.");
+    }
 
     std::chrono::seconds seconds = utils::time::current_time();
 
@@ -116,7 +128,7 @@ void shiro::bot::init() {
     bot_user->client_build = 19700101;
     bot_user->client_type = utils::clients::osu_client::aschente;
 
-    bot_user->presence.country_id = 111;
+    bot_user->presence.country_id = 43;
     bot_user->presence.time_zone = 9;
     bot_user->presence.latitude = 35.6895f;
     bot_user->presence.longitude = 139.6917f;
@@ -134,8 +146,7 @@ void shiro::bot::init() {
     LOG_F(INFO, "Bot has been successfully registered as %s and is now online.", config::bot::name.c_str());
 }
 
-void shiro::bot::init_commands()
-{
+void shiro::bot::init_commands() {
     commands_map.insert(std::make_pair("announce", commands::announce));
     commands_map.insert(std::make_pair("ban", commands::ban));
     commands_map.insert(std::make_pair("classic", commands::classic));
@@ -169,11 +180,11 @@ void shiro::bot::init_commands()
     LOG_F(INFO, "Multiplayer commands have been successfully loaded. %lu commands available.", commands_mp_map.size());
 }
 
-bool shiro::bot::handle(const std::string &command, std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
+bool shiro::bot::handle(const std::string &command, std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
     auto cmd = commands_map.find(command);
-    if (cmd != commands_map.end())
+    if (cmd != commands_map.end()) {
         return cmd->second(args, user, channel);
+    }
 
     io::layouts::message msg;
     io::osu_writer writer;
@@ -189,11 +200,11 @@ bool shiro::bot::handle(const std::string &command, std::deque<std::string> &arg
     return false;
 }
 
-bool shiro::bot::handle_mp(const std::string& command, std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel)
-{
+bool shiro::bot::handle_mp(const std::string& command, std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
     auto cmd = commands_mp_map.find(command);
-    if (cmd != commands_mp_map.end())
+    if (cmd != commands_mp_map.end()) {
         return cmd->second(args, user, channel);
+    }
 
     io::layouts::message msg;
     io::osu_writer writer;

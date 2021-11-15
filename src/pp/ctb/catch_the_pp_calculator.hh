@@ -22,14 +22,14 @@
 
 #include "../../beatmaps/beatmap.hh"
 #include "../../scores/score.hh"
+#include "curves.hh"
 #include "math.hh"
 
-namespace shiro::pp::ctb
-{
-    class timing_point
-    {
+namespace shiro::pp::ctb {
+
+    class timing_point {
     public:
-        timing_point() {};
+        timing_point() = default;
         timing_point(double time, double spm, double raw_s, double bpm, double raw_b) :
             timestamp(time),
             spm(spm),
@@ -45,39 +45,49 @@ namespace shiro::pp::ctb
         double raw_bpm = 600;
     };
 
-    class slider_tick
-    {
+    class slider_tick {
     public:
-        slider_tick(float x, float y, float time) : x(x), y(y), time(time) {};
+        slider_tick(float x, float y, float time) :
+            x(x),
+            y(y),
+            time(time)
+        {};
 
         float x;
         float y;
         float time;
     };
 
-    class fruit
-    {
+    class fruit {
     public:
-        fruit() {};
+        fruit() = default;
         fruit(float x, float y, float time, int32_t type,
             std::string slider_type = "", std::deque<std::pair<float, float>> curve_points = {}, int32_t repeat = 1, int32_t pixel_length = 0,
-            timing_point time_point = timing_point(), float slider_multiplier = 0, int32_t tick_distance = 1) :
-            x(x), y(y), time(time), type(type),
-            slider_type(slider_type), curve_points(curve_points), repeat(repeat), pixel_length(pixel_length),
-            time_point(time_point), slider_multiplier(slider_multiplier), tick_distance(tick_distance)
-        {
-            if (2 & type)
-            {
+            timing_point time_point = timing_point(), float slider_multiplier = 0.0f, int32_t tick_distance = 1
+        ) :
+            x(x),
+            y(y),
+            time(time),
+            type(type),
+            slider_type(slider_type),
+            curve_points(curve_points),
+            repeat(repeat),
+            pixel_length(pixel_length),
+            time_point(time_point),
+            slider_multiplier(slider_multiplier),
+            tick_distance(tick_distance) {
+
+            if (2 & type) {
                 this->curve_points.push_front(std::make_pair(x, y));
                 this->duration = (int32_t(time_point.raw_bpm) * (pixel_length / (slider_multiplier * time_point.spm)) / 100) * repeat;
 
                 this->calculate_slider();
             }
         };
+        ~fruit();
 
-        int get_combo();
-        inline slider_tick to_tick()
-        {
+        int32_t get_combo();
+        inline slider_tick to_tick() {
             return slider_tick(this->x, this->y, this->time);
         }
 
@@ -102,10 +112,12 @@ namespace shiro::pp::ctb
 
     private:
         void calculate_slider();
+
+        // Curve
+        shiro::pp::ctb::abstract_curve* _curve = nullptr;
     };
 
-    class difficulty_object
-    {
+    class difficulty_object {
     public:
         difficulty_object() :
             empty(true),
@@ -131,26 +143,10 @@ namespace shiro::pp::ctb
 
         void calculate_strain(difficulty_object last, float time_rate);
 
-        difficulty_object& operator=(const difficulty_object& other) noexcept
-        {
-            if (this == &other)
-                return *this;
-
-            empty = false;
-            strain = other.strain;
-            offset = other.offset;
-            last_movement = other.last_movement;
-            object = other.object;
-            player_width = other.player_width;
-            scaled_position = other.scaled_position;
-            hyperdash_distance = other.hyperdash_distance;
-            hyperdash = other.hyperdash;
-            return *this;
-        };
+        difficulty_object& operator=(const difficulty_object& other) noexcept = default;
     };
 
-    class ctb_calculator
-    {
+    class ctb_calculator {
     private:
         // Map based variables
         int32_t version = 0;
@@ -166,9 +162,9 @@ namespace shiro::pp::ctb
         float player_width = 0;
 
         // Score based variables
-        int32_t mods = 0;
-        int32_t miss_count = 0;
-        int32_t combo = 0;
+        uint32_t mods = 0;
+        uint32_t miss_count = 0;
+        uint32_t combo = 0;
         float accuracy = 0;
 
         std::vector<timing_point> timing_points;
@@ -189,7 +185,6 @@ namespace shiro::pp::ctb
 
     public:
         ctb_calculator(beatmaps::beatmap beatmap, scores::score score);
-        ~ctb_calculator();
 
         float calculate();
     };

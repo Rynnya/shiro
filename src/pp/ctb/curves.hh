@@ -26,22 +26,18 @@
 #include "../../scores/score.hh"
 #include "math.hh"
 
-namespace shiro::pp::ctb
-{
-    // Abstract class for every curve
-    class curve
-    {
+namespace shiro::pp::ctb {
+
+    class abstract_curve {
     public:
         virtual std::pair<float, float> point_at_distance(float distance) = 0;
     private:
         virtual void setup() = 0;
     };
 
-    class Bezier : public curve
-    {
+    class bezier : public abstract_curve {
     public:
-        Bezier(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points)
-        {
+        bezier(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points) {
             setup();
         };
 
@@ -53,15 +49,13 @@ namespace shiro::pp::ctb
 
     private:
         void setup() override;
-        void bezier(std::vector<std::pair<float, float>> points);
+        void _bezier(std::vector<std::pair<float, float>> points);
         float cpn(int32_t p, int32_t n);
     };
 
-    class Catmull : public curve
-    {
+    class catmull : public abstract_curve {
     public:
-        Catmull(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points)
-        {
+        catmull(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points) {
             setup();
         };
 
@@ -74,19 +68,16 @@ namespace shiro::pp::ctb
 
     private:
         void setup() override;
-        std::pair<float, float> appvec(std::pair<float, float> self, float value, std::pair<float, float> other)
-        {
+        std::pair<float, float> appvec(std::pair<float, float> self, float value, std::pair<float, float> other) {
             return std::make_pair(self.first + value * other.first, self.second + value * other.second);
         }
         std::pair<float, float> get_point(std::deque<std::pair<float, float>> points, float length);
-        float catmull(std::deque<float> p, float length);
+        float _catmull(std::deque<float> p, float length);
     };
 
-    class Perfect : public curve
-    {
+    class perfect : public abstract_curve {
     public:
-        Perfect(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points)
-        {
+        perfect(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points) {
             setup();
         };
 
