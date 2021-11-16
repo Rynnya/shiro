@@ -65,7 +65,6 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
         fs::remove(filename);
     }
 
-    // osu! requires raw replay in-game, to get full replay use /api/get_replay
     std::ofstream stream(filename, std::ofstream::trunc | std::ofstream::binary);
     stream << replay;
     stream.close();
@@ -134,11 +133,7 @@ std::string shiro::replays::get_replay(const shiro::scores::score &s) {
 }
 
 std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
-    std::shared_ptr<users::user> user = users::manager::get_user_by_id(s.user_id);
-
-    if (user == nullptr) {
-        return "";
-    }
+    std::string username = users::manager::get_username_by_id(s.user_id);
 
     // Convert raw replay into full osu! replay file
     // Reference: https://osu.ppy.sh/help/wiki/osu!_File_Formats/Osr_(file_format)
@@ -149,16 +144,16 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     std::snprintf(hash_buffer, sizeof(hash_buffer), "%ip%io%io%it%ia%sr%ie%sy%so%liu%s%i%s",
         s.count_100 + s.count_300, s.count_50, s.count_gekis, s.count_katus, s.count_misses,
         s.beatmap_md5.c_str(), s.max_combo, s.fc ? "True" : "False",
-        user->presence.username.c_str(), s.total_score, s.rank.c_str(), s.mods, "True");
+        username.c_str(), s.total_score, s.rank.c_str(), s.mods, "True");
 
     std::string raw_replay = get_replay(s);
 
-    if (raw_replay == "") {
+    if (raw_replay.empty()) {
         return "";
     }
 
     std::string beatmap_md5 = utils::osu_string(s.beatmap_md5);
-    std::string username = utils::osu_string(user->presence.username);
+    std::string osu_username = utils::osu_string(username);
     std::string hash = utils::osu_string(utils::crypto::md5::hash(hash_buffer));
 
     io::buffer buffer;
@@ -167,7 +162,7 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     buffer.write<int32_t>(20210520);
 
     buffer.write_string(beatmap_md5);
-    buffer.write_string(username);
+    buffer.write_string(osu_username);
     buffer.write_string(hash);
 
     buffer.write<int16_t>(s.count_300);

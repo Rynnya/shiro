@@ -30,6 +30,7 @@ namespace shiro::replays {
 
     void save_replay(const scores::score &s, const beatmaps::beatmap &beatmap, std::string replay);
 
+    // osu! requires raw replay in-game, to get full replay use `/api/get_replay` or `get_full_replay(score)`
     std::string get_replay(const scores::score &s);
 
     std::string get_full_replay(const scores::score &s);
