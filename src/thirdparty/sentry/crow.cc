@@ -184,7 +184,9 @@ void nlohmann::crow::capture_exception(const std::exception& exception, const ch
             { "type", type },
             { "handled", handled },
             { "description", handled ? "handled exception" : "unhandled exception" },
-            { "data", ex_position }
+            { "data", {
+                { "where", ex_position }
+            }}
         }},
         { "stacktrace", {
             { "frames", crow_utilities::get_backtrace() }

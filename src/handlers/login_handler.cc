@@ -214,7 +214,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (request.raw_url.find("ppy.sh") != std::string::npos) {
-        utils::bot::respond("Seems like you still use old type of connection. Please, read about (-devserver)[" + config::bancho::title_url + "] on our site.", user, config::bot::name, true);
+        utils::bot::respond("Seems like you still use old type of connection. Please, read about (-devserver)[" + config::ipc::frontend_url + "] on our site.", user, config::bot::name, true);
     }
 
     writer.friend_list(user->friends);

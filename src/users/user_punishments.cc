@@ -331,9 +331,9 @@ bool shiro::users::punishments::has_scores(int32_t user_id) {
         (punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) or
         punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict)) and
         punishments_table.active == true
-        ).limit(1u));
+    ).limit(1u));
 
-    return !result.empty();
+    return result.empty();
 }
 
 std::tuple<int32_t, uint32_t> shiro::users::punishments::get_silence_time(int32_t user_id) {

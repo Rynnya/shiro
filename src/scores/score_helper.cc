@@ -819,8 +819,7 @@ shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
     return s;
 }
 
-int32_t shiro::scores::helper::get_scoreboard_position(const shiro::scores::score &s, std::vector<score> &scores)
-{
+int32_t shiro::scores::helper::get_scoreboard_position(const shiro::scores::score &s, std::vector<score> &scores) {
     std::sort(scores.begin(), scores.end(), (s.is_relax ? pp_sorting : score_sorting));
 
     for (size_t i = 0; i < scores.size(); i++) {
