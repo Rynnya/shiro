@@ -28,11 +28,11 @@ static std::shared_ptr<cpptoml::table> config_file = nullptr;
 bool shiro::config::direct::enabled = true;
 int32_t shiro::config::direct::provider = 1;
 
-// Provider 0: Shirogane
-uint64_t shiro::config::direct::shm = 0x0;
+// Provider 0: Hanaru
+uint32_t shiro::config::direct::port = 8090;
+std::string shiro::config::direct::hanaru_url = "https://mirror.yukime.ml";
 
 // Provider 1: Emulation
-// Yukime don't provide any mirror currently, but shiro.host also dead, so i replace it
 std::string shiro::config::direct::base_url = "https://yukime.ml";
 std::string shiro::config::direct::mirror_url = "https://mirror.yukime.ml";
 
@@ -67,7 +67,8 @@ void shiro::config::direct::parse() {
 
     switch (provider) {
         case 0: {
-            shm = config_file->get_qualified_as<uint64_t>("shirogane.shm").value_or(0x0);
+            hanaru_url = config_file->get_qualified_as<std::string>("hanaru.url").value_or("https://mirror.yukime.ml");
+            port = config_file->get_qualified_as<uint32_t>("hanaru.port").value_or(8090);
             break;
         }
         case 1: {

@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +19,7 @@
 #ifndef SHIRO_CATCH_THE_PP_CURVES_HH
 #define SHIRO_CATCH_THE_PP_CURVES_HH
 
-#include <deque>
+#include <array>
 
 #include "../../beatmaps/beatmap.hh"
 #include "../../scores/score.hh"
@@ -30,67 +29,67 @@ namespace shiro::pp::ctb {
 
     class abstract_curve {
     public:
-        virtual std::pair<float, float> point_at_distance(float distance) = 0;
+        virtual point point_at_distance(float distance) = 0;
     private:
         virtual void setup() = 0;
     };
 
     class bezier : public abstract_curve {
     public:
-        bezier(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points) {
+        bezier(std::deque<point> curve_points) : curve_points(curve_points) {
             setup();
         };
 
-        std::deque<std::pair<float, float>> curve_points = {};
+        std::deque<point> curve_points = {};
         int32_t order = curve_points.size();
-        std::deque<std::pair<float, float>> points = {};
+        std::deque<point> points = {};
 
-        std::pair<float, float> point_at_distance(float distance) override;
+        point point_at_distance(float distance) override;
 
     private:
         void setup() override;
-        void _bezier(std::vector<std::pair<float, float>> points);
+        void _bezier(std::vector<point> points);
         float cpn(int32_t p, int32_t n);
     };
 
     class catmull : public abstract_curve {
     public:
-        catmull(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points) {
+        catmull(std::deque<point> curve_points) : curve_points(curve_points) {
             setup();
         };
 
-        std::deque<std::pair<float, float>> curve_points = {};
+        std::deque<point> curve_points = {};
         int32_t order = curve_points.size();
         float step = 2.5 / constants::SLIDER_QUALITY;
-        std::deque<std::pair<float, float>> points = {};
+        std::deque<point> points = {};
 
-        std::pair<float, float> point_at_distance(float distance) override;
+        point point_at_distance(float distance) override;
 
     private:
         void setup() override;
-        std::pair<float, float> appvec(std::pair<float, float> self, float value, std::pair<float, float> other) {
-            return std::make_pair(self.first + value * other.first, self.second + value * other.second);
+        point appvec(point self, float value, point other) {
+            return { self.x + value * other.x, self.y + value * other.y };
         }
-        std::pair<float, float> get_point(std::deque<std::pair<float, float>> points, float length);
-        float _catmull(std::deque<float> p, float length);
+        point get_point(std::array<point, 4> points, float length);
+        float _catmull(std::array<float, 4> points, float length);
     };
 
     class perfect : public abstract_curve {
     public:
-        perfect(std::deque<std::pair<float, float>> curve_points) : curve_points(curve_points) {
+        perfect(std::deque<point> curve_points) : curve_points(curve_points) {
             setup();
         };
 
-        std::deque<std::pair<float, float>> curve_points = {};
+        std::deque<point> curve_points = {};
         float cx = 0;
         float cy = 0;
         float radius = 0;
 
-        std::pair<float, float> point_at_distance(float distance) override;
+        point point_at_distance(float distance) override;
     private:
         void setup() override;
         std::tuple<float, float, float> get_circum_circle();
-        std::pair<float, float> rotate(std::pair<float, float> obj, float radians);
+        point rotate(point obj, float radians);
     };
 }
 

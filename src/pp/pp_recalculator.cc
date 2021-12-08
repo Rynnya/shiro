@@ -194,9 +194,9 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 
     io::osu_writer writer;
     writer.announce(
-            "Global PP recalculation has begun for all scores in " + game_mode + " (" + (is_relax ? "Relax" : "Classic") + "). "
-            "PP on scores may not match user overall pp amount. "
-            "Global rank and user pp updates have been paused."
+        "Global PP recalculation has begun for all scores in " + game_mode + " (" + (is_relax ? "Relax" : "Classic") + "). "
+        "PP on scores may not match user overall pp amount. "
+        "Global rank and user pp updates have been paused."
     );
 
     users::manager::iterate([&writer](std::shared_ptr<users::user> user) {

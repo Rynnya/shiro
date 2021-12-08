@@ -98,7 +98,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
         for (auto& diff_json : map_json["ChildrenBeatmaps"]) {
             difficulties << (std::string)diff_json["DiffName"] << " (";
             difficulties << (float)diff_json["DifficultyRating"] << "★~";
+            difficulties << (float)diff_json["BPM"] << "♫~";
             difficulties << "AR" << (float)diff_json["AR"] << "~";
+            difficulties << "OD" << (float)diff_json["OD"] << "~";
             difficulties << "CS" << (float)diff_json["CS"] << "~";
             difficulties << "HP" << (float)diff_json["HP"] << "~";
 
@@ -106,10 +108,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
             int32_t minutes = total_length / 60;
             int32_t seconds = total_length % 60;
 
-            if (minutes > 0) {
-                difficulties << minutes << "m";
-            }
-
+            difficulties << minutes << "m";
             difficulties << seconds << "s)" << "@";
             difficulties << diff_json["Mode"].get<int32_t>() << ",";
         }

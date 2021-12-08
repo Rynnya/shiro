@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,9 +40,16 @@ shiro::pp::ctb::ctb_calculator::ctb_calculator(shiro::beatmaps::beatmap beatmap,
     this->ar = adjust_difficulty(beatmap.ar, 1.4f);
     this->od = adjust_difficulty(beatmap.od, 1.4f);
     this->hp = adjust_difficulty(beatmap.hp, 1.4f);
+    
+    parse_file(*beatmap_file);
+    calculate_stars();
 }
 
 float shiro::pp::ctb::ctb_calculator::calculate() {
+    if (this->star_rate == 0) {
+        return 0;
+    }
+
     float pp = std::pow(((5 * this->star_rate / 0.0049) - 4), 2) / 100000;
     float length_bonus = 0.95 + 0.4 * std::min(1U, this->combo / 3000);
 
@@ -309,7 +315,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
     std::vector<std::string> split_object;
     boost::split(split_object, line, boost::is_any_of(","));
 
-    double time = safe_float(split_object[2]);
+    float time = safe_float(split_object[2]);
     int32_t object_type = safe_int(split_object[3]);
 
     if (!((1 & object_type) || (2 & object_type))) {
@@ -325,17 +331,17 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
 
         float tick_distance = (100 * this->slider_multiplier) / this->slider_tick_rate;
         if (this->version >= 8) {
-            tick_distance /= (std::clamp(-time_point.raw_spm, 10.0, 1000.0) / 100);
+            tick_distance /= (std::clamp(-time_point.raw_spm, 10.0f, 1000.0f) / 100);
         }
 
         std::vector<std::string> curve_split;
-        std::deque<std::pair<float, float>> curve_points;
+        std::deque<point> curve_points;
         boost::split(curve_split, split_object[5], boost::is_any_of("|"));
 
         for (int32_t i = 0; i < curve_split.size(); i++) {
             std::vector<std::string> vector_split;
             boost::split(vector_split, curve_split[i], boost::is_any_of(":"));
-            curve_points.push_back(std::make_pair(safe_float(vector_split[0]), safe_float(vector_split[1])));
+            curve_points.push_back({ safe_float(vector_split[0]), safe_float(vector_split[1]) });
         }
 
         std::string slider_type = curve_split[0];
@@ -345,7 +351,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
             }
 
             if (curve_points.size() == 2) {
-                if ((safe_int(split_object[0]) == curve_points[0].first && safe_int(split_object[1]) == curve_points[0].second) || curve_points[0] == curve_points[1]) {
+                if ((safe_int(split_object[0]) == curve_points[0].x && safe_int(split_object[1]) == curve_points[0].y) || curve_points[0] == curve_points[1]) {
                     curve_points.pop_front();
                     slider_type = "L";
                 }
@@ -353,21 +359,21 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
         }
 
         if (curve_points.size() == 0) {
-            hit_object = fruit(safe_int(split_object[0]), safe_int(split_object[1]), time, 1);
+            hit_object = { safe_float(split_object[0]), safe_float(split_object[1]), time, 1 };
         }
         else {
-            hit_object = fruit(safe_int(split_object[0]), safe_int(split_object[1]), time, object_type, slider_type, curve_points, repeat, pixel_length, time_point, this->slider_multiplier, tick_distance);
+            hit_object = { safe_float(split_object[0]), safe_float(split_object[1]), time, object_type, slider_type, curve_points, repeat, pixel_length, time_point, this->slider_multiplier, tick_distance };
         }
     }
     else {
-        hit_object = fruit(safe_int(split_object[0]), safe_int(split_object[1]), time, object_type);
+        hit_object = { safe_float(split_object[0]), safe_float(split_object[1]), time, object_type };
     }
 
     this->hit_objects.push_back(hit_object);
     this->max_combo += hit_object.get_combo();
 }
 
-shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_all(double time) {
+shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_all(float time) {
     for (int32_t i = 0; i < this->timing_points.size(); i++) {
         if (this->timing_points[i].timestamp == time) {
             return this->timing_points[i];
@@ -395,6 +401,10 @@ int32_t shiro::pp::ctb::fruit::get_combo() {
     return result;
 }
 
+shiro::pp::ctb::slider_tick shiro::pp::ctb::fruit::to_tick() noexcept {
+    return { this->x, this->y, this->time };
+}
+
 void shiro::pp::ctb::fruit::calculate_slider() {
     using namespace shiro::pp::ctb;
 
@@ -409,7 +419,7 @@ void shiro::pp::ctb::fruit::calculate_slider() {
         try {
             _curve = new perfect(this->curve_points);
         }
-        catch (const std::exception& /*ex*/) {
+        catch (const std::exception& /* ex */) {
             _curve = new bezier(this->curve_points);
             slider_type = "B";
         }
@@ -425,16 +435,16 @@ void shiro::pp::ctb::fruit::calculate_slider() {
     float time_add = this->duration * (this->tick_distance / (this->pixel_length * this->repeat));
 
     while (current_distance < this->pixel_length - this->tick_distance / 8) {
-        std::pair<float, float> point;
+        point ptr;
 
         if (slider_type == "L") {
-            point = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
+            ptr = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
         }
         else {
-            point = _curve->point_at_distance(current_distance);
+            ptr = _curve->point_at_distance(current_distance);
         }
 
-        this->ticks.push_back(slider_tick(point.first, point.second, this->time + time_add * (this->ticks.size() + 1)));
+        this->ticks.push_back({ ptr.x, ptr.y, this->time + time_add * (this->ticks.size() + 1) });
         current_distance += this->tick_distance;
     }
 
@@ -444,16 +454,16 @@ void shiro::pp::ctb::fruit::calculate_slider() {
         int32_t dist = (1 & repeat_id) * this->pixel_length;
         float time_offset = (this->duration / this->repeat) * repeat_id;
 
-        std::pair<float, float> point;
+        point ptr;
 
         if (slider_type == "L") {
-            point = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
+            ptr = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
         }
         else {
-            point = _curve->point_at_distance(current_distance);
+            ptr = _curve->point_at_distance(current_distance);
         }
 
-        this->end_ticks.push_back(slider_tick(point.first, point.second, this->time + time_offset));
+        this->end_ticks.push_back({ ptr.x, ptr.y, this->time + time_offset });
 
         auto repeat_ticks = this->ticks;
         float normalize_time_value = 0;
@@ -477,15 +487,15 @@ void shiro::pp::ctb::fruit::calculate_slider() {
     this->ticks.insert(this->ticks.end(), repeat_bonus_ticks.begin(), repeat_bonus_ticks.end());
 
     float dist_end = (1 & this->repeat) * this->pixel_length;
-    std::pair<float, float> point;
+    point ptr;
     if (slider_type == "L") {
-        point = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
+        ptr = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
     }
     else {
-        point = _curve->point_at_distance(current_distance);
+        ptr = _curve->point_at_distance(current_distance);
     }
 
-    this->end_ticks.push_back(slider_tick(point.first, point.second, this->time + this->duration));
+    this->end_ticks.push_back({ ptr.x, ptr.y, this->time + this->duration });
 }
 
 void shiro::pp::ctb::difficulty_object::calculate_strain(difficulty_object last, float time_rate) {

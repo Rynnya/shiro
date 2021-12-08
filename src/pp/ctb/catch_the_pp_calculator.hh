@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,14 +22,13 @@
 #include "../../beatmaps/beatmap.hh"
 #include "../../scores/score.hh"
 #include "curves.hh"
-#include "math.hh"
 
 namespace shiro::pp::ctb {
 
     class timing_point {
     public:
         timing_point() = default;
-        timing_point(double time, double spm, double raw_s, double bpm, double raw_b) :
+        timing_point(float time, float spm, float raw_s, float bpm, float raw_b) :
             timestamp(time),
             spm(spm),
             raw_spm(raw_s),
@@ -38,11 +36,11 @@ namespace shiro::pp::ctb {
             raw_bpm(raw_b)
         {};
 
-        double timestamp = 0;
-        double spm = 1;
-        double raw_spm = -100;
-        double bpm = 100;
-        double raw_bpm = 600;
+        float timestamp = 0;
+        float spm = 1;
+        float raw_spm = -100;
+        float bpm = 100;
+        float raw_bpm = 600;
     };
 
     class slider_tick {
@@ -62,8 +60,8 @@ namespace shiro::pp::ctb {
     public:
         fruit() = default;
         fruit(float x, float y, float time, int32_t type,
-            std::string slider_type = "", std::deque<std::pair<float, float>> curve_points = {}, int32_t repeat = 1, int32_t pixel_length = 0,
-            timing_point time_point = timing_point(), float slider_multiplier = 0.0f, int32_t tick_distance = 1
+            std::string slider_type = "", std::deque<point> curve_points = {}, int32_t repeat = 1, float pixel_length = 0,
+            timing_point time_point = timing_point(), float slider_multiplier = 0.0f, float tick_distance = 1
         ) :
             x(x),
             y(y),
@@ -78,7 +76,7 @@ namespace shiro::pp::ctb {
             tick_distance(tick_distance) {
 
             if (2 & type) {
-                this->curve_points.push_front(std::make_pair(x, y));
+                this->curve_points.push_front({ x, y });
                 this->duration = (int32_t(time_point.raw_bpm) * (pixel_length / (slider_multiplier * time_point.spm)) / 100) * repeat;
 
                 this->calculate_slider();
@@ -87,9 +85,7 @@ namespace shiro::pp::ctb {
         ~fruit();
 
         int32_t get_combo();
-        inline slider_tick to_tick() {
-            return slider_tick(this->x, this->y, this->time);
-        }
+        slider_tick to_tick() noexcept;
 
         // Notes
         float x = 0;
@@ -99,7 +95,7 @@ namespace shiro::pp::ctb {
 
         // Sliders
         std::string slider_type = "";
-        std::deque<std::pair<float, float>> curve_points = {};
+        std::deque<point> curve_points = {};
         int32_t repeat = 1;
         float pixel_length = 0;
         timing_point time_point = timing_point();
@@ -181,7 +177,7 @@ namespace shiro::pp::ctb {
         void parse_file(std::string filename);
         void parse_timing_point(std::string line);
         void parse_hit_object(std::string line);
-        timing_point get_point_by_time_all(double timestamp);
+        timing_point get_point_by_time_all(float timestamp);
 
     public:
         ctb_calculator(beatmaps::beatmap beatmap, scores::score score);

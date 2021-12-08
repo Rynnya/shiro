@@ -24,6 +24,7 @@
 #include "providers/beatconnect.hh"
 #include "providers/cheesegull.hh"
 #include "providers/emulation.hh"
+#include "providers/hanaru.hh"
 #include "direct_provider.hh"
 
 std::shared_ptr<shiro::direct::direct_provider> shiro::direct::provider = nullptr;
@@ -35,8 +36,9 @@ void shiro::direct::init() {
 
     switch (config::direct::provider) {
         case 0: {
-            // Localhost Shirogane via shm
-            throw std::runtime_error("Direct provider 0 (Shirogane via shared memory region) is currently not implemented.");
+            // Localhost Hanaru via shm
+            provider = std::make_shared<hanaru>();
+            break;
         }
         case 1: {
             // Client request emulation
@@ -80,7 +82,7 @@ bool shiro::direct::sanity_check() {
     try {
         auto [search_success, search_result] = provider->search({
             { "q", "hitorigoto" }
-            });
+        });
 
         if (!search_success || search_result.empty()) {
             return false;
@@ -102,20 +104,4 @@ bool shiro::direct::sanity_check() {
 
     LOG_F(INFO, "Direct provider has been set to %s.", provider->name().c_str());
     return true;
-}
-
-std::tuple<bool, std::string> shiro::direct::direct_provider::search(std::unordered_map<std::string, std::string> parameters) {
-    return { false, "Unimplemented" };
-}
-
-std::tuple<bool, std::string> shiro::direct::direct_provider::search_np(std::unordered_map<std::string, std::string> parameters) {
-    return { false, "Unimplemented" };
-}
-
-std::tuple<bool, std::string> shiro::direct::direct_provider::download(int32_t beatmap_id, bool no_video) {
-    return { false, "Unimplemented" };
-}
-
-const std::string shiro::direct::direct_provider::name() const {
-    return "Unimplemented";
 }

@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,32 +16,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <cmath>
-
 #include "math.hh"
 
-std::pair<float, float> shiro::pp::ctb::math::point_at_distance(std::deque<std::pair<float, float>> arr, float distance) {
-    float x, y;
+shiro::pp::ctb::point::point(float x, float y)
+    : x(x)
+    , y(y)
+{};
+
+bool shiro::pp::ctb::point::operator==(const point& other) {
+    return this->x == other.x && this->y == other.y;
+}
+
+shiro::pp::ctb::point shiro::pp::ctb::math::point_at_distance(std::deque<point> arr, float distance) {
     float current_distance = 0;
     float new_distance = 0;
     int32_t i = 0;
 
     if (arr.size() < 2) {
-        return std::make_pair(0, 0);
+        return { 0.0f, 0.0f };
     }
 
     if (distance == 0) {
-        return arr[0];
+        return arr.front();
     }
 
     if (distance_from_points(arr) <= distance) {
-        return arr[arr.size() - 1];
+        return arr.back();
     }
 
     for (; i < arr.size() - 2; i++) {
-        x = (arr[i].first - arr[i + 1].first);
-        y = (arr[i].second - arr[i + 1].second);
+        float x = (arr[i].x - arr[i + 1].x);
+        float y = (arr[i].y - arr[i + 1].y);
 
         new_distance = std::sqrt(x * x + y * y);
         current_distance += new_distance;
@@ -58,36 +62,36 @@ std::pair<float, float> shiro::pp::ctb::math::point_at_distance(std::deque<std::
         return arr[i];
     }
 
-    float angle = std::atan2(arr[i].second - arr[i + 1].second, arr[i].first - arr[i + 1].second);
-    std::pair<float, float> cart = std::make_pair((distance - current_distance) * std::cos(angle), (distance - current_distance) * std::sin(angle));
+    float angle = std::atan2(arr[i].y - arr[i + 1].y, arr[i].x - arr[i + 1].y);
+    point cart = { (distance - current_distance) * std::cos(angle), (distance - current_distance) * std::sin(angle) };
 
-    if (arr[i].first > arr[i + 1].first) {
-        return std::make_pair((arr[i].first - cart.first), (arr[i].second - cart.second));
+    if (arr[i].x > arr[i + 1].x) {
+        return { (arr[i].x - cart.x), (arr[i].y - cart.y) };
     }
 
-    return std::make_pair((arr[i].first + cart.first), (arr[i].second + cart.second));
+    return { (arr[i].x + cart.x), (arr[i].y + cart.y) };
 }
 
-std::pair<float, float> shiro::pp::ctb::math::point_on_line(std::pair<float, float> p0, std::pair<float, float> p1, float length) {
-    float full_length = std::sqrt(std::pow(p1.first - p0.first, 2) + std::pow(p1.second - p0.second, 2));
+shiro::pp::ctb::point shiro::pp::ctb::math::point_on_line(point p0, point p1, float length) {
+    float full_length = std::sqrt(std::pow(p1.x - p0.x, 2) + std::pow(p1.y - p0.y, 2));
     float n = full_length - length;
 
     if (full_length == 0) {
         full_length = 1;
     }
 
-    float x = (n * p0.first + length * p1.first) / full_length;
-    float y = (n * p0.second + length * p1.second) / full_length;
+    float x = (n * p0.x + length * p1.x) / full_length;
+    float y = (n * p0.y + length * p1.y) / full_length;
 
-    return std::make_pair(x, y);
+    return { x, y };
 }
 
-float shiro::pp::ctb::math::distance_from_points(std::deque<std::pair<float, float>> arr) {
+float shiro::pp::ctb::math::distance_from_points(std::deque<point> arr) {
     float distance = 0;
 
     for (int32_t i = 1; i < arr.size(); i++) {
-        float x_ = arr[i].first - arr[i - 1].first;
-        float y_ = arr[i].second - arr[i - 1].second;
+        float x_ = arr[i].x - arr[i - 1].x;
+        float y_ = arr[i].y - arr[i - 1].y;
         distance += std::sqrt(x_ * x_ + y_ * y_);
     }
 
