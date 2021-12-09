@@ -37,7 +37,12 @@ namespace shiro::direct {
         virtual void download(crow::response&& callback, int32_t beatmap_id, bool no_video) = 0;
 
         virtual const std::string name() const = 0;
+        uint32_t hold_callback(crow::response&& callback);
 
+        // Counter, required to properly insert values inside cache system
+        // Not used in Hanaru, as this provider works on own cache system
+        std::atomic_uint32_t counter = 0;
+        std::unordered_map<uint32_t, crow::response> holder = {};
     };
 
     extern std::shared_ptr<direct_provider> provider;

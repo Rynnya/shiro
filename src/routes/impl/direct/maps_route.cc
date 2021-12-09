@@ -25,19 +25,17 @@ void shiro::routes::direct::maps::handle(const crow::request& request, crow::res
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
     response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
-    shiro::thread::curl_operations.push_and_forgot([args, callback = std::make_shared<crow::response>(std::move(response))]() -> void {
-        auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
+    auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
 
-        if (!success) {
-            callback->code = 504;
-            callback->end();
+    if (!success) {
+        response.code = 504;
+        response.end();
 
-            LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
+        LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
 
-            return;
-        }
+        return;
+    }
 
-        callback->set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-        callback->end(result);
-    });
+    response.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+    response.end(result);
 }

@@ -30,8 +30,6 @@ namespace shiro::direct {
 
     typedef websocketpp::client<websocketpp::config::core_client> client;
 
-    extern std::unordered_map<int32_t, std::vector<crow::response>> cache;
-
     class hanaru : public direct_provider {
     public:
         hanaru();
@@ -48,6 +46,8 @@ namespace shiro::direct {
 
         client socket;
         client::connection_ptr connection_ptr;
+
+        std::unordered_map<int32_t, std::vector<crow::response>> cache = {};
 
         std::stringstream socket_stream;
         std::mutex mtx;

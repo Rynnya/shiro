@@ -27,8 +27,6 @@
 #include "../../utils/string_utils.hh"
 #include "hanaru.hh"
 
-std::unordered_map<int32_t, std::vector<crow::response>> shiro::direct::cache = {};
-
 shiro::direct::hanaru::hanaru() {
     socket.register_ostream(&socket_stream);
 

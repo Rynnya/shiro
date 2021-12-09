@@ -237,19 +237,26 @@ void shiro::direct::cheesegull::download(crow::response&& callback, int32_t beat
         url += "?n=1";
     }
 
-    shiro::thread::curl_operations.push_and_forgot([url, callback = std::make_shared<crow::response>(std::move(callback))]() -> void {
+    uint32_t index = hold_callback(std::move(callback));
+
+    shiro::thread::curl_operations.push_and_forgot([this, url, index]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
+        crow::response& callback = holder[index];
 
         if (!success) {
-            callback->code = 504;
-            callback->end();
+            callback.code = 504;
+            callback.end();
+
+            holder.erase(index);
 
             LOG_F(WARNING, "Beatconnect search returned invalid response, message: %s", output.c_str());
             return;
         }
 
-        callback->set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-        callback->end(output);
+        callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+        callback.end(output);
+
+        holder.erase(index);
     });
 }
 

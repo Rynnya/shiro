@@ -61,3 +61,12 @@ void shiro::direct::init() {
         }
     }
 }
+
+uint32_t shiro::direct::direct_provider::hold_callback(crow::response&& callback) {
+    // We don't need any checks or anything like that, because when unsigned number overflows - it's simple resets to 0
+    // After 4 billion requests I 100% sure that 0 request will no longer be valid :)
+    // Even if something bad happend before cleaning - this won't make huge diffirence, because object will be simply overwritten
+    uint32_t index = counter++;
+    holder[index] = std::move(callback);
+    return index;
+}
