@@ -28,10 +28,8 @@
 #ifndef WEBSOCKETPP_EXTENSION_HPP
 #define WEBSOCKETPP_EXTENSION_HPP
 
-#include <websocketpp/common/cpp11.hpp>
-#include <websocketpp/common/system_error.hpp>
-
 #include <string>
+#include <system_error>
 #include <vector>
 
 namespace websocketpp {
@@ -58,7 +56,7 @@ enum value {
     disabled
 };
 
-class category : public lib::error_category {
+class category : public std::error_category {
 public:
     category() {}
 
@@ -78,7 +76,7 @@ public:
     }
 };
 
-inline lib::error_category const & get_category() {
+inline std::error_category const & get_category() {
     static category instance;
     return instance;
 }
@@ -91,12 +89,12 @@ inline std::error_code make_error_code(error::value e) {
 } // namespace extensions
 } // namespace websocketpp
 
-_WEBSOCKETPP_ERROR_CODE_ENUM_NS_START_
-template<> struct is_error_code_enum
-    <websocketpp::extensions::error::value>
-{
-    static const bool value = true;
-};
-_WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
+namespace std {
+    template<> struct is_error_code_enum
+        <websocketpp::extensions::error::value>
+    {
+        static const bool value = true;
+    };
+}
 
 #endif // WEBSOCKETPP_EXTENSION_HPP

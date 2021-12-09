@@ -27,13 +27,14 @@
 #include "../../utils/string_utils.hh"
 #include "hanaru.hh"
 
-std::unordered_map<int32_t, std::weak_ptr<shiro::direct::beatmap_object>> shiro::direct::cache = {};
-auto deleter = [&](shiro::direct::beatmap_object* obj) {
-    shiro::direct::cache.erase(std::get<int32_t>(obj->get()));
-    delete obj;
-};
+std::unordered_map<int32_t, std::vector<crow::response>> shiro::direct::cache = {};
 
 shiro::direct::hanaru::hanaru() {
+    socket.register_ostream(&socket_stream);
+
+    socket.set_access_channels(websocketpp::log::alevel::all);
+    socket.set_error_channels(websocketpp::log::elevel::all);
+
     socket.set_message_handler([&](websocketpp::connection_hdl handle, client::message_ptr msg) {
         if (msg->get_opcode() != websocketpp::frame::opcode::binary) {
             // hanaru doesn't send anything other than ping, pong and binary
@@ -52,16 +53,36 @@ shiro::direct::hanaru::hanaru() {
         }
 
         int32_t id = payload["id"].get<int32_t>();
+        if (payload["status"].get<int32_t>() == 200) {
+            std::lock_guard<std::mutex> lock(mtx);
 
-        std::promise<std::tuple<bool, int32_t, std::string>> promise;
-        cache[id] = std::shared_ptr<beatmap_object>(new beatmap_object(promise.get_future()), deleter);
+            for (auto& callback : cache[id]) {
+                callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+                callback.end(payload["data"].get<std::string>());
+            }
 
-        promise.set_value({ payload["status"].get<int32_t>() == 200, id, payload["data"].get<std::string>() });
+            cache.erase(id);
+            return;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+
+            for (auto& callback : cache[id]) {
+                callback.code = 504;
+                callback.end();
+            }
+
+            cache.erase(id);
+        }
+
+        std::string error = payload["data"].get<std::string>();
+        LOG_F(ERROR, "Hanaru download returned invalid data through websocket: %s", error.c_str());
     });
 
     socket.set_max_message_size(256 * 1000 * 1000);
 
-    websocketpp::lib::error_code ec;
+    std::error_code ec;
     connection_ptr = socket.get_connection("ws://127.0.0.1:" + std::to_string(config::direct::port) + "/", ec);
     if (ec) {
         connection_ptr.reset();
@@ -72,7 +93,7 @@ shiro::direct::hanaru::hanaru() {
     socket.connect(connection_ptr);
 }
 
-std::tuple<bool, std::string> shiro::direct::hanaru::search(std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::hanaru::search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::beatmaps beatmaps_tables {};
 
@@ -172,7 +193,8 @@ std::tuple<bool, std::string> shiro::direct::hanaru::search(std::unordered_map<s
             out << 0 << "|"; // ?
             out << "|"; // Start of difficulties
 
-            difficulties.clear();
+            difficulties = std::stringstream();
+            difficulties << std::setprecision(2);
 
             difficulties << map.difficulty_name.value() << " (";
             switch (map.mode) {
@@ -211,13 +233,16 @@ std::tuple<bool, std::string> shiro::direct::hanaru::search(std::unordered_map<s
         }
     }
 
-    return { true, out.str() };
+    callback.end(out.str());
 }
 
-std::tuple<bool, std::string> shiro::direct::hanaru::search_np(std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::hanaru::search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
     if (b == parameters.end()) {
-        return { false, "'beatmap_id' not provided" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     sqlpp::mysql::connection db(db_connection->get_config());
@@ -227,16 +252,28 @@ std::tuple<bool, std::string> shiro::direct::hanaru::search_np(std::unordered_ma
     auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
     if (result.empty()) {
-        return { false, "Beatmap not loaded to database" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     auto& _result = result.front();
     int32_t beatmapset_id = _result.beatmapset_id;
 
-    auto [success, output] = shiro::utils::curl::get_direct(config::direct::hanaru_url + "/s/" + std::to_string(beatmapset_id));
+    std::string url =
+        (config::direct::hanaru_url == "localhost"
+            ? "127.0.0.1:" + std::to_string(config::direct::port)
+            : config::direct::hanaru_url
+        ) + "/s/" + std::to_string(beatmapset_id);
+    auto [success, output] = shiro::utils::curl::get_direct(url);
 
     if (!success) {
-        return { false, output };
+        callback.code = 504;
+        callback.end();
+
+        LOG_F(WARNING, "Hanaru search_np returned invalid response, message: %s", output.c_str());
+        return;
     }
 
     nlohmann::json json_result;
@@ -247,7 +284,10 @@ std::tuple<bool, std::string> shiro::direct::hanaru::search_np(std::unordered_ma
         LOG_F(ERROR, "Unable to parse json response from Hanaru: %s.", ex.what());
         logging::sentry::exception(ex, __FILE__, __LINE__);
 
-        return { false, ex.what() };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     std::stringstream out;
@@ -277,30 +317,28 @@ std::tuple<bool, std::string> shiro::direct::hanaru::search_np(std::unordered_ma
 
     out << "\n"; // std::endl flushes additionally which is not something we want
 
-    return { true, out.str() };
+    callback.end(out.str());
 }
 
-std::tuple<bool, std::string> shiro::direct::hanaru::download(int32_t beatmap_id, bool no_video) {
+void shiro::direct::hanaru::download(crow::response&& callback, int32_t beatmap_id, bool no_video) {
     // hanaru doesn't provide beatmapsets with video
     static_cast<void>(no_video);
 
     if (connection_ptr == nullptr) {
-        return { false, "Failed to connect through websocket" };
-    }
-    
-    std::shared_ptr<beatmap_object> object = std::make_shared<beatmap_object>();
-    auto it = cache.find(beatmap_id);
+        callback.code = 502;
+        callback.end();
 
-    if (it == cache.end()) {
-        cache.emplace(beatmap_id, object);
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(mtx);
+
+    bool required_request = cache.find(beatmap_id) == cache.end();
+    cache[beatmap_id].push_back(std::move(callback));
+
+    if (required_request) {
         connection_ptr->send(std::to_string(beatmap_id));
     }
-    else {
-        object = it->second.lock();
-    }
-
-    const auto [success, id, data] = object->get();
-    return { success, data };
 }
 
 const std::string shiro::direct::hanaru::name() const {

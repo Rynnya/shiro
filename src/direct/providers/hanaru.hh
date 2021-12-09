@@ -19,7 +19,7 @@
 #ifndef SHIRO_HANARU_HH
 #define SHIRO_HANARU_HH
 
-#include <shared_mutex>
+#include <mutex>
 #include <unordered_set>
 
 #include "../direct_provider.hh"
@@ -29,17 +29,16 @@
 namespace shiro::direct {
 
     typedef websocketpp::client<websocketpp::config::core_client> client;
-    typedef std::shared_future<std::tuple<bool, int32_t, std::string>> beatmap_object;
 
-    extern std::unordered_map<int32_t, std::weak_ptr<beatmap_object>> cache;
+    extern std::unordered_map<int32_t, std::vector<crow::response>> cache;
 
     class hanaru : public direct_provider {
     public:
         hanaru();
 
-        std::tuple<bool, std::string> search(std::unordered_map<std::string, std::string> parameters) override;
-        std::tuple<bool, std::string> search_np(std::unordered_map<std::string, std::string> parameters) override;
-        std::tuple<bool, std::string> download(int32_t beatmap_id, bool no_video) override;
+        void search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) override;
+        void search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) override;
+        void download(crow::response&& callback, int32_t beatmap_id, bool no_video) override;
 
         const std::string name() const override;
 
@@ -49,6 +48,9 @@ namespace shiro::direct {
 
         client socket;
         client::connection_ptr connection_ptr;
+
+        std::stringstream socket_stream;
+        std::mutex mtx;
     };
 
 }

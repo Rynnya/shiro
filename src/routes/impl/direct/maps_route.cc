@@ -16,25 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../../utils/curler.hh"
 #include "../../../thirdparty/loguru.hh"
+#include "../../../thread/thread_pool.hh"
+#include "../../../utils/curler.hh"
 #include "maps_route.hh"
 
 void shiro::routes::direct::maps::handle(const crow::request& request, crow::response& response, std::string args) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
-    auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
+    shiro::thread::curl_operations.push_and_forgot([args, callback = std::make_shared<crow::response>(std::move(response))]() -> void {
+        auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
 
-    if (!success) {
-        response.code = 504;
-        response.end();
+        if (!success) {
+            callback->code = 504;
+            callback->end();
 
-        LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
+            LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
 
-        return;
-    }
+            return;
+        }
 
-    response.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-    response.end(result);
+        callback->set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+        callback->end(result);
+    });
 }

@@ -22,7 +22,7 @@
 
 void shiro::routes::direct::search::set::handle(const crow::request& request, crow::response& response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     // Provider has failed sanity check, thus we can't provide Direct
     if (shiro::direct::provider == nullptr) {
@@ -31,16 +31,5 @@ void shiro::routes::direct::search::set::handle(const crow::request& request, cr
         return;
     }
 
-    auto [success, output] = shiro::direct::provider->search_np(request.url_params.get_all());
-
-    if (!success) {
-        response.code = 504;
-        response.end();
-
-        LOG_F(WARNING, "Direct search-set returned invalid response, message: %s", output.c_str());
-
-        return;
-    }
-
-    response.end(output);
+    shiro::direct::provider->search_np(std::move(response), request.url_params.get_all());
 }

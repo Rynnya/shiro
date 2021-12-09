@@ -33,8 +33,8 @@
 #include <string>
 #include <utility>
 
-#include <websocketpp/utilities.hpp>
-#include <websocketpp/http/constants.hpp>
+#include "../utilities.hh"
+#include "constants.hh"
 
 namespace websocketpp {
 namespace http {

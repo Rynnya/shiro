@@ -21,7 +21,7 @@
 
 void shiro::routes::web::bancho_connect::handle(const crow::request &request, crow::response &response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     char *username = request.url_params.get("u");
     char *md5sum = request.url_params.get("h");

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -22,7 +23,7 @@
 
 void shiro::routes::direct::search::handle(const crow::request &request, crow::response &response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     // Provider has failed sanity check, thus we can't provide Direct
     if (shiro::direct::provider == nullptr) {
@@ -31,16 +32,5 @@ void shiro::routes::direct::search::handle(const crow::request &request, crow::r
         return;
     }
 
-    auto [success, output] = shiro::direct::provider->search(request.url_params.get_all());
-
-    if (!success) {
-        response.code = 504;
-        response.end();
-
-        LOG_F(WARNING, "Direct search returned invalid response, message: %s", output.c_str());
-
-        return;
-    }
-
-    response.end(output);
+    shiro::direct::provider->search(std::move(response), request.url_params.get_all());
 }

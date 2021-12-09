@@ -30,7 +30,7 @@
 
 void shiro::routes::root::handle(const crow::request &request, crow::response &response) {
     response.set_header("Content-Type", "text/html; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     if (request.method == crow::HTTPMethod::Get) {
         std::string view = shiro::views::index::get_view();

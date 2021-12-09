@@ -30,7 +30,7 @@
 
 void shiro::routes::web::get_scores::handle(const crow::request &request, crow::response &response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     char *md5sum = request.url_params.get("c");
     char *beatmapset_id = request.url_params.get("i");

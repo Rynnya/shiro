@@ -7315,7 +7315,7 @@ namespace crow
             json_mode();
         }
 
-        response(response&& r)
+        response(response&& r) noexcept
         {
             *this = std::move(r);
         }

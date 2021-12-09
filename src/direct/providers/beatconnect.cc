@@ -21,13 +21,14 @@
 #include "../../database/tables/beatmap_table.hh"
 #include "../../logger/sentry_logger.hh"
 #include "../../thirdparty/loguru.hh"
+#include "../../thread/thread_pool.hh"
 #include "../../utils/curler.hh"
 #include "../../utils/play_mode.hh"
 #include "../../utils/string_utils.hh"
 #include "../../shiro.hh"
 #include "beatconnect.hh"
 
-std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::beatconnect::search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
@@ -52,7 +53,11 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success) {
-        return { false, output };
+        callback.code = 504;
+        callback.end();
+
+        LOG_F(WARNING, "Beatconnect search returned invalid response, message: %s", output.c_str());
+        return;
     }
 
     json json_result;
@@ -64,7 +69,9 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
         LOG_F(ERROR, "Unable to parse json response from Beatconnect: %s.", ex.what());
         logging::sentry::exception(ex, __FILE__, __LINE__);
 
-        return { false, ex.what() };
+        callback.code = 504;
+        callback.end(ex.what());
+        return;
     }
 
     std::stringstream out;
@@ -122,13 +129,16 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search(std::unordered_
         out << "\n"; // std::endl flushes additionally which is not something we want
     }
 
-    return { true, out.str() };
+    callback.end(out.str());
 }
 
-std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::beatconnect::search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
     if (b == parameters.end()) {
-        return { false, "b not provided" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
     
     // Remove username from the request so the requesting user stays anonymous
@@ -148,7 +158,10 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
     if (result.empty()) {
-        return { false, "Beatmap not loaded to database" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     auto& _result = result.front();
@@ -158,7 +171,11 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success) {
-        return { false, output };
+        callback.code = 504;
+        callback.end();
+
+        LOG_F(WARNING, "Beatconnect search returned invalid response, message: %s", output.c_str());
+        return;
     }
 
     json json_result;
@@ -170,11 +187,20 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
         LOG_F(ERROR, "Unable to parse json response from Beatconnect: %s.", ex.what());
         logging::sentry::exception(ex, __FILE__, __LINE__);
 
-        return { false, ex.what() };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     if (json_result["error"].is_object()) {
-        return { false, "Beatconnect response contains error" };
+        callback.code = 504;
+        callback.end();
+
+        std::string error = json_result["error"].get<std::string>();
+        LOG_F(ERROR, "Beatconnect JSON response contains errors: %s", error.c_str());
+
+        return;
     }
 
     std::stringstream out;
@@ -205,19 +231,23 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::search_np(std::unorder
     out << (int32_t)has_video << "|"; // Video?
     out << 0 << "|"; // ?
     out << 0 << "|"; // ?
-    out << (has_video ? 7331 : 0); // Video size (faked cuz nobody provide this)
+    out << (has_video ? 7331 : 0); // Video size
 
     out << "\n"; // std::endl flushes additionally which is not something we want
 
-    return { true, out.str() };
+    callback.end(out.str());
 }
 
-std::tuple<bool, std::string> shiro::direct::beatconnect::download(int32_t beatmap_id, bool no_video) {
+void shiro::direct::beatconnect::download(crow::response&& callback, int32_t beatmap_id, bool no_video) {
     std::string id = std::to_string(beatmap_id);
     auto [success, output] = utils::curl::get_direct("https://beatconnect.io/api/beatmap/" + id + "/");
 
     if (!success) {
-        return { success, output };
+        callback.code = 504;
+        callback.end();
+
+        LOG_F(WARNING, "Beatconnect search returned invalid response, message: %s", output.c_str());
+        return;
     }
 
     json json_result;
@@ -226,8 +256,13 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::download(int32_t beatm
         json_result = json::parse(output);
     }
     catch (const json::parse_error &ex) {
+        LOG_F(ERROR, "Unable to parse json response from Beatconnect: %s.", ex.what());
         logging::sentry::exception(ex, __FILE__, __LINE__);
-        return { false, ex.what() };
+
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     std::string unique_id = json_result["unique_id"];
@@ -237,7 +272,20 @@ std::tuple<bool, std::string> shiro::direct::beatconnect::download(int32_t beatm
         url += "?novideo=1";
     }
 
-    return utils::curl::get_direct(url);
+    shiro::thread::curl_operations.push_and_forgot([url, callback = std::make_shared<crow::response>(std::move(callback))]() -> void {
+        auto [success, output] = utils::curl::get_direct(url);
+
+        if (!success) {
+            callback->code = 504;
+            callback->end();
+
+            LOG_F(WARNING, "Beatconnect download returned invalid response, message: %s", output.c_str());
+            return;
+        }
+
+        callback->set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+        callback->end(output);
+    });
 }
 
 const std::string shiro::direct::beatconnect::name() const {
@@ -272,7 +320,6 @@ void shiro::direct::beatconnect::sanitize_mode(std::string &value) {
 
     if (!utils::strings::safe_int(value, mode)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", value.c_str());
-        logging::sentry::exception(std::invalid_argument("Value was not a number or it was more than int32_t max."), __FILE__, __LINE__);
 
         return;
     }

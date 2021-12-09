@@ -26,9 +26,9 @@ namespace shiro::direct {
 
     class emulation : public direct_provider {
     public:
-        std::tuple<bool, std::string> search(std::unordered_map<std::string, std::string> parameters) override;
-        std::tuple<bool, std::string> search_np(std::unordered_map<std::string, std::string> parameters) override;
-        std::tuple<bool, std::string> download(int32_t beatmap_id, bool no_video) override;
+        void search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) override;
+        void search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) override;
+        void download(crow::response&& callback, int32_t beatmap_id, bool no_video) override;
 
         const std::string name() const override;
 

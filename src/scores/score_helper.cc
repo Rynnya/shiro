@@ -1161,10 +1161,6 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
 }
 
 float shiro::scores::helper::calculate_accuracy(utils::play_mode mode, int32_t _300, int32_t _100, int32_t _50, int32_t geki, int32_t katu, int32_t miss) {
-    // TODO: Use performance library for accuracy calculation - source closed or deleled?
-    // https://github.com/Marc3842h/hikari/blob/master/src/accuracy.rs
-    // https://github.com/Marc3842h/hikari/blob/982260f83309499e2239148800561548f3fa39cf/include/hikari.h#L49
-
     switch (mode) {
         case utils::play_mode::standard: {
             int32_t total_hits = _300 + _100 + _50 + miss;
