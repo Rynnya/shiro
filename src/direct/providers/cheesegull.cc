@@ -29,7 +29,7 @@
 #include "../../shiro.hh"
 #include "cheesegull.hh"
 
-void shiro::direct::cheesegull::search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::cheesegull::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
@@ -132,7 +132,7 @@ void shiro::direct::cheesegull::search(crow::response&& callback, std::unordered
     callback.end(out.str());
 }
 
-void shiro::direct::cheesegull::search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::cheesegull::search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
     if (b == parameters.end()) {
         callback.code = 504;
@@ -229,7 +229,7 @@ void shiro::direct::cheesegull::search_np(crow::response&& callback, std::unorde
     callback.end(out.str());
 }
 
-void shiro::direct::cheesegull::download(crow::response&& callback, int32_t beatmap_id, bool no_video) {
+void shiro::direct::cheesegull::download(crow::response& callback, int32_t beatmap_id, bool no_video) {
     std::string id = std::to_string(beatmap_id);
     std::string url = config::direct::download_url + "/d/" + id;
 
@@ -237,17 +237,12 @@ void shiro::direct::cheesegull::download(crow::response&& callback, int32_t beat
         url += "?n=1";
     }
 
-    uint32_t index = hold_callback(std::move(callback));
-
-    shiro::thread::curl_operations.push_and_forgot([this, url, index]() -> void {
+    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
-        crow::response& callback = holder[index];
 
         if (!success) {
             callback.code = 504;
             callback.end();
-
-            holder.erase(index);
 
             LOG_F(WARNING, "Beatconnect search returned invalid response, message: %s", output.c_str());
             return;
@@ -255,8 +250,6 @@ void shiro::direct::cheesegull::download(crow::response&& callback, int32_t beat
 
         callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
         callback.end(output);
-
-        holder.erase(index);
     });
 }
 

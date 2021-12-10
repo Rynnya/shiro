@@ -22,7 +22,7 @@
 #include "../../utils/curler.hh"
 #include "emulation.hh"
 
-void shiro::direct::emulation::search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::emulation::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
@@ -42,57 +42,43 @@ void shiro::direct::emulation::search(crow::response&& callback, std::unordered_
     // Remove the last char (which will be a & or ?)
     url.pop_back();
 
-    uint32_t index = hold_callback(std::move(callback));
-
-    shiro::thread::curl_operations.push_and_forgot([this, url, index]() -> void {
+    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
-        crow::response& callback = holder[index];
 
         if (!success) {
             callback.code = 504;
             callback.end();
 
-            holder.erase(index);
-
             return;
         }
 
         callback.end(output);
-
-        holder.erase(index);
     });
 }
 
-void shiro::direct::emulation::search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
-    return this->search(std::move(callback), parameters);
+void shiro::direct::emulation::search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
+    return this->search(callback, parameters);
 }
 
-void shiro::direct::emulation::download(crow::response&& callback, int32_t beatmap_id, bool no_video) {
+void shiro::direct::emulation::download(crow::response& callback, int32_t beatmap_id, bool no_video) {
     std::string url = config::direct::mirror_url + "/d/" + std::to_string(beatmap_id);
 
     if (no_video) {
         url.append("?novideo=yes");
     }
 
-    uint32_t index = hold_callback(std::move(callback));
-
-    shiro::thread::curl_operations.push_and_forgot([this, url, index]() -> void {
+    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
-        crow::response& callback = holder[index];
 
         if (!success) {
             callback.code = 504;
             callback.end();
-
-            holder.erase(index);
 
             return;
         }
 
         callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
         callback.end(output);
-
-        holder.erase(index);
     });
 }
 

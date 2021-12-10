@@ -28,7 +28,7 @@
 #include "../../shiro.hh"
 #include "beatconnect.hh"
 
-void shiro::direct::beatconnect::search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::beatconnect::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
@@ -132,7 +132,7 @@ void shiro::direct::beatconnect::search(crow::response&& callback, std::unordere
     callback.end(out.str());
 }
 
-void shiro::direct::beatconnect::search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::beatconnect::search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
     if (b == parameters.end()) {
         callback.code = 504;
@@ -238,7 +238,7 @@ void shiro::direct::beatconnect::search_np(crow::response&& callback, std::unord
     callback.end(out.str());
 }
 
-void shiro::direct::beatconnect::download(crow::response&& callback, int32_t beatmap_id, bool no_video) {
+void shiro::direct::beatconnect::download(crow::response& callback, int32_t beatmap_id, bool no_video) {
     std::string id = std::to_string(beatmap_id);
     auto [success, output] = utils::curl::get_direct("https://beatconnect.io/api/beatmap/" + id + "/");
 
@@ -272,17 +272,12 @@ void shiro::direct::beatconnect::download(crow::response&& callback, int32_t bea
         url += "?novideo=1";
     }
 
-    uint32_t index = hold_callback(std::move(callback));
-
-    shiro::thread::curl_operations.push_and_forgot([this, url, index]() -> void {
+    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
-        crow::response& callback = holder[index];
 
         if (!success) {
             callback.code = 504;
             callback.end();
-
-            holder.erase(index);
 
             LOG_F(WARNING, "Beatconnect download returned invalid response, message: %s", output.c_str());
             return;
@@ -290,8 +285,6 @@ void shiro::direct::beatconnect::download(crow::response&& callback, int32_t bea
 
         callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
         callback.end(output);
-
-        holder.erase(index);
     });
 }
 

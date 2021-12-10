@@ -34,9 +34,9 @@ namespace shiro::direct {
     public:
         hanaru();
 
-        void search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) override;
-        void search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) override;
-        void download(crow::response&& callback, int32_t beatmap_id, bool no_video) override;
+        void search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) override;
+        void search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) override;
+        void download(crow::response& callback, int32_t beatmap_id, bool no_video) override;
 
         const std::string name() const override;
 
@@ -47,7 +47,7 @@ namespace shiro::direct {
         client socket;
         client::connection_ptr connection_ptr;
 
-        std::unordered_map<int32_t, std::vector<crow::response>> cache = {};
+        std::unordered_map<int32_t, std::vector<std::function<void(const nlohmann::json&)>>> cache = {};
 
         std::stringstream socket_stream;
         std::mutex mtx;

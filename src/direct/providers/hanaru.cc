@@ -51,31 +51,13 @@ shiro::direct::hanaru::hanaru() {
         }
 
         int32_t id = payload["id"].get<int32_t>();
-        if (payload["status"].get<int32_t>() == 200) {
-            std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);
 
-            for (auto& callback : cache[id]) {
-                callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-                callback.end(payload["data"].get<std::string>());
-            }
-
-            cache.erase(id);
-            return;
+        for (auto& callback : cache[id]) {
+            callback(payload);
         }
 
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-
-            for (auto& callback : cache[id]) {
-                callback.code = 504;
-                callback.end();
-            }
-
-            cache.erase(id);
-        }
-
-        std::string error = payload["data"].get<std::string>();
-        LOG_F(ERROR, "Hanaru download returned invalid data through websocket: %s", error.c_str());
+        cache.erase(id);
     });
 
     socket.set_max_message_size(256 * 1000 * 1000);
@@ -91,7 +73,7 @@ shiro::direct::hanaru::hanaru() {
     socket.connect(connection_ptr);
 }
 
-void shiro::direct::hanaru::search(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::beatmaps beatmaps_tables {};
 
@@ -234,7 +216,7 @@ void shiro::direct::hanaru::search(crow::response&& callback, std::unordered_map
     callback.end(out.str());
 }
 
-void shiro::direct::hanaru::search_np(crow::response&& callback, std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
     if (b == parameters.end()) {
         callback.code = 504;
@@ -318,7 +300,7 @@ void shiro::direct::hanaru::search_np(crow::response&& callback, std::unordered_
     callback.end(out.str());
 }
 
-void shiro::direct::hanaru::download(crow::response&& callback, int32_t beatmap_id, bool no_video) {
+void shiro::direct::hanaru::download(crow::response& callback, int32_t beatmap_id, bool no_video) {
     // hanaru doesn't provide beatmapsets with video
     static_cast<void>(no_video);
 
@@ -332,7 +314,17 @@ void shiro::direct::hanaru::download(crow::response&& callback, int32_t beatmap_
     std::lock_guard<std::mutex> lock(mtx);
 
     bool required_request = cache.find(beatmap_id) == cache.end();
-    cache[beatmap_id].push_back(std::move(callback));
+    cache[beatmap_id].push_back([&callback](const nlohmann::json& payload) {
+
+        if (payload["status"].get<int32_t>() == 200) {
+            callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+            callback.end(payload["data"].get<std::string>());
+            return;
+        }
+
+        callback.code = 504;
+        callback.end();
+    });
 
     if (required_request) {
         connection_ptr->send(std::to_string(beatmap_id));
