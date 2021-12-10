@@ -32,5 +32,5 @@ void shiro::routes::direct::search::handle(const crow::request &request, crow::r
         return;
     }
 
-    shiro::direct::provider->search(std::move(response), request.url_params.get_all());
+    shiro::direct::provider->search(response, request.url_params.get_all());
 }

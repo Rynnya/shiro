@@ -51,10 +51,11 @@ shiro::direct::hanaru::hanaru() {
         }
 
         int32_t id = payload["id"].get<int32_t>();
+        int32_t code = payload["status"].get<int32_t>();
         std::lock_guard<std::mutex> lock(mtx);
 
         for (auto& callback : cache[id]) {
-            callback(payload);
+            callback(code, payload);
         }
 
         cache.erase(id);
@@ -311,20 +312,27 @@ void shiro::direct::hanaru::download(crow::response& callback, int32_t beatmap_i
         return;
     }
 
-    std::lock_guard<std::mutex> lock(mtx);
+    bool required_request = false;
+    {
+        std::lock_guard<std::mutex> lock(mtx);
 
-    bool required_request = cache.find(beatmap_id) == cache.end();
-    cache[beatmap_id].push_back([&callback](const nlohmann::json& payload) {
+        required_request = cache.find(beatmap_id) == cache.end();
+        cache[beatmap_id].push_back([&callback](int32_t code, const nlohmann::json& payload) {
 
-        if (payload["status"].get<int32_t>() == 200) {
-            callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-            callback.end(payload["data"].get<std::string>());
-            return;
-        }
+            if (!callback.is_alive()) {
+                return;
+            }
 
-        callback.code = 504;
-        callback.end();
-    });
+            if (code == 200) {
+                callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+                callback.end(payload["data"].get<std::string>());
+                return;
+            }
+
+            callback.code = 504;
+            callback.end();
+        });
+    }
 
     if (required_request) {
         connection_ptr->send(std::to_string(beatmap_id));

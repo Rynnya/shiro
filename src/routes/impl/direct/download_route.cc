@@ -47,5 +47,5 @@ void shiro::routes::direct::download::handle(const crow::request &request, crow:
         return;
     }
 
-    shiro::direct::provider->download(std::move(response), id, no_video);
+    shiro::direct::provider->download(response, id, no_video);
 }

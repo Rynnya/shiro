@@ -47,7 +47,7 @@ namespace shiro::direct {
         client socket;
         client::connection_ptr connection_ptr;
 
-        std::unordered_map<int32_t, std::vector<std::function<void(const nlohmann::json&)>>> cache = {};
+        std::unordered_map<int32_t, std::vector<std::function<void(int32_t, const nlohmann::json&)>>> cache = {};
 
         std::stringstream socket_stream;
         std::mutex mtx;
