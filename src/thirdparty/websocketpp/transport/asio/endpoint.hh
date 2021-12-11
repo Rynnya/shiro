@@ -28,7 +28,7 @@
 #ifndef WEBSOCKETPP_TRANSPORT_ASIO_HPP
 #define WEBSOCKETPP_TRANSPORT_ASIO_HPP
 
-#include "../transport/base/endpoint.hh"
+#include "../base/endpoint.hh"
 #include "connection.hh"
 #include "security/none.hh"
 
