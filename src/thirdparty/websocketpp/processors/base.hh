@@ -32,8 +32,10 @@
 #include "../utilities.hh"
 #include "../uri.hh"
 
+#include "../common/cpp11.hh"
+#include "../common/system_error.hh"
+
 #include <string>
-#include <system_error>
 
 namespace websocketpp {
 namespace processor {
@@ -156,11 +158,11 @@ enum processor_errors {
 };
 
 /// Category for processor errors
-class processor_category : public std::error_category {
+class processor_category : public lib::error_category {
 public:
     processor_category() {}
 
-    char const * name() const noexcept {
+    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
         return "websocketpp.processor";
     }
 
@@ -233,14 +235,14 @@ public:
 };
 
 /// Get a reference to a static copy of the processor error category
-inline std::error_category const & get_processor_category() {
+inline lib::error_category const & get_processor_category() {
     static processor_category instance;
     return instance;
 }
 
 /// Create an error code with the given value and the processor category
-inline std::error_code make_error_code(error::processor_errors e) {
-    return std::error_code(static_cast<int>(e), get_processor_category());
+inline lib::error_code make_error_code(error::processor_errors e) {
+    return lib::error_code(static_cast<int>(e), get_processor_category());
 }
 
 /// Converts a processor error_code into a websocket close code
@@ -256,7 +258,7 @@ inline std::error_code make_error_code(error::processor_errors e) {
  * applications, ex: invalid arguments) then
  * close::status::internal_endpoint_error is returned.
  */
-inline close::status::value to_ws(std::error_code ec) {
+inline close::status::value to_ws(lib::error_code ec) {
     if (ec.category() != get_processor_category()) {
         return close::status::blank;
     }
@@ -287,11 +289,11 @@ inline close::status::value to_ws(std::error_code ec) {
 } // namespace processor
 } // namespace websocketpp
 
-namespace std {
-    template<> struct is_error_code_enum<websocketpp::processor::error::processor_errors>
-    {
-        static bool const value = true;
-    };
-}
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_START_
+template<> struct is_error_code_enum<websocketpp::processor::error::processor_errors>
+{
+    static bool const value = true;
+};
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
 
 #endif //WEBSOCKETPP_PROCESSOR_BASE_HPP

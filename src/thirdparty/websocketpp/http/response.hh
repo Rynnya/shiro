@@ -57,11 +57,11 @@ namespace parser {
 class response : public parser {
 public:
     typedef response type;
-    typedef std::shared_ptr<type> ptr;
+    typedef lib::shared_ptr<type> ptr;
 
     response()
       : m_read(0)
-      , m_buf(std::make_shared<std::string>())
+      , m_buf(lib::make_shared<std::string>())
       , m_status_code(status_code::uninitialized)
       , m_state(RESPONSE_LINE) {}
 
@@ -173,7 +173,7 @@ private:
 
     std::string                     m_status_msg;
     size_t                          m_read;
-    std::shared_ptr<std::string>    m_buf;
+    lib::shared_ptr<std::string>    m_buf;
     status_code::value              m_status_code;
     state                           m_state;
 

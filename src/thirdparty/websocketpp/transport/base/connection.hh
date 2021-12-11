@@ -28,10 +28,11 @@
 #ifndef WEBSOCKETPP_TRANSPORT_BASE_CON_HPP
 #define WEBSOCKETPP_TRANSPORT_BASE_CON_HPP
 
+#include "../../common/cpp11.hh"
 #include "../../common/connection_hdl.hh"
+#include "../../common/functional.hh"
+#include "../../common/system_error.hh"
 
-#include <functional>
-#include <system_error>
 #include <string>
 
 namespace websocketpp {
@@ -102,7 +103,7 @@ namespace websocketpp {
  * whether or not the connection to the remote endpoint is secure
  *
  * **dispatch**\n
- * `std::error_code dispatch(dispatch_handler handler)`: invoke handler within
+ * `lib::error_code dispatch(dispatch_handler handler)`: invoke handler within
  * the transport's event system if it uses one. Otherwise, this method should
  * simply call `handler` immediately.
  *
@@ -113,25 +114,25 @@ namespace websocketpp {
 namespace transport {
 
 /// The type and signature of the callback passed to the init hook
-typedef std::function<void(std::error_code const &)> init_handler;
+typedef lib::function<void(lib::error_code const &)> init_handler;
 
 /// The type and signature of the callback passed to the read method
-typedef std::function<void(std::error_code const &,size_t)> read_handler;
+typedef lib::function<void(lib::error_code const &,size_t)> read_handler;
 
 /// The type and signature of the callback passed to the write method
-typedef std::function<void(std::error_code const &)> write_handler;
+typedef lib::function<void(lib::error_code const &)> write_handler;
 
 /// The type and signature of the callback passed to the read method
-typedef std::function<void(std::error_code const &)> timer_handler;
+typedef lib::function<void(lib::error_code const &)> timer_handler;
 
 /// The type and signature of the callback passed to the shutdown method
-typedef std::function<void(std::error_code const &)> shutdown_handler;
+typedef lib::function<void(lib::error_code const &)> shutdown_handler;
 
 /// The type and signature of the callback passed to the interrupt method
-typedef std::function<void()> interrupt_handler;
+typedef lib::function<void()> interrupt_handler;
 
 /// The type and signature of the callback passed to the dispatch method
-typedef std::function<void()> dispatch_handler;
+typedef lib::function<void()> dispatch_handler;
 
 /// A simple utility buffer class
 struct buffer {
@@ -179,11 +180,11 @@ enum value {
     tls_error
 };
 
-class category : public std::error_category {
+class category : public lib::error_category {
     public:
     category() {}
 
-    char const * name() const noexcept {
+    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
         return "websocketpp.transport";
     }
 
@@ -215,24 +216,23 @@ class category : public std::error_category {
     }
 };
 
-inline std::error_category const & get_category() {
+inline lib::error_category const & get_category() {
     static category instance;
     return instance;
 }
 
-inline std::error_code make_error_code(error::value e) {
-    return std::error_code(static_cast<int>(e), get_category());
+inline lib::error_code make_error_code(error::value e) {
+    return lib::error_code(static_cast<int>(e), get_category());
 }
 
 } // namespace error
 } // namespace transport
 } // namespace websocketpp
-
-namespace std {
-    template<> struct is_error_code_enum<websocketpp::transport::error::value>
-    {
-        static bool const value = true;
-    };
-}
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_START_
+template<> struct is_error_code_enum<websocketpp::transport::error::value>
+{
+    static bool const value = true;
+};
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
 
 #endif // WEBSOCKETPP_TRANSPORT_BASE_CON_HPP

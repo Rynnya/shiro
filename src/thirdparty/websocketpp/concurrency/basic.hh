@@ -28,16 +28,16 @@
 #ifndef WEBSOCKETPP_CONCURRENCY_BASIC_HPP
 #define WEBSOCKETPP_CONCURRENCY_BASIC_HPP
 
-#include <mutex>
+#include "../common/thread.hh"
 
 namespace websocketpp {
 namespace concurrency {
 
-/// Concurrency policy that uses std::mutex
+/// Concurrency policy that uses std::mutex / boost::mutex
 class basic {
 public:
-    typedef std::mutex mutex_type;
-    typedef std::lock_guard<mutex_type> scoped_lock_type;
+    typedef lib::mutex mutex_type;
+    typedef lib::lock_guard<mutex_type> scoped_lock_type;
 };
 
 } // namespace concurrency

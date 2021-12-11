@@ -28,10 +28,8 @@
 #include "hanaru.hh"
 
 shiro::direct::hanaru::hanaru() {
-    socket.register_ostream(&socket_stream);
-
-    socket.set_access_channels(websocketpp::log::alevel::all);
-    socket.set_error_channels(websocketpp::log::elevel::all);
+    socket.set_access_channels(websocketpp::log::alevel::none);
+    socket.set_error_channels(websocketpp::log::elevel::none);
 
     socket.set_message_handler([&](websocketpp::connection_hdl handle, client::message_ptr msg) {
         if (msg->get_opcode() != websocketpp::frame::opcode::binary) {
@@ -62,16 +60,34 @@ shiro::direct::hanaru::hanaru() {
     });
 
     socket.set_max_message_size(256 * 1000 * 1000);
+    socket.init_asio();
 
-    std::error_code ec;
-    connection_ptr = socket.get_connection("ws://127.0.0.1:" + std::to_string(config::direct::port) + "/", ec);
-    if (ec) {
-        connection_ptr.reset();
-        connection_ptr = nullptr;
-        return;
-    }
+    std::thread running_client([&]() {
+        while (true) {
+            try {
+                socket.reset();
 
-    socket.connect(connection_ptr);
+                websocketpp::lib::error_code ec;
+                connection_ptr = socket.get_connection("ws://127.0.0.1:" + std::to_string(config::direct::port) + "/", ec);
+                if (ec) {
+                    std::string msg = ec.message();
+                    LOG_F(ERROR, "Cannot connect through websocket: %s", msg.c_str());
+
+                    connection_ptr = nullptr;
+                    return;
+                }
+
+                socket.connect(connection_ptr);
+                socket.run();
+            }
+            catch (...) {
+                // Set connection to null so we doesn't leak memory through cache
+                connection_ptr = nullptr;
+            }
+        }
+    });
+
+    running_client.detach();
 }
 
 void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {

@@ -29,7 +29,8 @@
 #ifndef UTF8_VALIDATOR_HPP
 #define UTF8_VALIDATOR_HPP
 
-#include <cstdint>
+#include "common/stdint.hh"
+
 #include <string>
 
 namespace websocketpp {

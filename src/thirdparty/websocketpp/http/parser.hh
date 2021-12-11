@@ -57,7 +57,7 @@ namespace body_encoding {
     };
 }
 
-typedef std::map<std::string, std::string, utility::ci_less> header_list;
+typedef std::map<std::string, std::string, utility::ci_less > header_list;
 
 /// Read and return the next token in the stream
 /**

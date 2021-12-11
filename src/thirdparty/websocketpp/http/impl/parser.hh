@@ -34,8 +34,6 @@
 #include <sstream>
 #include <string>
 
-#include "../parser.hh"
-
 namespace websocketpp {
 namespace http {
 namespace parser {

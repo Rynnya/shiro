@@ -28,11 +28,11 @@
 #ifndef WEBSOCKETPP_SERVER_ENDPOINT_HPP
 #define WEBSOCKETPP_SERVER_ENDPOINT_HPP
 
-#include <websocketpp/endpoint.hpp>
+#include "../endpoint.hh"
 
-#include <websocketpp/logger/levels.hpp>
+#include "../logger/levels.hh"
 
-#include <websocketpp/common/system_error.hpp>
+#include "../common/system_error.hh"
 
 namespace websocketpp {
 
@@ -118,13 +118,13 @@ public:
      *
      * @param [out] ec A status code indicating an error, if any.
      */
-    void start_accept(std::error_code & ec) {
+    void start_accept(lib::error_code & ec) {
         if (!transport_type::is_listening()) {
             ec = error::make_error_code(error::async_accept_not_listening);
             return;
         }
         
-        ec = std::error_code();
+        ec = lib::error_code();
         connection_ptr con = get_connection();
 
         if (!con) {
@@ -141,7 +141,7 @@ public:
         if (ec && con) {
             // If the connection was constructed but the accept failed,
             // terminate the connection to prevent memory leaks
-            con->terminate(std::error_code());
+            con->terminate(lib::error_code());
         }
     }
 
@@ -155,7 +155,7 @@ public:
      * instructions on how to stop this acceptance loop.
      */
     void start_accept() {
-        std::error_code ec;
+        lib::error_code ec;
         start_accept(ec);
         if (ec) {
             throw exception(ec);
@@ -163,7 +163,7 @@ public:
     }
 
     /// Handler callback for start_accept
-    void handle_accept(connection_ptr con, std::error_code const & ec) {
+    void handle_accept(connection_ptr con, lib::error_code const & ec) {
         if (ec) {
             con->terminate(ec);
 
@@ -178,7 +178,7 @@ public:
             con->start();
         }
 
-        std::error_code start_ec;
+        lib::error_code start_ec;
         start_accept(start_ec);
         if (start_ec == error::async_accept_not_listening) {
             endpoint_type::m_elog->write(log::elevel::info,

@@ -29,10 +29,16 @@
 #define WEBSOCKETPP_CONFIG_CORE_CLIENT_HPP
 
 // Non-Policy common stuff
-#include <cstdint>
+#include "../common/platforms.hh"
+#include "../common/cpp11.hh"
+#include "../common/stdint.hh"
 
 // Concurrency
+#ifndef _WEBSOCKETPP_NO_THREADING_
 #include "../concurrency/basic.hh"
+#else
+#include "../concurrency/none.hh"
+#endif
 
 // Transport
 #include "../transport/iostream/endpoint.hh"
@@ -56,7 +62,6 @@
 #include "../connection_base.hh"
 
 // Extensions
-// TODO: Convert to inline cuz only disabled is used in stripped version
 #include "../extensions/permessage_deflate/disabled.hh"
 
 namespace websocketpp {
@@ -67,7 +72,11 @@ struct core_client {
     typedef core_client type;
 
     // Concurrency policy
+#ifndef _WEBSOCKETPP_NO_THREADING_
     typedef websocketpp::concurrency::basic concurrency_type;
+#else
+    typedef websocketpp::concurrency::none concurrency_type;
+#endif
 
     // HTTP Parser Policies
     typedef http::parser::request request_type;
@@ -221,11 +230,11 @@ struct core_client {
      * determines the point at which the library will fail a connection with the 
      * message_too_big protocol error.
      *
-     * The default is 128MB
+     * The default is 32MB
      *
      * @since 0.3.0
      */
-    static const size_t max_message_size = 128000000;
+    static const size_t max_message_size = 32000000;
 
     /// Default maximum http body size
     /**
@@ -233,11 +242,11 @@ struct core_client {
      * determines the point at which the library will abort reading an HTTP
      * connection with the 413/request entity too large error.
      *
-     * The default is 128MB
+     * The default is 32MB
      *
      * @since 0.5.0
      */
-    static const size_t max_http_body_size = 128000000;
+    static const size_t max_http_body_size = 32000000;
 
     /// Global flag for enabling/disabling extensions
     static const bool enable_extensions = true;

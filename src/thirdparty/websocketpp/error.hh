@@ -30,13 +30,15 @@
 
 #include <exception>
 #include <string>
-#include <system_error>
 #include <utility>
+
+#include "common/cpp11.hh"
+#include "common/system_error.hh"
 
 namespace websocketpp {
 
 /// Combination error code / string type for returning two values
-typedef std::pair<std::error_code,std::string> err_str_pair;
+typedef std::pair<lib::error_code,std::string> err_str_pair;
 
 /// Library level error codes
 namespace error {
@@ -145,11 +147,11 @@ enum value {
 }; // enum value
 
 
-class category : public std::error_category {
+class category : public lib::error_category {
 public:
     category() {}
 
-    char const * name() const noexcept {
+    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
         return "websocketpp";
     }
 
@@ -225,34 +227,34 @@ public:
     }
 };
 
-inline const std::error_category& get_category() {
+inline const lib::error_category& get_category() {
     static category instance;
     return instance;
 }
 
-inline std::error_code make_error_code(error::value e) {
-    return std::error_code(static_cast<int>(e), get_category());
+inline lib::error_code make_error_code(error::value e) {
+    return lib::error_code(static_cast<int>(e), get_category());
 }
 
 } // namespace error
 } // namespace websocketpp
 
-namespace std {
-    template<> struct is_error_code_enum<websocketpp::error::value>
-    {
-        static bool const value = true;
-    };
-}
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_START_
+template<> struct is_error_code_enum<websocketpp::error::value>
+{
+    static bool const value = true;
+};
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
 
 namespace websocketpp {
 
 class exception : public std::exception {
 public:
-    exception(std::string const & msg, std::error_code ec = make_error_code(error::general))
+    exception(std::string const & msg, lib::error_code ec = make_error_code(error::general))
       : m_msg(msg.empty() ? ec.message() : msg), m_code(ec)
     {}
 
-    explicit exception(std::error_code ec)
+    explicit exception(lib::error_code ec)
       : m_msg(ec.message()), m_code(ec)
     {}
 
@@ -262,12 +264,12 @@ public:
         return m_msg.c_str();
     }
 
-    std::error_code code() const throw() {
+    lib::error_code code() const throw() {
         return m_code;
     }
 
     const std::string m_msg;
-    std::error_code m_code;
+    lib::error_code m_code;
 };
 
 } // namespace websocketpp

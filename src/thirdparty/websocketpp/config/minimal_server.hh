@@ -29,8 +29,9 @@
 #define WEBSOCKETPP_CONFIG_MINIMAL_HPP
 
 // Non-Policy common stuff
-#include <cstdint>
-#include "core.hh"
+#include "../common/platforms.hh"
+#include "../common/cpp11.hh"
+#include "../common/stdint.hh"
 
 // Concurrency
 #include "../concurrency/none.hh"
@@ -87,7 +88,7 @@ namespace config {
  * <system_error>
  *
  * Operating System:
- * <stdint.h> or <boost/cstdint.hpp>
+ * <stdint.h> or <boost/cstdint.hh"
  * <netinet/in.h> or <winsock2.h> (for ntohl.. could potentially bundle this)
  *
  * @since 0.4.0-dev
@@ -247,11 +248,11 @@ struct minimal_server {
      * determines the point at which the library will fail a connection with the 
      * message_too_big protocol error.
      *
-     * The default is 128MB
+     * The default is 32MB
      *
      * @since 0.4.0-alpha1
      */
-    static const size_t max_message_size = 128000000;
+    static const size_t max_message_size = 32000000;
 
     /// Default maximum http body size
     /**
@@ -259,11 +260,11 @@ struct minimal_server {
      * determines the point at which the library will abort reading an HTTP
      * connection with the 413/request entity too large error.
      *
-     * The default is 128MB
+     * The default is 32MB
      *
      * @since 0.5.0
      */
-    static const size_t max_http_body_size = 128000000;
+    static const size_t max_http_body_size = 32000000;
 
     /// Global flag for enabling/disabling extensions
     static const bool enable_extensions = true;
@@ -272,7 +273,7 @@ struct minimal_server {
 
     /// permessage_compress extension
     struct permessage_deflate_config {
-        typedef core::request_type request_type;
+        typedef type::request_type request_type;
 
         /// If the remote endpoint requests that we reset the compression
         /// context after each message should we honor the request?

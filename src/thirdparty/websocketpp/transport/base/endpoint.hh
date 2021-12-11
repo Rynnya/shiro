@@ -28,8 +28,8 @@
 #ifndef WEBSOCKETPP_TRANSPORT_BASE_HPP
 #define WEBSOCKETPP_TRANSPORT_BASE_HPP
 
-#include <functional>
-#include <system_error>
+#include "../../common/functional.hh"
+#include "../../common/system_error.hh"
 
 namespace websocketpp {
 /// Transport policies provide network connectivity and timers
@@ -39,7 +39,7 @@ namespace websocketpp {
  * Transport endpoint components needs to provide:
  *
  * **init**\n
- * `std::error_code init(transport_con_ptr tcon)`\n
+ * `lib::error_code init(transport_con_ptr tcon)`\n
  * init is called by an endpoint once for each newly created connection.
  * It's purpose is to give the transport policy the chance to perform any
  * transport specific initialization that couldn't be done via the default
@@ -66,10 +66,10 @@ namespace websocketpp {
 namespace transport {
 
 /// The type and signature of the callback passed to the accept method
-typedef std::function<void(std::error_code const &)> accept_handler;
+typedef lib::function<void(lib::error_code const &)> accept_handler;
 
 /// The type and signature of the callback passed to the connect method
-typedef std::function<void(std::error_code const &)> connect_handler;
+typedef lib::function<void(lib::error_code const &)> connect_handler;
 
 } // namespace transport
 } // namespace websocketpp

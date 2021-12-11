@@ -28,7 +28,9 @@
 #ifndef WEBSOCKETPP_LOGGER_STUB_HPP
 #define WEBSOCKETPP_LOGGER_STUB_HPP
 
-#include "levels.hh"
+#include "../logger/levels.hh"
+
+#include "../common/cpp11.hh"
 
 #include <string>
 
@@ -50,7 +52,7 @@ public:
      * @param hint A channel type specific hint for how to construct the logger
      */
     stub(level, channel_type_hint::value) {}
-    constexpr stub() {}
+    _WEBSOCKETPP_CONSTEXPR_TOKEN_ stub() {}
 
     /// Dynamically enable the given list of channels
     /**
@@ -95,7 +97,7 @@ public:
      *
      * @param channel The package of channels to test
      */
-    constexpr bool static_test(level) const {
+    _WEBSOCKETPP_CONSTEXPR_TOKEN_ bool static_test(level) const {
         return false;
     }
 

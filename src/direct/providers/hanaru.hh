@@ -24,11 +24,11 @@
 
 #include "../direct_provider.hh"
 #include "../../thirdparty/websocketpp/client.hh"
-#include "../../thirdparty/websocketpp/config/core_client.hh"
+#include "../../thirdparty/websocketpp/config/asio_no_tls_client.hh"
 
 namespace shiro::direct {
 
-    typedef websocketpp::client<websocketpp::config::core_client> client;
+    typedef websocketpp::client<websocketpp::config::asio_client> client;
 
     class hanaru : public direct_provider {
     public:

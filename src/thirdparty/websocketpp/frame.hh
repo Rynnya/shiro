@@ -30,9 +30,10 @@
 
 #include <algorithm>
 #include <string>
-#include <system_error>
 
+#include "common/system_error.hh"
 #include "common/network.hh"
+
 #include "utilities.hh"
 
 namespace websocketpp {

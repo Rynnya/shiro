@@ -28,8 +28,10 @@
 #ifndef WEBSOCKETPP_EXTENSION_HPP
 #define WEBSOCKETPP_EXTENSION_HPP
 
+#include "../common/cpp11.hh"
+#include "../common/system_error.hh"
+
 #include <string>
-#include <system_error>
 #include <vector>
 
 namespace websocketpp {
@@ -56,11 +58,11 @@ enum value {
     disabled
 };
 
-class category : public std::error_category {
+class category : public lib::error_category {
 public:
     category() {}
 
-    const char *name() const noexcept {
+    const char *name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
         return "websocketpp.extension";
     }
 
@@ -76,25 +78,25 @@ public:
     }
 };
 
-inline std::error_category const & get_category() {
+inline lib::error_category const & get_category() {
     static category instance;
     return instance;
 }
 
-inline std::error_code make_error_code(error::value e) {
-    return std::error_code(static_cast<int>(e), get_category());
+inline lib::error_code make_error_code(error::value e) {
+    return lib::error_code(static_cast<int>(e), get_category());
 }
 
 } // namespace error
 } // namespace extensions
 } // namespace websocketpp
 
-namespace std {
-    template<> struct is_error_code_enum
-        <websocketpp::extensions::error::value>
-    {
-        static const bool value = true;
-    };
-}
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_START_
+template<> struct is_error_code_enum
+    <websocketpp::extensions::error::value>
+{
+    static const bool value = true;
+};
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
 
 #endif // WEBSOCKETPP_EXTENSION_HPP

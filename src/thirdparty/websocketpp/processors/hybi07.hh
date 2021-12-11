@@ -60,7 +60,7 @@ public:
      * @param [in] uri The uri being connected to
      * @param [in] subprotocols The list of subprotocols to request
      */
-    std::error_code client_handshake_request(request_type &, uri_ptr,
+    lib::error_code client_handshake_request(request_type &, uri_ptr,
         std::vector<std::string> const &) const
     {
         return error::make_error_code(error::no_protocol_support);

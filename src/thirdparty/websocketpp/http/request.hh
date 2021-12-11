@@ -29,8 +29,8 @@
 #define HTTP_PARSER_REQUEST_HPP
 
 #include <string>
-#include <memory>
 
+#include "../common/memory.hh"
 #include "parser.hh"
 
 namespace websocketpp {
@@ -50,10 +50,10 @@ namespace parser {
 class request : public parser {
 public:
     typedef request type;
-    typedef std::shared_ptr<type> ptr;
+    typedef lib::shared_ptr<type> ptr;
 
     request()
-      : m_buf(std::make_shared<std::string>())
+      : m_buf(lib::make_shared<std::string>())
       , m_ready(false) {}
 
     /// Process bytes in the input buffer
@@ -109,7 +109,7 @@ private:
     /// Helper function for message::consume. Process request line
     void process(std::string::iterator begin, std::string::iterator end);
 
-    std::shared_ptr<std::string>    m_buf;
+    lib::shared_ptr<std::string>    m_buf;
     std::string                     m_method;
     std::string                     m_uri;
     bool                            m_ready;

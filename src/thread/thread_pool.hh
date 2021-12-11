@@ -59,7 +59,7 @@ namespace shiro::thread {
         template <typename F, typename... Args>
         void push_and_forgot(F&& func, Args&&... args) {
             std::function<decltype(func(args...))()> bounded_function = std::bind(std::forward<F>(func), std::forward<Args>(args)...);
-            std::function<void()> wrapper = [bounded_function]() { bounded_function() };
+            std::function<void()> wrapper = [bounded_function]() { bounded_function(); };
 
             push_and_notify(std::move(wrapper));
         }

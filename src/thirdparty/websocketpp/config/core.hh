@@ -29,7 +29,9 @@
 #define WEBSOCKETPP_CONFIG_CORE_HPP
 
 // Non-Policy common stuff
-#include <cstdint>
+#include "../common/platforms.hh"
+#include "../common/cpp11.hh"
+#include "../common/stdint.hh"
 
 // Concurrency
 #include "../concurrency/basic.hh"
@@ -231,11 +233,11 @@ struct core {
      * determines the point at which the library will fail a connection with the 
      * message_too_big protocol error.
      *
-     * The default is 128MB
+     * The default is 32MB
      *
      * @since 0.3.0
      */
-    static const size_t max_message_size = 128000000;
+    static const size_t max_message_size = 32000000;
     
     /// Default maximum http body size
     /**
@@ -243,11 +245,11 @@ struct core {
      * determines the point at which the library will abort reading an HTTP
      * connection with the 413/request entity too large error.
      *
-     * The default is 128MB
+     * The default is 32MB
      *
      * @since 0.5.0
      */
-    static const size_t max_http_body_size = 128000000;
+    static const size_t max_http_body_size = 32000000;
 
     /// Global flag for enabling/disabling extensions
     static const bool enable_extensions = true;

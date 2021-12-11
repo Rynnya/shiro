@@ -29,6 +29,7 @@
 #define WEBSOCKETPP_TRANSPORT_IOSTREAM_CON_HPP
 
 #include "base.hh"
+
 #include "../base/connection.hh"
 
 #include "../../uri.hh"
@@ -36,13 +37,14 @@
 #include "../../logger/levels.hh"
 
 #include "../../common/connection_hdl.hh"
+#include "../../common/memory.hh"
+#include "../../common/platforms.hh"
 
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace websocketpp {
 namespace transport {
@@ -55,12 +57,12 @@ struct timer {
 };
 
 template <typename config>
-class connection : public std::enable_shared_from_this< connection<config> > {
+class connection : public lib::enable_shared_from_this< connection<config> > {
 public:
     /// Type of this connection transport component
     typedef connection<config> type;
     /// Type of a shared pointer to this connection transport component
-    typedef std::shared_ptr<type> ptr;
+    typedef lib::shared_ptr<type> ptr;
 
     /// transport concurrency policy
     typedef typename config::concurrency_type concurrency_type;
@@ -73,9 +75,9 @@ public:
     typedef typename concurrency_type::scoped_lock_type scoped_lock_type;
     typedef typename concurrency_type::mutex_type mutex_type;
 
-    typedef std::shared_ptr<timer> timer_ptr;
+    typedef lib::shared_ptr<timer> timer_ptr;
 
-    explicit connection(bool is_server, const std::shared_ptr<alog_type> & alog, const std::shared_ptr<elog_type> & elog)
+    explicit connection(bool is_server, const lib::shared_ptr<alog_type> & alog, const lib::shared_ptr<elog_type> & elog)
       : m_output_stream(NULL)
       , m_reading(false)
       , m_is_server(is_server)
@@ -333,7 +335,7 @@ public:
      * can be used in place of registering an ostream for output.
      *
      * The signature of the handler is
-     * `std::error_code (connection_hdl, char const *, size_t)` The
+     * `lib::error_code (connection_hdl, char const *, size_t)` The
      * code returned will be reported and logged by the core library.
      *
      * See also, set_vector_write_handler, for an optional write handler that
@@ -366,7 +368,7 @@ public:
      * will be made to the standard write handler.
      *
      * The signature of the handler is
-     * `std::error_code (connection_hdl, std::vector<websocketpp::transport::buffer>
+     * `lib::error_code (connection_hdl, std::vector<websocketpp::transport::buffer>
      * const & bufs)`. The code returned will be reported and logged by the core
      * library. The `websocketpp::transport::buffer` type is a struct with two
      * data members. buf (char const *) and len (size_t).
@@ -388,7 +390,7 @@ public:
      * If you are using iostream transport with another socket library, this is
      * a good time to close/shutdown the socket for this connection.
      *
-     * The signature of the handler is `std::error_code (connection_hdl)`. The
+     * The signature of the handler is `lib::error_code (connection_hdl)`. The
      * code returned will be reported and logged by the core library.
      *
      * @since 0.5.0
@@ -407,7 +409,7 @@ protected:
      */
     void init(init_handler handler) {
         m_alog->write(log::alevel::devel,"iostream connection init");
-        handler(std::error_code());
+        handler(lib::error_code());
     }
 
     /// Initiate an async_read for at least num_bytes bytes into buf
@@ -452,7 +454,7 @@ protected:
         }
 
         if (num_bytes == 0 || len == 0) {
-            handler(std::error_code(),size_t(0));
+            handler(lib::error_code(),size_t(0));
             return;
         }
 
@@ -488,7 +490,7 @@ protected:
         m_alog->write(log::alevel::devel,"iostream_con async_write");
         // TODO: lock transport state?
 
-        std::error_code ec;
+        lib::error_code ec;
 
         if (m_output_stream) {
             m_output_stream->write(buf,len);
@@ -528,7 +530,7 @@ protected:
         m_alog->write(log::alevel::devel,"iostream_con async_write buffer list");
         // TODO: lock transport state?
 
-        std::error_code ec;
+        lib::error_code ec;
 
         if (m_output_stream) {
             std::vector<buffer>::const_iterator it;
@@ -575,9 +577,9 @@ protected:
      * @return Whether or not the transport was able to register the handler for
      * callback.
      */
-    std::error_code dispatch(dispatch_handler handler) {
+    lib::error_code dispatch(dispatch_handler handler) {
         handler();
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Perform cleanup on socket shutdown_handler
@@ -589,7 +591,7 @@ protected:
      * @param handler The `shutdown_handler` to call back when complete
      */
     void async_shutdown(transport::shutdown_handler handler) {
-        std::error_code ec;
+        lib::error_code ec;
 
         if (m_shutdown_handler) {
             ec = m_shutdown_handler(m_connection_hdl);
@@ -624,7 +626,7 @@ private:
 
             if (m_cursor >= m_bytes_needed) {
                 m_reading = false;
-                complete_read(std::error_code());
+                complete_read(lib::error_code());
             }
         }
     }
@@ -644,7 +646,7 @@ private:
         m_cursor += bytes_to_copy;
 
         if (m_cursor >= m_bytes_needed) {
-            complete_read(std::error_code());
+            complete_read(lib::error_code());
         }
 
         return bytes_to_copy;
@@ -666,7 +668,7 @@ private:
      *
      * @param ec The error code to forward to the read handler
      */
-    void complete_read(std::error_code const & ec) {
+    void complete_read(lib::error_code const & ec) {
         m_reading = false;
 
         read_handler handler = m_read_handler;
@@ -692,8 +694,8 @@ private:
     bool            m_reading;
     bool const      m_is_server;
     bool            m_is_secure;
-    std::shared_ptr<alog_type>     m_alog;
-    std::shared_ptr<elog_type>     m_elog;
+    lib::shared_ptr<alog_type>     m_alog;
+    lib::shared_ptr<elog_type>     m_elog;
     std::string     m_remote_endpoint;
 
     // This lock ensures that only one thread can edit read data for this

@@ -30,8 +30,8 @@
 
 #include "error.hh"
 
-#include <memory>
-#include <cstdint>
+#include "common/memory.hh"
+#include "common/stdint.hh"
 
 #include <algorithm>
 #include <sstream>
@@ -153,7 +153,7 @@ public:
             ++it;
         }
 
-        std::error_code ec;
+        lib::error_code ec;
         m_port = get_port_from_string(port, ec);
 
         if (ec) {
@@ -191,7 +191,7 @@ public:
       , m_resource(resource.empty() ? "/" : resource)
       , m_secure(secure)
     {
-        std::error_code ec;
+        lib::error_code ec;
         m_port = get_port_from_string(port,ec);
         m_valid = !ec;
     }
@@ -220,7 +220,7 @@ public:
       , m_resource(resource.empty() ? "/" : resource)
       , m_secure(scheme == "wss" || scheme == "https")
     {
-        std::error_code ec;
+        lib::error_code ec;
         m_port = get_port_from_string(port,ec);
         m_valid = !ec;
     }
@@ -318,10 +318,10 @@ public:
     void set_port(const std::string& port);
     void set_resource(const std::string& resource);*/
 private:
-    uint16_t get_port_from_string(std::string const & port, std::error_code &
+    uint16_t get_port_from_string(std::string const & port, lib::error_code &
         ec) const
     {
-        ec = std::error_code();
+        ec = lib::error_code();
 
         if (port.empty()) {
             return (m_secure ? uri_default_secure_port : uri_default_port);
@@ -349,7 +349,7 @@ private:
 };
 
 /// Pointer to a URI
-typedef std::shared_ptr<uri> uri_ptr;
+typedef lib::shared_ptr<uri> uri_ptr;
 
 } // namespace websocketpp
 

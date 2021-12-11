@@ -42,7 +42,7 @@ namespace http {
      * The attribute list is an unordered key/value map. Encoded attribute
      * values are delimited by semicolons.
      */
-    typedef std::map<std::string, std::string> attribute_list;
+    typedef std::map<std::string,std::string> attribute_list;
 
     /// The type of an HTTP parameter list
     /**
@@ -291,9 +291,9 @@ namespace http {
           , m_body(body)
           , m_error_code(error_code) {}
 
-        ~exception() noexcept {}
+        ~exception() throw() {}
 
-        virtual const char* what() const noexcept {
+        virtual const char* what() const throw() {
             return m_msg.c_str();
         }
 

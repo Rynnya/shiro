@@ -28,10 +28,10 @@
 #ifndef WEBSOCKETPP_MESSAGE_BUFFER_MESSAGE_HPP
 #define WEBSOCKETPP_MESSAGE_BUFFER_MESSAGE_HPP
 
+#include "../common/memory.hh"
 #include "../frame.hh"
 
 #include <string>
-#include <memory>
 
 namespace websocketpp {
 namespace message_buffer {
@@ -83,7 +83,7 @@ namespace message_buffer {
 template <template<class> class con_msg_manager>
 class message {
 public:
-    typedef std::shared_ptr<message> ptr;
+    typedef lib::shared_ptr<message> ptr;
 
     typedef con_msg_manager<message> con_msg_man_type;
     typedef typename con_msg_man_type::ptr con_msg_man_ptr;

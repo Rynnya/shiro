@@ -28,14 +28,15 @@
 #ifndef WEBSOCKETPP_CONNECTION_IMPL_HPP
 #define WEBSOCKETPP_CONNECTION_IMPL_HPP
 
-#include "../connection.hh"
-
 #include "../processors/hybi00.hh"
 #include "../processors/hybi07.hh"
 #include "../processors/hybi08.hh"
 #include "../processors/hybi13.hh"
 
 #include "../processors/processor.hh"
+
+#include "../common/platforms.hh"
+#include "../common/system_error.hh"
 
 #include <algorithm>
 #include <exception>
@@ -79,7 +80,7 @@ session::state::value connection<config>::get_state() const {
 }
 
 template <typename config>
-std::error_code connection<config>::send(std::string const & payload,
+lib::error_code connection<config>::send(std::string const & payload,
     frame::opcode::value op)
 {
     message_ptr msg = m_msg_manager->get_message(op,payload.size());
@@ -90,7 +91,7 @@ std::error_code connection<config>::send(std::string const & payload,
 }
 
 template <typename config>
-std::error_code connection<config>::send(void const * payload, size_t len,
+lib::error_code connection<config>::send(void const * payload, size_t len,
     frame::opcode::value op)
 {
     message_ptr msg = m_msg_manager->get_message(op,len);
@@ -100,7 +101,7 @@ std::error_code connection<config>::send(void const * payload, size_t len,
 }
 
 template <typename config>
-std::error_code connection<config>::send(typename config::message_type::ptr msg)
+lib::error_code connection<config>::send(typename config::message_type::ptr msg)
 {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection send");
@@ -130,7 +131,7 @@ std::error_code connection<config>::send(typename config::message_type::ptr msg)
         }
 
         scoped_lock_type lock(m_write_lock);
-        std::error_code ec = m_processor->prepare_data_frame(msg,outgoing_msg);
+        lib::error_code ec = m_processor->prepare_data_frame(msg,outgoing_msg);
 
         if (ec) {
             return ec;
@@ -141,17 +142,17 @@ std::error_code connection<config>::send(typename config::message_type::ptr msg)
     }
 
     if (needs_writing) {
-        transport_con_type::dispatch(std::bind(
+        transport_con_type::dispatch(lib::bind(
             &type::write_frame,
             type::get_shared()
         ));
     }
 
-    return std::error_code();
+    return lib::error_code();
 }
 
 template <typename config>
-void connection<config>::ping(std::string const& payload, std::error_code& ec) {
+void connection<config>::ping(std::string const& payload, lib::error_code& ec) {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection ping");
     }
@@ -186,11 +187,11 @@ void connection<config>::ping(std::string const& payload, std::error_code& ec) {
         if (m_pong_timeout_dur > 0) {
             m_ping_timer = transport_con_type::set_timer(
                 m_pong_timeout_dur,
-                std::bind(
+                lib::bind(
                     &type::handle_pong_timeout,
                     type::get_shared(),
                     payload,
-                    std::placeholders::_1
+                    lib::placeholders::_1
                 )
             );
         }
@@ -210,18 +211,18 @@ void connection<config>::ping(std::string const& payload, std::error_code& ec) {
     }
 
     if (needs_writing) {
-        transport_con_type::dispatch(std::bind(
+        transport_con_type::dispatch(lib::bind(
             &type::write_frame,
             type::get_shared()
         ));
     }
 
-    ec = std::error_code();
+    ec = lib::error_code();
 }
 
 template<typename config>
 void connection<config>::ping(std::string const & payload) {
-    std::error_code ec;
+    lib::error_code ec;
     ping(payload,ec);
     if (ec) {
         throw exception(ec);
@@ -230,7 +231,7 @@ void connection<config>::ping(std::string const & payload) {
 
 template<typename config>
 void connection<config>::handle_pong_timeout(std::string payload,
-    std::error_code const & ec)
+    lib::error_code const & ec)
 {
     if (ec) {
         if (ec == transport::error::operation_aborted) {
@@ -248,7 +249,7 @@ void connection<config>::handle_pong_timeout(std::string payload,
 }
 
 template <typename config>
-void connection<config>::pong(std::string const& payload, std::error_code& ec) {
+void connection<config>::pong(std::string const& payload, lib::error_code& ec) {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection pong");
     }
@@ -281,18 +282,18 @@ void connection<config>::pong(std::string const& payload, std::error_code& ec) {
     }
 
     if (needs_writing) {
-        transport_con_type::dispatch(std::bind(
+        transport_con_type::dispatch(lib::bind(
             &type::write_frame,
             type::get_shared()
         ));
     }
 
-    ec = std::error_code();
+    ec = lib::error_code();
 }
 
 template<typename config>
 void connection<config>::pong(std::string const & payload) {
-    std::error_code ec;
+    lib::error_code ec;
     pong(payload,ec);
     if (ec) {
         throw exception(ec);
@@ -301,7 +302,7 @@ void connection<config>::pong(std::string const & payload) {
 
 template <typename config>
 void connection<config>::close(close::status::value const code,
-    std::string const & reason, std::error_code & ec)
+    std::string const & reason, lib::error_code & ec)
 {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection close");
@@ -325,7 +326,7 @@ template<typename config>
 void connection<config>::close(close::status::value const code,
     std::string const & reason)
 {
-    std::error_code ec;
+    lib::error_code ec;
     close(code,reason,ec);
     if (ec) {
         throw exception(ec);
@@ -337,10 +338,10 @@ void connection<config>::close(close::status::value const code,
  * This is thread safe if the transport is thread safe
  */
 template <typename config>
-std::error_code connection<config>::interrupt() {
+lib::error_code connection<config>::interrupt() {
     m_alog->write(log::alevel::devel,"connection connection::interrupt");
     return transport_con_type::interrupt(
-        std::bind(
+        lib::bind(
             &type::handle_interrupt,
             type::get_shared()
         )
@@ -356,10 +357,10 @@ void connection<config>::handle_interrupt() {
 }
 
 template <typename config>
-std::error_code connection<config>::pause_reading() {
+lib::error_code connection<config>::pause_reading() {
     m_alog->write(log::alevel::devel,"connection connection::pause_reading");
     return transport_con_type::dispatch(
-        std::bind(
+        lib::bind(
             &type::handle_pause_reading,
             type::get_shared()
         )
@@ -374,10 +375,10 @@ void connection<config>::handle_pause_reading() {
 }
 
 template <typename config>
-std::error_code connection<config>::resume_reading() {
+lib::error_code connection<config>::resume_reading() {
     m_alog->write(log::alevel::devel,"connection connection::resume_reading");
     return transport_con_type::dispatch(
-        std::bind(
+        lib::bind(
             &type::handle_resume_reading,
             type::get_shared()
         )
@@ -455,7 +456,7 @@ connection<config>::get_requested_subprotocols() const {
 
 template <typename config>
 void connection<config>::add_subprotocol(std::string const & value,
-    std::error_code & ec)
+    lib::error_code & ec)
 {
     if (m_is_server) {
         ec = error::make_error_code(error::client_only);
@@ -475,7 +476,7 @@ void connection<config>::add_subprotocol(std::string const & value,
 
 template <typename config>
 void connection<config>::add_subprotocol(std::string const & value) {
-    std::error_code ec;
+    lib::error_code ec;
     this->add_subprotocol(value,ec);
     if (ec) {
         throw exception(ec);
@@ -485,7 +486,7 @@ void connection<config>::add_subprotocol(std::string const & value) {
 
 template <typename config>
 void connection<config>::select_subprotocol(std::string const & value,
-    std::error_code & ec)
+    lib::error_code & ec)
 {
     if (!m_is_server) {
         ec = error::make_error_code(error::server_only);
@@ -493,7 +494,7 @@ void connection<config>::select_subprotocol(std::string const & value,
     }
 
     if (value.empty()) {
-        ec = std::error_code();
+        ec = lib::error_code();
         return;
     }
 
@@ -513,7 +514,7 @@ void connection<config>::select_subprotocol(std::string const & value,
 
 template <typename config>
 void connection<config>::select_subprotocol(std::string const & value) {
-    std::error_code ec;
+    lib::error_code ec;
     this->select_subprotocol(value,ec);
     if (ec) {
         throw exception(ec);
@@ -657,7 +658,7 @@ void connection<config>::remove_header(std::string const & key)
  * @return A status code, zero on success, non-zero otherwise
  */
 template <typename config>
-std::error_code connection<config>::defer_http_response() {
+lib::error_code connection<config>::defer_http_response() {
     // Cancel handshake timer, otherwise the connection will time out and we'll
     // close the connection before the app has a chance to send a response.
     if (m_handshake_timer) {
@@ -668,7 +669,7 @@ std::error_code connection<config>::defer_http_response() {
     // Do something to signal deferral
     m_http_state = session::http_state::deferred;
     
-    return std::error_code();
+    return lib::error_code();
 }
 
 /// Send deferred HTTP Response (exception free)
@@ -682,7 +683,7 @@ std::error_code connection<config>::defer_http_response() {
  * @param ec A status code, zero on success, non-zero otherwise
  */
 template <typename config>
-void connection<config>::send_http_response(std::error_code & ec) {
+void connection<config>::send_http_response(lib::error_code & ec) {
     {
         scoped_lock_type lock(m_connection_state_lock);
         if (m_http_state != session::http_state::deferred) {
@@ -693,13 +694,13 @@ void connection<config>::send_http_response(std::error_code & ec) {
         m_http_state = session::http_state::body_written;
     }
     
-    this->write_http_response(std::error_code());
-    ec = std::error_code();
+    this->write_http_response(lib::error_code());
+    ec = lib::error_code();
 }
 
 template <typename config>
 void connection<config>::send_http_response() {
-    std::error_code ec;
+    lib::error_code ec;
     this->send_http_response(ec);
     if (ec) {
         throw exception(ec);
@@ -727,19 +728,19 @@ void connection<config>::start() {
     // immediately and call handle_transport_init later or call
     // handle_transport_init from this function.
     transport_con_type::init(
-        std::bind(
+        lib::bind(
             &type::handle_transport_init,
             type::get_shared(),
-            std::placeholders::_1
+            lib::placeholders::_1
         )
     );
 }
 
 template <typename config>
-void connection<config>::handle_transport_init(std::error_code const & ec) {
+void connection<config>::handle_transport_init(lib::error_code const & ec) {
     m_alog->write(log::alevel::devel,"connection handle_transport_init");
 
-    std::error_code ecm = ec;
+    lib::error_code ecm = ec;
 
     if (m_internal_state != istate::TRANSPORT_INIT) {
         m_alog->write(log::alevel::devel,
@@ -776,10 +777,10 @@ void connection<config>::read_handshake(size_t num_bytes) {
     if (m_open_handshake_timeout_dur > 0) {
         m_handshake_timer = transport_con_type::set_timer(
             m_open_handshake_timeout_dur,
-            std::bind(
+            lib::bind(
                 &type::handle_open_handshake_timeout,
                 type::get_shared(),
-                std::placeholders::_1
+                lib::placeholders::_1
             )
         );
     }
@@ -788,11 +789,11 @@ void connection<config>::read_handshake(size_t num_bytes) {
         num_bytes,
         m_buf,
         config::connection_read_buffer_size,
-        std::bind(
+        lib::bind(
             &type::handle_read_handshake,
             type::get_shared(),
-            std::placeholders::_1,
-            std::placeholders::_2
+            lib::placeholders::_1,
+            lib::placeholders::_2
         )
     );
 }
@@ -800,12 +801,12 @@ void connection<config>::read_handshake(size_t num_bytes) {
 // All exit paths for this function need to call write_http_response() or submit
 // a new read request with this function as the handler.
 template <typename config>
-void connection<config>::handle_read_handshake(std::error_code const & ec,
+void connection<config>::handle_read_handshake(lib::error_code const & ec,
     size_t bytes_transferred)
 {
     m_alog->write(log::alevel::devel,"connection handle_read_handshake");
 
-    std::error_code ecm = ec;
+    lib::error_code ecm = ec;
 
     if (!ecm) {
         scoped_lock_type lock(m_connection_state_lock);
@@ -873,7 +874,7 @@ void connection<config>::handle_read_handshake(std::error_code const & ec,
     }
 
     if (m_request.ready()) {
-        std::error_code processor_ec = this->initialize_processor();
+        lib::error_code processor_ec = this->initialize_processor();
         if (processor_ec) {
             this->write_http_response_error(processor_ec);
             return;
@@ -915,7 +916,7 @@ void connection<config>::handle_read_handshake(std::error_code const & ec,
         m_internal_state = istate::PROCESS_HTTP_REQUEST;
         
         // We have the complete request. Process it.
-        std::error_code handshake_ec = this->process_handshake_request();
+        lib::error_code handshake_ec = this->process_handshake_request();
         
         // Write a response if this is a websocket connection or if it is an
         // HTTP connection for which the response has not been deferred or
@@ -929,11 +930,11 @@ void connection<config>::handle_read_handshake(std::error_code const & ec,
             1,
             m_buf,
             config::connection_read_buffer_size,
-            std::bind(
+            lib::bind(
                 &type::handle_read_handshake,
                 type::get_shared(),
-                std::placeholders::_1,
-                std::placeholders::_2
+                lib::placeholders::_1,
+                lib::placeholders::_2
             )
         );
     }
@@ -945,7 +946,7 @@ void connection<config>::handle_read_handshake(std::error_code const & ec,
 // sure if the hybi00 key3 bytes need to be read). This method sets the correct
 // state and calls write_http_response
 template <typename config>
-void connection<config>::write_http_response_error(std::error_code const & ec) {
+void connection<config>::write_http_response_error(lib::error_code const & ec) {
     if (m_internal_state != istate::READ_HTTP_REQUEST) {
         m_alog->write(log::alevel::devel,
             "write_http_response_error called in invalid state");
@@ -961,12 +962,12 @@ void connection<config>::write_http_response_error(std::error_code const & ec) {
 // All exit paths for this function need to call write_http_response() or submit
 // a new read request with this function as the handler.
 template <typename config>
-void connection<config>::handle_read_frame(std::error_code const & ec,
+void connection<config>::handle_read_frame(lib::error_code const & ec,
     size_t bytes_transferred)
 {
     //m_alog->write(log::alevel::devel,"connection handle_read_frame");
 
-    std::error_code ecm = ec;
+    lib::error_code ecm = ec;
 
     if (!ecm && m_internal_state != istate::PROCESS_CONNECTION) {
         ecm = error::make_error_code(error::invalid_state);
@@ -985,7 +986,7 @@ void connection<config>::handle_read_frame(std::error_code const & ec,
                 // If we are a client we expect to get eof in the closing state,
                 // this is a signal to terminate our end of the connection after
                 // the closing handshake
-                terminate(std::error_code());
+                terminate(lib::error_code());
                 return;
             }
         } else if (ecm == error::invalid_state) {
@@ -1035,7 +1036,7 @@ void connection<config>::handle_read_frame(std::error_code const & ec,
             m_alog->write(log::alevel::devel,s.str());
         }
 
-        std::error_code consume_ec;
+        lib::error_code consume_ec;
 
         if (m_alog->static_test(log::alevel::devel)) {
             std::stringstream s;
@@ -1061,7 +1062,7 @@ void connection<config>::handle_read_frame(std::error_code const & ec,
                 this->terminate(consume_ec);
                 return;
             } else {
-                std::error_code close_ec;
+                lib::error_code close_ec;
                 this->close(
                     processor::error::to_ws(consume_ec),
                     consume_ec.message(),
@@ -1127,12 +1128,12 @@ void connection<config>::read_frame() {
 }
 
 template <typename config>
-std::error_code connection<config>::initialize_processor() {
+lib::error_code connection<config>::initialize_processor() {
     m_alog->write(log::alevel::devel,"initialize_processor");
 
     // if it isn't a websocket handshake nothing to do.
     if (!processor::is_websocket_handshake(m_request)) {
-        return std::error_code();
+        return lib::error_code();
     }
 
     int version = processor::get_websocket_version(m_request);
@@ -1147,7 +1148,7 @@ std::error_code connection<config>::initialize_processor() {
 
     // if the processor is not null we are done
     if (m_processor) {
-        return std::error_code();
+        return lib::error_code();
     }
 
     // We don't have a processor for this version. Return bad request
@@ -1169,7 +1170,7 @@ std::error_code connection<config>::initialize_processor() {
 }
 
 template <typename config>
-std::error_code connection<config>::process_handshake_request() {
+lib::error_code connection<config>::process_handshake_request() {
     m_alog->write(log::alevel::devel,"process handshake request");
 
     if (!processor::is_websocket_handshake(m_request)) {
@@ -1200,10 +1201,10 @@ std::error_code connection<config>::process_handshake_request() {
             return error::make_error_code(error::upgrade_required);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
-    std::error_code ec = m_processor->validate_handshake(m_request);
+    lib::error_code ec = m_processor->validate_handshake(m_request);
 
     // Validate: make sure all required elements are present.
     if (ec){
@@ -1215,7 +1216,7 @@ std::error_code connection<config>::process_handshake_request() {
 
     // Read extension parameters and set up values necessary for the end user
     // to complete extension negotiation.
-    std::pair<std::error_code,std::string> neg_results;
+    std::pair<lib::error_code,std::string> neg_results;
     neg_results = m_processor->negotiate_extensions(m_request);
 
     if (neg_results.first == processor::error::make_error_code(processor::error::extension_parse_error)) {
@@ -1251,7 +1252,7 @@ std::error_code connection<config>::process_handshake_request() {
     }
 
     // extract subprotocols
-    std::error_code subp_ec = m_processor->extract_subprotocols(m_request,
+    lib::error_code subp_ec = m_processor->extract_subprotocols(m_request,
         m_requested_subprotocols);
 
     if (subp_ec) {
@@ -1288,11 +1289,11 @@ std::error_code connection<config>::process_handshake_request() {
         return error::make_error_code(error::rejected);
     }
 
-    return std::error_code();
+    return lib::error_code();
 }
 
 template <typename config>
-void connection<config>::write_http_response(std::error_code const & ec) {
+void connection<config>::write_http_response(lib::error_code const & ec) {
     m_alog->write(log::alevel::devel,"connection write_http_response");
 
     if (ec == error::make_error_code(error::http_connection_ended)) {
@@ -1338,19 +1339,19 @@ void connection<config>::write_http_response(std::error_code const & ec) {
     transport_con_type::async_write(
         m_handshake_buffer.data(),
         m_handshake_buffer.size(),
-        std::bind(
+        lib::bind(
             &type::handle_write_http_response,
             type::get_shared(),
-            std::placeholders::_1
+            lib::placeholders::_1
         )
     );
 }
 
 template <typename config>
-void connection<config>::handle_write_http_response(std::error_code const & ec) {
+void connection<config>::handle_write_http_response(lib::error_code const & ec) {
     m_alog->write(log::alevel::devel,"handle_write_http_response");
 
-    std::error_code ecm = ec;
+    lib::error_code ecm = ec;
 
     if (!ecm) {
         scoped_lock_type lock(m_connection_state_lock);
@@ -1426,7 +1427,7 @@ void connection<config>::handle_write_http_response(std::error_code const & ec) 
         m_open_handler(m_connection_hdl);
     }
 
-    this->handle_read_frame(std::error_code(), m_buf_cursor);
+    this->handle_read_frame(lib::error_code(), m_buf_cursor);
 }
 
 template <typename config>
@@ -1438,7 +1439,7 @@ void connection<config>::send_http_request() {
     // Have the protocol processor fill in the appropriate fields based on the
     // selected client version
     if (m_processor) {
-        std::error_code ec;
+        lib::error_code ec;
         ec = m_processor->client_handshake_request(m_request,m_uri,
             m_requested_subprotocols);
 
@@ -1469,10 +1470,10 @@ void connection<config>::send_http_request() {
     if (m_open_handshake_timeout_dur > 0) {
         m_handshake_timer = transport_con_type::set_timer(
             m_open_handshake_timeout_dur,
-            std::bind(
+            lib::bind(
                 &type::handle_open_handshake_timeout,
                 type::get_shared(),
-                std::placeholders::_1
+                lib::placeholders::_1
             )
         );
     }
@@ -1480,19 +1481,19 @@ void connection<config>::send_http_request() {
     transport_con_type::async_write(
         m_handshake_buffer.data(),
         m_handshake_buffer.size(),
-        std::bind(
+        lib::bind(
             &type::handle_send_http_request,
             type::get_shared(),
-            std::placeholders::_1
+            lib::placeholders::_1
         )
     );
 }
 
 template <typename config>
-void connection<config>::handle_send_http_request(std::error_code const & ec) {
+void connection<config>::handle_send_http_request(lib::error_code const & ec) {
     m_alog->write(log::alevel::devel,"handle_send_http_request");
 
-    std::error_code ecm = ec;
+    lib::error_code ecm = ec;
 
     if (!ecm) {
         scoped_lock_type lock(m_connection_state_lock);
@@ -1532,22 +1533,22 @@ void connection<config>::handle_send_http_request(std::error_code const & ec) {
         1,
         m_buf,
         config::connection_read_buffer_size,
-        std::bind(
+        lib::bind(
             &type::handle_read_http_response,
             type::get_shared(),
-            std::placeholders::_1,
-            std::placeholders::_2
+            lib::placeholders::_1,
+            lib::placeholders::_2
         )
     );
 }
 
 template <typename config>
-void connection<config>::handle_read_http_response(std::error_code const & ec,
+void connection<config>::handle_read_http_response(lib::error_code const & ec,
     size_t bytes_transferred)
 {
     m_alog->write(log::alevel::devel,"handle_read_http_response");
 
-    std::error_code ecm = ec;
+    lib::error_code ecm = ec;
 
     if (!ecm) {
         scoped_lock_type lock(m_connection_state_lock);
@@ -1600,7 +1601,7 @@ void connection<config>::handle_read_http_response(std::error_code const & ec,
             m_handshake_timer.reset();
         }
 
-        std::error_code validate_ec = m_processor->validate_server_handshake_response(
+        lib::error_code validate_ec = m_processor->validate_server_handshake_response(
             m_request,
             m_response
         );
@@ -1612,7 +1613,7 @@ void connection<config>::handle_read_http_response(std::error_code const & ec,
 
         // Read extension parameters and set up values necessary for the end
         // user to complete extension negotiation.
-        std::pair<std::error_code,std::string> neg_results;
+        std::pair<lib::error_code,std::string> neg_results;
         neg_results = m_processor->negotiate_extensions(m_response);
 
         if (neg_results.first) {
@@ -1645,17 +1646,17 @@ void connection<config>::handle_read_http_response(std::error_code const & ec,
         std::copy(m_buf+bytes_processed,m_buf+bytes_transferred,m_buf);
         m_buf_cursor = bytes_transferred-bytes_processed;
 
-        this->handle_read_frame(std::error_code(), m_buf_cursor);
+        this->handle_read_frame(lib::error_code(), m_buf_cursor);
     } else {
         transport_con_type::async_read_at_least(
             1,
             m_buf,
             config::connection_read_buffer_size,
-            std::bind(
+            lib::bind(
                 &type::handle_read_http_response,
                 type::get_shared(),
-                std::placeholders::_1,
-                std::placeholders::_2
+                lib::placeholders::_1,
+                lib::placeholders::_2
             )
         );
     }
@@ -1663,7 +1664,7 @@ void connection<config>::handle_read_http_response(std::error_code const & ec,
 
 template <typename config>
 void connection<config>::handle_open_handshake_timeout(
-    std::error_code const & ec)
+    lib::error_code const & ec)
 {
     if (ec == transport::error::operation_aborted) {
         m_alog->write(log::alevel::devel,"open handshake timer cancelled");
@@ -1679,7 +1680,7 @@ void connection<config>::handle_open_handshake_timeout(
 
 template <typename config>
 void connection<config>::handle_close_handshake_timeout(
-    std::error_code const & ec)
+    lib::error_code const & ec)
 {
     if (ec == transport::error::operation_aborted) {
         m_alog->write(log::alevel::devel,"asio close handshake timer cancelled");
@@ -1694,7 +1695,7 @@ void connection<config>::handle_close_handshake_timeout(
 }
 
 template <typename config>
-void connection<config>::terminate(std::error_code const & ec) {
+void connection<config>::terminate(lib::error_code const & ec) {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection terminate");
     }
@@ -1737,18 +1738,18 @@ void connection<config>::terminate(std::error_code const & ec) {
     // TODO: choose between shutdown and close based on error code sent
 
     transport_con_type::async_shutdown(
-        std::bind(
+        lib::bind(
             &type::handle_terminate,
             type::get_shared(),
             tstat,
-            std::placeholders::_1
+            lib::placeholders::_1
         )
     );
 }
 
 template <typename config>
 void connection<config>::handle_terminate(terminate_status tstat,
-    std::error_code const & ec)
+    lib::error_code const & ec)
 {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection handle_terminate");
@@ -1885,7 +1886,7 @@ void connection<config>::write_frame() {
 }
 
 template <typename config>
-void connection<config>::handle_write_frame(std::error_code const & ec)
+void connection<config>::handle_write_frame(lib::error_code const & ec)
 {
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"connection handle_write_frame");
@@ -1904,7 +1905,7 @@ void connection<config>::handle_write_frame(std::error_code const & ec)
     }
 
     if (terminal) {
-        this->terminate(std::error_code());
+        this->terminate(lib::error_code());
         return;
     }
 
@@ -1919,7 +1920,7 @@ void connection<config>::handle_write_frame(std::error_code const & ec)
     }
 
     if (needs_writing) {
-        transport_con_type::dispatch(std::bind(
+        transport_con_type::dispatch(lib::bind(
             &type::write_frame,
             type::get_shared()
         ));
@@ -1938,7 +1939,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
     m_alog->write(log::alevel::devel,"process_control_frame");
 
     frame::opcode::value op = msg->get_opcode();
-    std::error_code ec;
+    lib::error_code ec;
 
     std::stringstream s;
     s << "Control frame received with opcode " << op;
@@ -2040,7 +2041,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
             // TODO: different behavior if the underlying transport doesn't
             // support timers?
             if (m_is_server) {
-                terminate(std::error_code());
+                terminate(lib::error_code());
             }
         } else {
             // spurious, ignore
@@ -2054,14 +2055,14 @@ void connection<config>::process_control_frame(typename config::message_type::pt
 }
 
 template <typename config>
-std::error_code connection<config>::send_close_ack(close::status::value code,
+lib::error_code connection<config>::send_close_ack(close::status::value code,
     std::string const & reason)
 {
     return send_close_frame(code,reason,true,m_is_server);
 }
 
 template <typename config>
-std::error_code connection<config>::send_close_frame(close::status::value code,
+lib::error_code connection<config>::send_close_frame(close::status::value code,
     std::string const & reason, bool ack, bool terminal)
 {
     m_alog->write(log::alevel::devel,"send_close_frame");
@@ -2107,7 +2108,7 @@ std::error_code connection<config>::send_close_frame(close::status::value code,
         return error::make_error_code(error::no_outgoing_buffers);
     }
 
-    std::error_code ec = m_processor->prepare_close(m_local_close_code,
+    lib::error_code ec = m_processor->prepare_close(m_local_close_code,
         m_local_close_reason,msg);
     if (ec) {
         return ec;
@@ -2131,10 +2132,10 @@ std::error_code connection<config>::send_close_frame(close::status::value code,
     if (m_close_handshake_timeout_dur > 0) {
         m_handshake_timer = transport_con_type::set_timer(
             m_close_handshake_timeout_dur,
-            std::bind(
+            lib::bind(
                 &type::handle_close_handshake_timeout,
                 type::get_shared(),
-                std::placeholders::_1
+                lib::placeholders::_1
             )
         );
     }
@@ -2147,13 +2148,13 @@ std::error_code connection<config>::send_close_frame(close::status::value code,
     }
 
     if (needs_writing) {
-        transport_con_type::dispatch(std::bind(
+        transport_con_type::dispatch(lib::bind(
             &type::write_frame,
             type::get_shared()
         ));
     }
 
-    return std::error_code();
+    return lib::error_code();
 }
 
 template <typename config>
@@ -2165,34 +2166,34 @@ connection<config>::get_processor(int version) const {
     
     switch (version) {
         case 0:
-            p = std::make_shared<processor::hybi00<config> >(
+            p = lib::make_shared<processor::hybi00<config> >(
                 transport_con_type::is_secure(),
                 m_is_server,
                 m_msg_manager
             );
             break;
         case 7:
-            p = std::make_shared<processor::hybi07<config> >(
+            p = lib::make_shared<processor::hybi07<config> >(
                 transport_con_type::is_secure(),
                 m_is_server,
                 m_msg_manager,
-                std::ref(m_rng)
+                lib::ref(m_rng)
             );
             break;
         case 8:
-            p = std::make_shared<processor::hybi08<config> >(
+            p = lib::make_shared<processor::hybi08<config> >(
                 transport_con_type::is_secure(),
                 m_is_server,
                 m_msg_manager,
-                std::ref(m_rng)
+                lib::ref(m_rng)
             );
             break;
         case 13:
-            p = std::make_shared<processor::hybi13<config> >(
+            p = lib::make_shared<processor::hybi13<config> >(
                 transport_con_type::is_secure(),
                 m_is_server,
                 m_msg_manager,
-                std::ref(m_rng)
+                lib::ref(m_rng)
             );
             break;
         default:

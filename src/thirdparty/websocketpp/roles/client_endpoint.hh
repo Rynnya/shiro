@@ -33,6 +33,10 @@
 
 #include "../logger/levels.hh"
 
+#include "../common/system_error.hh"
+
+#include <string>
+
 namespace websocketpp {
 
 /// Client endpoint role based on the given config
@@ -65,7 +69,8 @@ public:
 
     friend class connection<config>;
 
-    explicit client() : endpoint_type(false) {
+    explicit client() : endpoint_type(false)
+    {
         endpoint_type::m_alog->write(log::alevel::devel, "client constructor");
     }
 
@@ -81,7 +86,7 @@ public:
      *
      * @return A connection_ptr to the new connection
      */
-    connection_ptr get_connection(uri_ptr location, std::error_code & ec) {
+    connection_ptr get_connection(uri_ptr location, lib::error_code & ec) {
         if (location->get_secure() && !transport_type::is_secure()) {
             ec = error::make_error_code(error::endpoint_not_secure);
             return connection_ptr();
@@ -96,7 +101,7 @@ public:
 
         con->set_uri(location);
 
-        ec = std::error_code();
+        ec = lib::error_code();
         return con;
     }
 
@@ -111,8 +116,8 @@ public:
      *
      * @return A connection_ptr to the new connection
      */
-    connection_ptr get_connection(std::string const & u, std::error_code & ec) {
-        uri_ptr location = std::make_shared<uri>(u);
+    connection_ptr get_connection(std::string const & u, lib::error_code & ec) {
+        uri_ptr location = lib::make_shared<uri>(u);
 
         if (!location->get_valid()) {
             ec = error::make_error_code(error::invalid_uri);
@@ -134,13 +139,13 @@ public:
     connection_ptr connect(connection_ptr con) {
         // Ask transport to perform a connection
         transport_type::async_connect(
-            std::static_pointer_cast<transport_con_type>(con),
+            lib::static_pointer_cast<transport_con_type>(con),
             con->get_uri(),
-            std::bind(
+            lib::bind(
                 &type::handle_connect,
                 this,
                 con,
-                std::placeholders::_1
+                lib::placeholders::_1
             )
         );
 
@@ -148,7 +153,7 @@ public:
     }
 private:
     // handle_connect
-    void handle_connect(connection_ptr con, std::error_code const & ec) {
+    void handle_connect(connection_ptr con, lib::error_code const & ec) {
         if (ec) {
             con->terminate(ec);
 

@@ -34,7 +34,6 @@
 #include <string>
 
 #include "../parser.hh"
-#include "../response.hh"
 
 namespace websocketpp {
 namespace http {

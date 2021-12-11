@@ -28,7 +28,7 @@
 #ifndef WEBSOCKETPP_CONFIG_MINIMAL_CLIENT_HPP
 #define WEBSOCKETPP_CONFIG_MINIMAL_CLIENT_HPP
 
-#include "../config/minimal_server.hh"
+#include "minimal_server.hh"
 
 namespace websocketpp {
 namespace config {

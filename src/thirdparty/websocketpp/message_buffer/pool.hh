@@ -28,8 +28,9 @@
 #ifndef WEBSOCKETPP_MESSAGE_BUFFER_ALLOC_HPP
 #define WEBSOCKETPP_MESSAGE_BUFFER_ALLOC_HPP
 
+#include "../common/memory.hh"
+
 #include <string>
-#include <memory>
 
 namespace websocketpp {
 namespace message_buffer {
@@ -99,7 +100,7 @@ void message_deleter(T* msg) {
 template <typename con_msg_manager>
 class message {
 public:
-    typedef std::shared_ptr<message> ptr;
+    typedef lib::shared_ptr<message> ptr;
 
     typedef typename con_msg_manager::weak_ptr con_msg_man_ptr;
 
@@ -158,8 +159,8 @@ namespace alloc {
 template <typename message>
 class con_msg_manager {
 public:
-    typedef std::shared_ptr<con_msg_manager> ptr;
-    typedef std::weak_ptr<con_msg_manager> weak_ptr;
+    typedef lib::shared_ptr<con_msg_manager> ptr;
+    typedef lib::weak_ptr<con_msg_manager> weak_ptr;
 
     typedef typename message::ptr message_ptr;
 
@@ -170,7 +171,7 @@ public:
      * @return A shared pointer to a new message with specified size.
      */
     message_ptr get_message(size_t size) const {
-        return std::make_shared<message>(size);
+        return lib::make_shared<message>(size);
     }
 
     /// Recycle a message
@@ -200,7 +201,7 @@ public:
      * @return A pointer to the requested connection message manager.
      */
     con_msg_man_ptr get_manager() const {
-        return std::make_shared<con_msg_manager>();
+        return lib::make_shared<con_msg_manager>();
     }
 };
 

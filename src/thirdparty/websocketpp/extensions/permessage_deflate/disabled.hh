@@ -28,8 +28,9 @@
 #ifndef WEBSOCKETPP_EXTENSION_PERMESSAGE_DEFLATE_DISABLED_HPP
 #define WEBSOCKETPP_EXTENSION_PERMESSAGE_DEFLATE_DISABLED_HPP
 
-#include <cstdint>
-#include <system_error>
+#include "../../common/cpp11.hh"
+#include "../../common/stdint.hh"
+#include "../../common/system_error.hh"
 
 #include "../../http/constants.hh"
 #include "../extension.hh"
@@ -50,7 +51,7 @@ namespace permessage_deflate {
  */
 template <typename config>
 class disabled {
-    typedef std::pair<std::error_code,std::string> err_str_pair;
+    typedef std::pair<lib::error_code,std::string> err_str_pair;
 
 public:
     /// Negotiate extension
@@ -72,8 +73,8 @@ public:
      * @param is_server True to initialize as a server, false for a client.
      * @return A code representing the error that occurred, if any
      */
-    std::error_code init(bool) {
-        return std::error_code();
+    lib::error_code init(bool) {
+        return lib::error_code();
     }
 
     /// Returns true if the extension is capable of providing
@@ -105,7 +106,7 @@ public:
      * @param [out] out String to append compressed bytes to
      * @return Error or status code
      */
-    std::error_code compress(std::string const &, std::string &) {
+    lib::error_code compress(std::string const &, std::string &) {
         return make_error_code(error::disabled);
     }
 
@@ -116,7 +117,7 @@ public:
      * @param out String to append decompressed bytes to
      * @return Error or status code
      */
-    std::error_code decompress(uint8_t const *, size_t, std::string &) {
+    lib::error_code decompress(uint8_t const *, size_t, std::string &) {
         return make_error_code(error::disabled);
     }
 };

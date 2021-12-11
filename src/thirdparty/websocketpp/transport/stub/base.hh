@@ -28,8 +28,10 @@
 #ifndef WEBSOCKETPP_TRANSPORT_STUB_BASE_HPP
 #define WEBSOCKETPP_TRANSPORT_STUB_BASE_HPP
 
+#include "../../common/system_error.hh"
+#include "../../common/cpp11.hh"
+
 #include <string>
-#include <system_error>
 
 namespace websocketpp {
 namespace transport {
@@ -48,11 +50,11 @@ enum value {
 };
 
 /// stub transport error category
-class category : public std::error_category {
+class category : public lib::error_category {
     public:
     category() {}
 
-    char const * name() const noexcept {
+    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
         return "websocketpp.transport.stub";
     }
 
@@ -69,25 +71,25 @@ class category : public std::error_category {
 };
 
 /// Get a reference to a static copy of the stub transport error category
-inline std::error_category const & get_category() {
+inline lib::error_category const & get_category() {
     static category instance;
     return instance;
 }
 
 /// Get an error code with the given value and the stub transport category
-inline std::error_code make_error_code(error::value e) {
-    return std::error_code(static_cast<int>(e), get_category());
+inline lib::error_code make_error_code(error::value e) {
+    return lib::error_code(static_cast<int>(e), get_category());
 }
 
 } // namespace error
 } // namespace stub
 } // namespace transport
 } // namespace websocketpp
-namespace std {
-    template<> struct is_error_code_enum<websocketpp::transport::stub::error::value>
-    {
-        static bool const value = true;
-    };
-}
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_START_
+template<> struct is_error_code_enum<websocketpp::transport::stub::error::value>
+{
+    static bool const value = true;
+};
+_WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
 
 #endif // WEBSOCKETPP_TRANSPORT_STUB_BASE_HPP

@@ -28,12 +28,11 @@
 #ifndef WEBSOCKETPP_TRANSPORT_STUB_HPP
 #define WEBSOCKETPP_TRANSPORT_STUB_HPP
 
+#include "../../common/memory.hh"
 #include "../../logger/levels.hh"
 
 #include "../base/endpoint.hh"
 #include "connection.hh"
-
-#include <memory>
 
 namespace websocketpp {
 namespace transport {
@@ -45,7 +44,7 @@ public:
     /// Type of this endpoint transport component
     typedef endpoint type;
     /// Type of a pointer to this endpoint transport component
-    typedef std::shared_ptr<type> ptr;
+    typedef lib::shared_ptr<type> ptr;
 
     /// Type of this endpoint's concurrency policy
     typedef typename config::concurrency_type concurrency_type;
@@ -127,7 +126,7 @@ protected:
      * @param tcon A pointer to the transport portion of the connection.
      * @return A status code indicating the success or failure of the operation
      */
-    std::error_code init(transport_con_ptr tcon) {
+    lib::error_code init(transport_con_ptr tcon) {
         return make_error_code(error::not_implemented);
     }
 private:

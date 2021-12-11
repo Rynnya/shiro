@@ -28,8 +28,9 @@
 #ifndef WEBSOCKETPP_UTILITIES_HPP
 #define WEBSOCKETPP_UTILITIES_HPP
 
+#include "common/stdint.hh"
+
 #include <algorithm>
-#include <cstdint>
 #include <string>
 #include <locale>
 

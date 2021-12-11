@@ -29,6 +29,7 @@
 #define WEBSOCKETPP_PROCESSOR_HPP
 
 #include "base.hh"
+#include "../common/system_error.hh"
 
 #include "../close.hh"
 #include "../utilities.hh"
@@ -36,7 +37,6 @@
 
 #include <sstream>
 #include <string>
-#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -146,9 +146,9 @@ uri_ptr get_uri_from_host(request_type & request, std::string scheme) {
     if (last_colon == std::string::npos ||
         (last_sbrace != std::string::npos && last_sbrace > last_colon))
     {
-        return std::make_shared<uri>(scheme, h, request.get_uri());
+        return lib::make_shared<uri>(scheme, h, request.get_uri());
     } else {
-        return std::make_shared<uri>(scheme,
+        return lib::make_shared<uri>(scheme,
                                h.substr(0,last_colon),
                                h.substr(last_colon+1),
                                request.get_uri());
@@ -163,7 +163,7 @@ public:
     typedef typename config::request_type request_type;
     typedef typename config::response_type response_type;
     typedef typename config::message_type::ptr message_ptr;
-    typedef std::pair<std::error_code,std::string> err_str_pair;
+    typedef std::pair<lib::error_code,std::string> err_str_pair;
 
     explicit processor(bool secure, bool p_is_server)
       : m_secure(secure)
@@ -249,7 +249,7 @@ public:
      * @return A status code, 0 on success, non-zero for specific sorts of
      * failure
      */
-    virtual std::error_code validate_handshake(request_type const & request) const = 0;
+    virtual lib::error_code validate_handshake(request_type const & request) const = 0;
 
     /// Calculate the appropriate response for this websocket request
     /**
@@ -261,7 +261,7 @@ public:
      *
      * @return An error code, 0 on success, non-zero for other errors
      */
-    virtual std::error_code process_handshake(request_type const & req,
+    virtual lib::error_code process_handshake(request_type const & req,
         std::string const & subprotocol, response_type& res) const = 0;
 
     /// Fill in an HTTP request for an outgoing connection handshake
@@ -270,7 +270,7 @@ public:
      *
      * @return An error code, 0 on success, non-zero for other errors
      */
-    virtual std::error_code client_handshake_request(request_type & req,
+    virtual lib::error_code client_handshake_request(request_type & req,
         uri_ptr uri, std::vector<std::string> const & subprotocols) const = 0;
 
     /// Validate the server's response to an outgoing handshake request
@@ -279,7 +279,7 @@ public:
      * @param res The reponse to generate
      * @return An error code, 0 on success, non-zero for other errors
      */
-    virtual std::error_code validate_server_handshake_response(request_type
+    virtual lib::error_code validate_server_handshake_response(request_type
         const & req, response_type & res) const = 0;
 
     /// Given a completed response, get the raw bytes to put on the wire
@@ -297,7 +297,7 @@ public:
      * @param [out] subprotocol_list A reference to a vector of strings to store
      * the results in.
      */
-    virtual std::error_code extract_subprotocols(const request_type & req,
+    virtual lib::error_code extract_subprotocols(const request_type & req,
         std::vector<std::string> & subprotocol_list) = 0;
 
     /// Extracts client uri from a handshake request
@@ -313,7 +313,7 @@ public:
      * @param ec Reference to an error code to return any errors in
      * @return Number of bytes processed
      */
-    virtual size_t consume(uint8_t *buf, size_t len, std::error_code & ec) = 0;
+    virtual size_t consume(uint8_t *buf, size_t len, lib::error_code & ec) = 0;
 
     /// Checks if there is a message ready
     /**
@@ -355,7 +355,7 @@ public:
      * Performs validation, masking, compression, etc. will return an error if
      * there was an error, otherwise msg will be ready to be written
      */
-    virtual std::error_code prepare_data_frame(message_ptr in, message_ptr out) = 0;
+    virtual lib::error_code prepare_data_frame(message_ptr in, message_ptr out) = 0;
 
     /// Prepare a ping frame
     /**
@@ -366,7 +366,7 @@ public:
      * @param out The message buffer to prepare the ping in.
      * @return Status code, zero on success, non-zero on failure
      */
-    virtual std::error_code prepare_ping(std::string const & in, message_ptr out) const 
+    virtual lib::error_code prepare_ping(std::string const & in, message_ptr out) const 
         = 0;
 
     /// Prepare a pong frame
@@ -378,7 +378,7 @@ public:
      * @param out The message buffer to prepare the pong in.
      * @return Status code, zero on success, non-zero on failure
      */
-    virtual std::error_code prepare_pong(std::string const & in, message_ptr out) const 
+    virtual lib::error_code prepare_pong(std::string const & in, message_ptr out) const 
         = 0;
 
     /// Prepare a close frame
@@ -393,7 +393,7 @@ public:
      * @param out The message buffer to prepare the fame in
      * @return Status code, zero on success, non-zero on failure
      */
-    virtual std::error_code prepare_close(close::status::value code,
+    virtual lib::error_code prepare_close(close::status::value code,
         std::string const & reason, message_ptr out) const = 0;
 protected:
     bool const m_secure;

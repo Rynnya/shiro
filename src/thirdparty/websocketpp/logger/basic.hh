@@ -42,9 +42,11 @@
 
 #include "levels.hh"
 
-#include <cstdint>
+#include "../common/cpp11.hh"
+#include "../common/stdint.hh"
 #include "../common/time.hh"
 
+#include <ctime>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -155,7 +157,7 @@ public:
         m_out->flush();
     }
 
-    constexpr bool static_test(level channel) const {
+    _WEBSOCKETPP_CONSTEXPR_TOKEN_ bool static_test(level channel) const {
         return ((channel & m_static_channels) != 0);
     }
 
@@ -175,9 +177,15 @@ private:
     //
     // TODO: find a workaround for this or make this format user settable
     static std::ostream & timestamp(std::ostream & os) {
-        std::time_t t = std::time(0);
+        std::time_t t = std::time(NULL);
         std::tm lt = lib::localtime(t);
-        return os << std::put_time(&lt,"%Y-%m-%d %H:%M:%S");
+        #ifdef _WEBSOCKETPP_PUTTIME_
+            return os << std::put_time(&lt,"%Y-%m-%d %H:%M:%S");
+        #else // Falls back to strftime, which requires a temporary copy of the string.
+            char buffer[20];
+            size_t result = std::strftime(buffer,sizeof(buffer),"%Y-%m-%d %H:%M:%S",&lt);
+            return os << (result == 0 ? "Unknown" : buffer);
+        #endif
     }
 
     level const m_static_channels;

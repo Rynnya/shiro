@@ -28,7 +28,7 @@
 #ifndef WEBSOCKETPP_COMMON_CONNECTION_HDL_HPP
 #define WEBSOCKETPP_COMMON_CONNECTION_HDL_HPP
 
-#include <memory>
+#include "memory.hh"
 
 namespace websocketpp {
 
@@ -45,7 +45,7 @@ namespace websocketpp {
  * `endpoint::get_con_from_hdl()` from within a handler fired by the connection
  * that owns the handler.
  */
-typedef std::weak_ptr<void> connection_hdl;
+typedef lib::weak_ptr<void> connection_hdl;
 
 } // namespace websocketpp
 

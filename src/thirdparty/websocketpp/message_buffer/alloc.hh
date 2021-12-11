@@ -28,7 +28,7 @@
 #ifndef WEBSOCKETPP_MESSAGE_BUFFER_ALLOC_HPP
 #define WEBSOCKETPP_MESSAGE_BUFFER_ALLOC_HPP
 
-#include <memory>
+#include "../common/memory.hh"
 #include "../frame.hh"
 
 namespace websocketpp {
@@ -38,11 +38,13 @@ namespace alloc {
 /// A connection message manager that allocates a new message for each
 /// request.
 template <typename message>
-class con_msg_manager : public std::enable_shared_from_this<con_msg_manager<message>> {
+class con_msg_manager
+  : public lib::enable_shared_from_this<con_msg_manager<message> >
+{
 public:
     typedef con_msg_manager<message> type;
-    typedef std::shared_ptr<con_msg_manager> ptr;
-    typedef std::weak_ptr<con_msg_manager> weak_ptr;
+    typedef lib::shared_ptr<con_msg_manager> ptr;
+    typedef lib::weak_ptr<con_msg_manager> weak_ptr;
 
     typedef typename message::ptr message_ptr;
 
@@ -51,7 +53,7 @@ public:
      * @return A shared pointer to an empty new message
      */
     message_ptr get_message() {
-        return message_ptr(std::make_shared<message>(type::shared_from_this()));
+        return message_ptr(lib::make_shared<message>(type::shared_from_this()));
     }
 
     /// Get a message buffer with specified size and opcode
@@ -62,7 +64,7 @@ public:
      * @return A shared pointer to a new message with specified size.
      */
     message_ptr get_message(frame::opcode::value op,size_t size) {
-        return message_ptr(std::make_shared<message>(type::shared_from_this(),op,size));
+        return message_ptr(lib::make_shared<message>(type::shared_from_this(),op,size));
     }
 
     /// Recycle a message
@@ -92,7 +94,7 @@ public:
      * @return A pointer to the requested connection message manager.
      */
     con_msg_man_ptr get_manager() const {
-        return con_msg_man_ptr(std::make_shared<con_msg_manager>());
+        return con_msg_man_ptr(lib::make_shared<con_msg_manager>());
     }
 };
 

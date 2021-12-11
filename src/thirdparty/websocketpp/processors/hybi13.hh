@@ -38,6 +38,7 @@
 #include "../base64/base64.hh"
 
 #include "../common/network.hh"
+#include "../common/platforms.hh"
 
 #include <algorithm>
 #include <cassert>
@@ -66,7 +67,7 @@ public:
 
     typedef typename config::permessage_deflate_type permessage_deflate_type;
 
-    typedef std::pair<std::error_code,std::string> err_str_pair;
+    typedef std::pair<lib::error_code,std::string> err_str_pair;
 
     explicit hybi13(bool secure, bool p_is_server, msg_manager_ptr manager, rng_type& rng)
       : processor<config>(secure, p_is_server)
@@ -154,7 +155,7 @@ public:
 
                 // Actually try to initialize the extension before we
                 // deem negotiation complete
-                std::error_code ec = m_permessage_deflate.init(base::m_server);
+                lib::error_code ec = m_permessage_deflate.init(base::m_server);
 
                 if (ec) {
                     // Negotiation succeeded but initialization failed this is 
@@ -181,7 +182,7 @@ public:
         return ret;
     }
 
-    std::error_code validate_handshake(request_type const & r) const {
+    lib::error_code validate_handshake(request_type const & r) const {
         if (r.get_method() != "GET") {
             return make_error_code(error::invalid_http_method);
         }
@@ -198,19 +199,19 @@ public:
             return make_error_code(error::missing_required_header);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /* TODO: the 'subprotocol' parameter may need to be expanded into a more
      * generic struct if other user input parameters to the processed handshake
      * are found.
      */
-    std::error_code process_handshake(request_type const & request, 
+    lib::error_code process_handshake(request_type const & request, 
         std::string const & subprotocol, response_type & response) const
     {
         std::string server_key = request.get_header("Sec-WebSocket-Key");
 
-        std::error_code ec = process_handshake_key(server_key);
+        lib::error_code ec = process_handshake_key(server_key);
 
         if (ec) {
             return ec;
@@ -224,7 +225,7 @@ public:
             response.replace_header("Sec-WebSocket-Protocol",subprotocol);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Fill in a set of request headers for a client connection request
@@ -233,7 +234,7 @@ public:
      * @param [in] uri The uri being connected to
      * @param [in] subprotocols The list of subprotocols to request
      */
-    std::error_code client_handshake_request(request_type & req, uri_ptr
+    lib::error_code client_handshake_request(request_type & req, uri_ptr
         uri, std::vector<std::string> const & subprotocols) const
     {
         req.set_method("GET");
@@ -274,7 +275,7 @@ public:
             }
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Validate the server's response to an outgoing handshake request
@@ -283,7 +284,7 @@ public:
      * @param res The reponse to generate
      * @return An error code, 0 on success, non-zero for other errors
      */
-    std::error_code validate_server_handshake_response(request_type const & req,
+    lib::error_code validate_server_handshake_response(request_type const & req,
         response_type& res) const
     {
         // A valid response has an HTTP 101 switching protocols code
@@ -309,7 +310,7 @@ public:
 
         // And has a valid Sec-WebSocket-Accept value
         std::string key = req.get_header("Sec-WebSocket-Key");
-        std::error_code ec = process_handshake_key(key);
+        lib::error_code ec = process_handshake_key(key);
 
         if (ec || key != res.get_header("Sec-WebSocket-Accept")) {
             return error::make_error_code(error::missing_required_header);
@@ -317,7 +318,7 @@ public:
 
         // check extensions
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     std::string get_raw(response_type const & res) const {
@@ -328,7 +329,7 @@ public:
         return r.get_header("Origin");
     }
 
-    std::error_code extract_subprotocols(request_type const & req,
+    lib::error_code extract_subprotocols(request_type const & req,
         std::vector<std::string> & subprotocol_list)
     {
         if (!req.get_header("Sec-WebSocket-Protocol").empty()) {
@@ -344,7 +345,7 @@ public:
                  return error::make_error_code(error::subprotocol_parse_error);
              }
         }
-        return std::error_code();
+        return lib::error_code();
     }
 
     uri_ptr get_uri(request_type const & request) const {
@@ -378,10 +379,10 @@ public:
      *
      * @return Number of bytes processed or zero on error
      */
-    size_t consume(uint8_t * buf, size_t len, std::error_code & ec) {
+    size_t consume(uint8_t * buf, size_t len, lib::error_code & ec) {
         size_t p = 0;
 
-        ec = std::error_code();
+        ec = lib::error_code();
 
         //std::cout << "consume: " << utility::to_hex(buf,len) << std::endl;
 
@@ -514,7 +515,7 @@ public:
      *
      * @return A code indicating errors, if any
      */
-    std::error_code finalize_message() {
+    lib::error_code finalize_message() {
         std::string & out = m_current_msg->msg_ptr->get_raw_payload();
 
         // if the frame is compressed, append the compression
@@ -525,7 +526,7 @@ public:
             uint8_t trailer[4] = {0x00, 0x00, 0xff, 0xff};
 
             // Decompress current buffer into the message buffer
-            std::error_code ec;
+            lib::error_code ec;
             ec = m_permessage_deflate.decompress(trailer,4,out);
             if (ec) {
                 return ec;
@@ -541,7 +542,7 @@ public:
 
         m_state = READY;
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     void reset_headers() {
@@ -601,7 +602,7 @@ public:
      * @param out A message to be overwritten with the prepared message
      * @return error code
      */
-    virtual std::error_code prepare_data_frame(message_ptr in, message_ptr out)
+    virtual lib::error_code prepare_data_frame(message_ptr in, message_ptr out)
     {
         if (!in || !out) {
             return make_error_code(error::invalid_arguments);
@@ -680,19 +681,19 @@ public:
         out->set_prepared(true);
         out->set_opcode(op);
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Get URI
-    std::error_code prepare_ping(std::string const & in, message_ptr out) const {
+    lib::error_code prepare_ping(std::string const & in, message_ptr out) const {
         return this->prepare_control(frame::opcode::PING,in,out);
     }
 
-    std::error_code prepare_pong(std::string const & in, message_ptr out) const {
+    lib::error_code prepare_pong(std::string const & in, message_ptr out) const {
         return this->prepare_control(frame::opcode::PONG,in,out);
     }
 
-    virtual std::error_code prepare_close(close::status::value code,
+    virtual lib::error_code prepare_close(close::status::value code,
         std::string const & reason, message_ptr out) const
     {
         if (close::status::reserved(code)) {
@@ -729,14 +730,14 @@ public:
     }
 protected:
     /// Convert a client handshake key into a server response key in place
-    std::error_code process_handshake_key(std::string & key) const {
+    lib::error_code process_handshake_key(std::string & key) const {
         key.append(constants::handshake_guid);
 
         unsigned char message_digest[20];
         sha1::calc(key.c_str(),key.length(),message_digest);
         key = base64_encode(message_digest,20);
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Reads bytes from buf into m_basic_header
@@ -795,7 +796,7 @@ protected:
      * @param len Length of buf
      * @return Number of bytes processed or zero in case of an error
      */
-    size_t process_payload_bytes(uint8_t * buf, size_t len, std::error_code& ec)
+    size_t process_payload_bytes(uint8_t * buf, size_t len, lib::error_code& ec)
     {
         // unmask if masked
         if (frame::get_masked(m_basic_header)) {
@@ -844,7 +845,7 @@ protected:
      * @param new_msg Whether or not this is the first frame of the message
      * @return 0 on success or a non-zero error code on failure
      */
-    std::error_code validate_incoming_basic_header(frame::basic_header const & h,
+    lib::error_code validate_incoming_basic_header(frame::basic_header const & h,
         bool is_server, bool new_msg) const
     {
         frame::opcode::value op = frame::get_opcode(h);
@@ -908,7 +909,7 @@ protected:
             return make_error_code(error::masking_forbidden);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Validate an incoming extended header
@@ -922,7 +923,7 @@ protected:
      * @return An error_code, non-zero values indicate why the validation
      * failed
      */
-    std::error_code validate_incoming_extended_header(frame::basic_header h,
+    lib::error_code validate_incoming_extended_header(frame::basic_header h,
         frame::extended_header e) const
     {
         uint8_t basic_size = frame::get_basic_size(h);
@@ -946,7 +947,7 @@ protected:
             return make_error_code(error::requires_64bit);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Copy and mask/unmask in one operation
@@ -973,7 +974,7 @@ protected:
      * @param out The message buffer to store the prepared frame in
      * @return Status code, zero on success, non-zero on error
      */
-    std::error_code prepare_control(frame::opcode::value op,
+    lib::error_code prepare_control(frame::opcode::value op,
         std::string const & payload, message_ptr out) const
     {
         if (!out) {
@@ -1012,7 +1013,7 @@ protected:
         out->set_opcode(op);
         out->set_prepared(true);
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     enum state {

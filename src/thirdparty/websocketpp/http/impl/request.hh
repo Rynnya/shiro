@@ -33,7 +33,6 @@
 #include <string>
 
 #include "../parser.hh"
-#include "../request.hh"
 
 namespace websocketpp {
 namespace http {

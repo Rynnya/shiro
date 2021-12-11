@@ -34,6 +34,7 @@
 #include "../utf8_validator.hh"
 #include "../common/network.hh"
 #include "../common/md5.hh"
+#include "../common/platforms.hh"
 
 #include "processor.hh"
 
@@ -73,7 +74,7 @@ public:
         return 0;
     }
 
-    std::error_code validate_handshake(request_type const & r) const {
+    lib::error_code validate_handshake(request_type const & r) const {
         if (r.get_method() != "GET") {
             return make_error_code(error::invalid_http_method);
         }
@@ -93,10 +94,10 @@ public:
             return make_error_code(error::missing_required_header);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
-    std::error_code process_handshake(request_type const & req,
+    lib::error_code process_handshake(request_type const & req,
         std::string const & subprotocol, response_type & res) const
     {
         char key_final[16];
@@ -142,7 +143,7 @@ public:
             res.replace_header("Sec-WebSocket-Protocol",subprotocol);
         }
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Fill in a set of request headers for a client connection request
@@ -154,7 +155,7 @@ public:
      * @param [in] uri The uri being connected to
      * @param [in] subprotocols The list of subprotocols to request
      */
-    std::error_code client_handshake_request(request_type &, uri_ptr,
+    lib::error_code client_handshake_request(request_type &, uri_ptr,
         std::vector<std::string> const &) const
     {
         return error::make_error_code(error::no_protocol_support);
@@ -169,7 +170,7 @@ public:
      * @param res The reponse to generate
      * @return An error code, 0 on success, non-zero for other errors
      */
-    std::error_code validate_server_handshake_response(request_type const &,
+    lib::error_code validate_server_handshake_response(request_type const &,
         response_type &) const
     {
         return error::make_error_code(error::no_protocol_support);
@@ -194,7 +195,7 @@ public:
      * @param [out] subprotocol_list A reference to a vector of strings to store
      * the results in.
      */
-    std::error_code extract_subprotocols(request_type const & req,
+    lib::error_code extract_subprotocols(request_type const & req,
         std::vector<std::string> & subprotocol_list)
     {
         if (!req.get_header("Sec-WebSocket-Protocol").empty()) {
@@ -210,7 +211,7 @@ public:
                  return error::make_error_code(error::subprotocol_parse_error);
              }
         }
-        return std::error_code();
+        return lib::error_code();
     }
 
     uri_ptr get_uri(request_type const & request) const {
@@ -227,9 +228,9 @@ public:
         if (last_colon == std::string::npos ||
             (last_sbrace != std::string::npos && last_sbrace > last_colon))
         {
-            return std::make_shared<uri>(base::m_secure, h, request.get_uri());
+            return lib::make_shared<uri>(base::m_secure, h, request.get_uri());
         } else {
-            return std::make_shared<uri>(base::m_secure,
+            return lib::make_shared<uri>(base::m_secure,
                                    h.substr(0,last_colon),
                                    h.substr(last_colon+1),
                                    request.get_uri());
@@ -248,13 +249,13 @@ public:
     }
 
     /// Process new websocket connection bytes
-    size_t consume(uint8_t * buf, size_t len, std::error_code & ec) {
+    size_t consume(uint8_t * buf, size_t len, lib::error_code & ec) {
         // if in state header we are expecting a 0x00 byte, if we don't get one
         // it is a fatal error
         size_t p = 0; // bytes processed
         size_t l = 0;
 
-        ec = std::error_code();
+        ec = lib::error_code();
 
         while (p < len) {
             if (m_state == HEADER) {
@@ -325,7 +326,7 @@ public:
      * Performs validation, masking, compression, etc. will return an error if
      * there was an error, otherwise msg will be ready to be written
      */
-    virtual std::error_code prepare_data_frame(message_ptr in, message_ptr out)
+    virtual lib::error_code prepare_data_frame(message_ptr in, message_ptr out)
     {
         if (!in || !out) {
             return make_error_code(error::invalid_arguments);
@@ -358,7 +359,7 @@ public:
 
         out->set_prepared(true);
 
-        return std::error_code();
+        return lib::error_code();
     }
 
     /// Prepare a ping frame
@@ -369,9 +370,9 @@ public:
      * @param out The message buffer to prepare the ping in.
      * @return Status code, zero on success, non-zero on failure
      */
-    std::error_code prepare_ping(std::string const &, message_ptr) const
+    lib::error_code prepare_ping(std::string const &, message_ptr) const
     {
-        return std::error_code(error::no_protocol_support);
+        return lib::error_code(error::no_protocol_support);
     }
 
     /// Prepare a pong frame
@@ -382,9 +383,9 @@ public:
      * @param out The message buffer to prepare the pong in.
      * @return Status code, zero on success, non-zero on failure
      */
-    std::error_code prepare_pong(std::string const &, message_ptr) const
+    lib::error_code prepare_pong(std::string const &, message_ptr) const
     {
-        return std::error_code(error::no_protocol_support);
+        return lib::error_code(error::no_protocol_support);
     }
 
     /// Prepare a close frame
@@ -397,11 +398,11 @@ public:
      * @param out The message buffer to prepare the fame in
      * @return Status code, zero on success, non-zero on failure
      */
-    std::error_code prepare_close(close::status::value, std::string const &, 
+    lib::error_code prepare_close(close::status::value, std::string const &, 
         message_ptr out) const
     {
         if (!out) {
-            return std::error_code(error::invalid_arguments);
+            return lib::error_code(error::invalid_arguments);
         }
 
         std::string val;
@@ -410,7 +411,7 @@ public:
         out->set_payload(val);
         out->set_prepared(true);
 
-        return std::error_code();
+        return lib::error_code();
     }
 private:
     void decode_client_key(std::string const & key, char * result) const {
