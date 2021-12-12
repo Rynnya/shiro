@@ -47,7 +47,7 @@
 
 void shiro::routes::web::submit_score::handle(const crow::request &request, crow::response &response) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     const std::string &user_agent = request.get_header_value("user-agent");
 
@@ -411,35 +411,29 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
             utils::bot::respond(buffer, user, "#announce", false);
 
-            // Bad thing that db creation might cost a lot, but moving cost a lot too because we need wrap it around shared_ptr...
-            // Creating new thread might cost even more, so let's stuck with this variant
-            shiro::thread::curl_operations.push_and_forgot(
-                [db = std::make_shared<decltype(db)>(std::move(db))](const std::shared_ptr<users::user>& user, const beatmaps::beatmap& beatmap, const scores::score& score) {
-                shiro::channels::discord_webhook::send_top1_message(user, beatmap, score);
-
-                const tables::scores_first scores_first_table {};
-                auto exist = (*db)(sqlpp::select(scores_first_table.beatmap_md5).from(scores_first_table).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5).limit(1u));
-                if (exist.empty()) {
-                    (*db)(sqlpp::insert_into(scores_first_table).set(
-                        scores_first_table.score_id = score.id,
-                        scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
-                        scores_first_table.user_id = score.user_id,
-                        scores_first_table.play_mode = score.play_mode,
-                        scores_first_table.is_relax = score.is_relax
-                    ));
-                    return;
-                }
-
-                // One result exist, we need to pop it
+            shiro::thread::curl_operations.push_and_forgot(shiro::channels::discord_webhook::send_top1_message, user, beatmap, score);
+            
+            const tables::scores_first scores_first_table {};
+            auto exist = db(sqlpp::select(scores_first_table.beatmap_md5).from(scores_first_table).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5).limit(1u));
+            if (exist.empty()) {
+                db(sqlpp::insert_into(scores_first_table).set(
+                    scores_first_table.score_id = score.id,
+                    scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
+                    scores_first_table.user_id = score.user_id,
+                    scores_first_table.play_mode = score.play_mode,
+                    scores_first_table.is_relax = score.is_relax
+                ));
+            }
+            else {
                 exist.pop_front();
-                (*db)(sqlpp::update(scores_first_table).set(
+                db(sqlpp::update(scores_first_table).set(
                     scores_first_table.score_id = score.id,
                     scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
                     scores_first_table.user_id = score.user_id,
                     scores_first_table.play_mode = score.play_mode,
                     scores_first_table.is_relax = score.is_relax
                 ).where(scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
-            }, user, beatmap, score);
+            }
         }
     }
 

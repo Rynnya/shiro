@@ -16,13 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../../utils/curler.hh"
 #include "../../../thirdparty/loguru.hh"
+#include "../../../thread/thread_pool.hh"
+#include "../../../utils/curler.hh"
 #include "maps_route.hh"
 
 void shiro::routes::direct::maps::handle(const crow::request& request, crow::response& response, std::string args) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
 

@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +24,16 @@
 
 namespace shiro::pp::ctb {
 
+    // replacement for std::pair<float, float>
+    class point {
+    public:
+        point(float x = 0.0f, float y = 0.0f);
+        bool operator==(const point& other);
+
+        float x = 0.0f;
+        float y = 0.0f;
+    };
+
     namespace constants {
 
         static constexpr float STAR_SCALING_FACTOR = 0.145f;
@@ -39,12 +48,12 @@ namespace shiro::pp::ctb {
 
     class math {
     public:
-        static std::pair<float, float> point_at_distance(std::deque<std::pair<float, float>> arr, float distance);
-        static std::pair<float, float> point_on_line(std::pair<float, float> p0, std::pair<float, float> p1, float length);
-        static float distance_from_points(std::deque<std::pair<float, float>> arr);
+        static point point_at_distance(std::deque<point> arr, float distance);
+        static point point_on_line(point p0, point p1, float length);
+        static float distance_from_points(std::deque<point> arr);
 
         template <typename T>
-        static int32_t sign(T val) {
+        constexpr static int32_t sign(T val) {
             return (T(0) < val) - (val < T(0));
         }
     };

@@ -47,17 +47,11 @@ namespace shiro::thread {
         // Executes the function and returns std::future<func_type>
         template <typename F, typename... Args>
         auto push(F&& func, Args&&... args) -> std::future<decltype(func(args...))> {
-
             std::function<decltype(func(args...))()> bounded_function = std::bind(std::forward<F>(func), std::forward<Args>(args)...);
             auto task_ptr = std::make_shared<std::packaged_task<decltype(func(args...))()>>(bounded_function);
             std::function<void()> wrapper_func = [task_ptr]() { (*task_ptr)(); };
 
-            {
-                std::unique_lock<std::mutex> lock(queue_lock);
-                tasks.emplace_back(wrapper_func);
-            }
-
-            condition.notify_one();
+            push_and_notify(std::move(wrapper_func));
             return task_ptr->get_future();
         }
 
@@ -65,17 +59,14 @@ namespace shiro::thread {
         template <typename F, typename... Args>
         void push_and_forgot(F&& func, Args&&... args) {
             std::function<decltype(func(args...))()> bounded_function = std::bind(std::forward<F>(func), std::forward<Args>(args)...);
-            std::function<void()> wrapper_func = [bounded_function]() { bounded_function(); };
+            std::function<void()> wrapper = [bounded_function]() { bounded_function(); };
 
-            {
-                std::unique_lock<std::mutex> lock(queue_lock);
-                tasks.emplace_back(wrapper_func);
-            }
-
-            condition.notify_one();
+            push_and_notify(std::move(wrapper));
         }
 
     private:
+        void push_and_notify(std::function<void()>&& function);
+
         std::mutex queue_lock;
         std::condition_variable condition;
         std::atomic_bool running = true;

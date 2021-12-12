@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 project(shiro C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+if (WIN32)
+    include(${CMAKE_TOOLCHAIN_FILE})
+endif ()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
@@ -124,7 +127,7 @@ add_executable(shiro ${SRC})
 target_link_libraries(shiro general Threads::Threads ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${LIBLZMA_LIBRARIES} ${CMAKE_LINK_LIBS})
 
 if (MSVC)
-	file(GLOB_RECURSE _source_list *.c* *.cpp* *.h* *.hpp*)
+	file(GLOB_RECURSE _source_list *.hpp *.c* *.h*)
 	foreach(_source IN ITEMS ${_source_list})
 		get_filename_component(_source_path "${_source}" PATH)
 		string(REPLACE "${CMAKE_SOURCE_DIR}" "" _group_path "${_source_path}")

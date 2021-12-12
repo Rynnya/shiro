@@ -24,6 +24,7 @@
 #include "providers/beatconnect.hh"
 #include "providers/cheesegull.hh"
 #include "providers/emulation.hh"
+#include "providers/hanaru.hh"
 #include "direct_provider.hh"
 
 std::shared_ptr<shiro::direct::direct_provider> shiro::direct::provider = nullptr;
@@ -35,8 +36,9 @@ void shiro::direct::init() {
 
     switch (config::direct::provider) {
         case 0: {
-            // Localhost Shirogane via shm
-            throw std::runtime_error("Direct provider 0 (Shirogane via shared memory region) is currently not implemented.");
+            // Localhost Hanaru via websocket
+            provider = std::make_shared<hanaru>();
+            break;
         }
         case 1: {
             // Client request emulation
@@ -58,64 +60,4 @@ void shiro::direct::init() {
             break;
         }
     }
-
-    if (sanity_check()) {
-        return;
-    }
-
-    if (provider != nullptr) {
-        provider.reset();
-        provider = nullptr;
-    }
-
-    LOG_F(WARNING, "Sanity check has failed. Direct Beatmap downloading has been disabled.");
-}
-
-bool shiro::direct::sanity_check() {
-    if (provider == nullptr) {
-        return false;
-    }
-
-    // Everything might happend here, so wrap it
-    try {
-        auto [search_success, search_result] = provider->search({
-            { "q", "hitorigoto" }
-            });
-
-        if (!search_success || search_result.empty()) {
-            return false;
-        }
-
-        /*auto [download_success, download_result] = provider->download(1262832, true);
-
-        if (!download_success || download_result.empty()) {
-            return false;
-        }*/
-
-    }
-    catch (const std::exception& ex) {
-        shiro::logging::sentry::exception(ex, __FILE__, __LINE__);
-        LOG_F(ERROR, "Sanity check threw an exception: %s", ex.what());
-
-        return false;
-    }
-
-    LOG_F(INFO, "Direct provider has been set to %s.", provider->name().c_str());
-    return true;
-}
-
-std::tuple<bool, std::string> shiro::direct::direct_provider::search(std::unordered_map<std::string, std::string> parameters) {
-    return { false, "Unimplemented" };
-}
-
-std::tuple<bool, std::string> shiro::direct::direct_provider::search_np(std::unordered_map<std::string, std::string> parameters) {
-    return { false, "Unimplemented" };
-}
-
-std::tuple<bool, std::string> shiro::direct::direct_provider::download(int32_t beatmap_id, bool no_video) {
-    return { false, "Unimplemented" };
-}
-
-const std::string shiro::direct::direct_provider::name() const {
-    return "Unimplemented";
 }

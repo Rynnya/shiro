@@ -64,3 +64,12 @@ shiro::thread::pool::~pool() {
         th.join();
     }
 }
+
+void shiro::thread::pool::push_and_notify(std::function<void()>&& function) {
+    {
+        std::unique_lock<std::mutex> lock(queue_lock);
+        tasks.push_back(std::move(function));
+    }
+
+    condition.notify_one();
+}

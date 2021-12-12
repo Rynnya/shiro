@@ -1,6 +1,5 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
  * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,7 +41,8 @@ shiro::pp::mania::mania_calculator::mania_calculator(shiro::beatmaps::beatmap be
     this->od = beatmap.od;
     this->score = score.total_score;
     this->mods = score.mods;
-    parse_file(beatmap_file.value());
+
+    parse_file(*beatmap_file);
     calculate_stars();
 }
 
@@ -137,7 +137,7 @@ void shiro::pp::mania::mania_calculator::parse_note(std::string line, int32_t ke
 
         end_t = (end_t == -1 ? start_t : end_t);
 
-        this->notes.push_back(note(key, start_t, end_t, 0));
+        this->notes.push_back({ static_cast<double>(key), start_t, end_t, 0 });
     }
 }
 

@@ -44,6 +44,7 @@ void shiro::routes::init() {
 
     try {
         server.concurrency(config::bancho::concurrency);
+        server.multithreaded();
 
         server.bindaddr(config::bancho::host);
         server.port(config::bancho::port);

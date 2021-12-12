@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -23,14 +24,17 @@
 
 void shiro::routes::direct::download::handle(const crow::request &request, crow::response &response, std::string args) {
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
-    response.set_header("cho-server", "shiro (https://github.com/Marc3842h/shiro)");
+    response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
     const char &last_char = args.back();
     bool no_video = last_char == 'n';
+    if (no_video) {
+        args.pop_back();
+    }
 
     int32_t id = 0;
 
-    if (!utils::strings::safe_int(no_video ? args.substr(0, args.length() - 1) : args, id)) {
+    if (!utils::strings::safe_int(args, id)) {
         response.code = 400;
         response.end("Invalid beatmap id");
         return;
@@ -43,17 +47,5 @@ void shiro::routes::direct::download::handle(const crow::request &request, crow:
         return;
     }
 
-    auto [success, output] = shiro::direct::provider->download(id, no_video);
-
-    if (!success) {
-        response.code = 504;
-        response.end();
-
-        LOG_F(WARNING, "Direct search returned invalid response, message: %s", output.c_str());
-
-        return;
-    }
-
-    response.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-    response.end(output);
+    shiro::direct::provider->download(response, id, no_video);
 }

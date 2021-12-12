@@ -83,16 +83,16 @@ int shiro::init(int argc, char **argv) {
     config::discord_webhook::parse();
     config::score_submission::parse();
 
+    db_connection = std::make_shared<database>(
+        config::database::address, config::database::port, config::database::database,
+        config::database::username, config::database::password
+        );
+    db_connection->connect();
+
     beatmaps::helper::init();
     direct::init();
     geoloc::init();
     channels::discord_webhook::init();
-
-    db_connection = std::make_shared<database>(
-        config::database::address, config::database::port, config::database::database,
-        config::database::username, config::database::password
-    );
-    db_connection->connect();
 
     redis_connection = std::make_shared<redis>(
         config::database::redis_address,

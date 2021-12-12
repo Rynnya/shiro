@@ -23,12 +23,13 @@
 #include "../../database/tables/beatmap_table.hh"
 #include "../../logger/sentry_logger.hh"
 #include "../../thirdparty/loguru.hh"
+#include "../../thread/thread_pool.hh"
 #include "../../utils/curler.hh"
 #include "../../utils/play_mode.hh"
 #include "../../shiro.hh"
 #include "cheesegull.hh"
 
-std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::cheesegull::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     // Remove username from the request so the requesting user stays anonymous
     if (parameters.find("u") != parameters.end()) {
         parameters.erase("u");
@@ -52,7 +53,11 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success) {
-        return { false, output };
+        callback.code = 504;
+        callback.end();
+
+        LOG_F(WARNING, "Cheesegull search returned invalid response, message: %s", output.c_str());
+        return;
     }
 
     json json_result;
@@ -64,7 +69,10 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
         LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
         logging::sentry::exception(ex, __FILE__, __LINE__);
 
-        return { false, ex.what() };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     std::stringstream out;
@@ -98,7 +106,9 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
         for (auto& diff_json : map_json["ChildrenBeatmaps"]) {
             difficulties << (std::string)diff_json["DiffName"] << " (";
             difficulties << (float)diff_json["DifficultyRating"] << "★~";
+            difficulties << (float)diff_json["BPM"] << "♫~";
             difficulties << "AR" << (float)diff_json["AR"] << "~";
+            difficulties << "OD" << (float)diff_json["OD"] << "~";
             difficulties << "CS" << (float)diff_json["CS"] << "~";
             difficulties << "HP" << (float)diff_json["HP"] << "~";
 
@@ -106,10 +116,7 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
             int32_t minutes = total_length / 60;
             int32_t seconds = total_length % 60;
 
-            if (minutes > 0) {
-                difficulties << minutes << "m";
-            }
-
+            difficulties << minutes << "m";
             difficulties << seconds << "s)" << "@";
             difficulties << diff_json["Mode"].get<int32_t>() << ",";
         }
@@ -122,13 +129,16 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search(std::unordered_m
         out << "\n"; // std::endl flushes additionally which is not something we want
     }
 
-    return { true, out.str() };
+    callback.end(out.str());
 }
 
-std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordered_map<std::string, std::string> parameters) {
+void shiro::direct::cheesegull::search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
     auto b = parameters.find("b");
     if (b == parameters.end()) {
-        return { false, "'beatmap_id' not provided" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     // Remove username from the request so the requesting user stays anonymous
@@ -148,7 +158,10 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
     if (result.empty()) {
-        return { false, "Beatmap not loaded to database" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     auto& _result = result.front();
@@ -158,7 +171,11 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     auto [success, output] = utils::curl::get_direct(url);
 
     if (!success) {
-        return { false, output };
+        callback.code = 504;
+        callback.end();
+
+        LOG_F(WARNING, "Cheesegull search_np returned invalid response, message: %s", output.c_str());
+        return;
     }
 
     json json_result;
@@ -170,11 +187,17 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
         LOG_F(ERROR, "Unable to parse json response from Cheesegull: %s.", ex.what());
         logging::sentry::exception(ex, __FILE__, __LINE__);
 
-        return { false, ex.what() };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     if (json_result.is_null()) {
-        return { false, "Cheesegull response was null" };
+        callback.code = 504;
+        callback.end();
+
+        return;
     }
 
     std::stringstream out;
@@ -199,14 +222,14 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::search_np(std::unordere
     out << (int32_t)has_video << "|"; // Video?
     out << 0 << "|"; // ?
     out << 0 << "|"; // ?
-    out << (has_video ? 7331 : 0); // Video size (faked cuz nobody provide this)
+    out << (has_video ? 7331 : 0); // Video size
 
     out << "\n"; // std::endl flushes additionally which is not something we want
 
-    return { true, out.str() };
+    callback.end(out.str());
 }
 
-std::tuple<bool, std::string> shiro::direct::cheesegull::download(int32_t beatmap_id, bool no_video) {
+void shiro::direct::cheesegull::download(crow::response& callback, int32_t beatmap_id, bool no_video) {
     std::string id = std::to_string(beatmap_id);
     std::string url = config::direct::download_url + "/d/" + id;
 
@@ -214,7 +237,20 @@ std::tuple<bool, std::string> shiro::direct::cheesegull::download(int32_t beatma
         url += "?n=1";
     }
 
-    return utils::curl::get_direct(url);
+    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
+        auto [success, output] = utils::curl::get_direct(url);
+
+        if (!success) {
+            callback.code = 504;
+            callback.end();
+
+            LOG_F(WARNING, "Beatconnect search returned invalid response, message: %s", output.c_str());
+            return;
+        }
+
+        callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
+        callback.end(output);
+    });
 }
 
 const std::string shiro::direct::cheesegull::name() const {

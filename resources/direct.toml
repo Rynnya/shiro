@@ -5,15 +5,16 @@
 # Players still need the direct permission in order to use it
 enabled = true
 # Which provider implementation should Shiro use?
-# provider 0 = Contact local Shirogane over a Shared Memory Region
+# provider 0 = Contant local Hanaru through Websocket
 # provider 1 = Emulate a client request to direct via another Bancho server
 # provider 2 = Use the Beatconnect API (recommended)
 # provider 3 = Use the Cheesegull (https://github.com/osuripple/cheesegull)
 provider = 3
 
 # This section is only active if provider is set to 0
-[shirogane]
-shm = 195934910
+[hanaru]
+hanaru_url = "http://localhost:8090"
+port = 8090
 
 # This section is only active if provider is set to 1
 [emulate]

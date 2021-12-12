@@ -69,7 +69,8 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
 
     switch (config::direct::provider) {
         case 0: {
-            // Never happens as this provider uses a shared memory region
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Rynnya/shiro)");
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
             break;
         }
         case 1: {

@@ -17,7 +17,8 @@ Bancho and the Score Submission server.
 
 # Current state
 Currently WIP, previous owner left many non-tested features (like direct and replays before)<br>
-Some features not implementated at all (like Shirogane, which, I guess, not open-source)<br>
+Some features not implementated at all (screenshots, osu!lazer)<br>
+Performance also should be more scalable, because shiro already uses ASIO
 
 ## Features
 
@@ -29,12 +30,11 @@ functioning osu! server, which includes:
 * Leaderboards (Classic and Relax)
 * Multiplayer (Even !mp commands!)
 * Online user listing with their presence
-* osu!direct (Based on mirrors)
+* osu!direct (Supports [Beatconnect][8], [Cheesegull][9], [Hanaru][10] and mirrors)
 * osu!tourney
 * Rankings
 * Replays
 * Score submission
-* Screenshots
 * Spectating
 
 ## Documentation
@@ -82,3 +82,6 @@ trademark law. Fair use applies.
 [6]: https://github.com/Rynnya/shiro/compare
 [7]: https://github.com/Rynnya/shiro/blob/master/LICENSE.txt
 
+[8]: https://beatconnect.io/
+[9]: https://github.com/osuripple/cheesegull
+[10]: https://github.com/Rynnya/hanaru

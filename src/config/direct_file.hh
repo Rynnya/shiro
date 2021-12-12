@@ -27,8 +27,9 @@ namespace shiro::config::direct {
     extern bool enabled;
     extern int32_t provider;
 
-    // Provider 0: Shirogane
-    extern uint64_t shm;
+    // Provider 0: Hanaru
+    extern std::string hanaru_url;
+    extern uint32_t port;
 
     // Provider 1: Emulation
     extern std::string base_url;
