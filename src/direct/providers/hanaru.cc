@@ -350,7 +350,10 @@ void shiro::direct::hanaru::on_message(websocketpp::connection_hdl handle, clien
 
     int32_t id = payload["id"].get<int32_t>();
     int32_t code = payload["status"].get<int32_t>();
-    std::string data = payload["data"].get<std::string>();
+
+    std::string data = code == 200
+        ? websocketpp::base64_decode(payload["data"].get<std::string>())
+        : payload["data"].get<std::string>();
 
     std::lock_guard<std::mutex> lock(mtx);
 
