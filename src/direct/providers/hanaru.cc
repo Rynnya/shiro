@@ -31,36 +31,12 @@ shiro::direct::hanaru::hanaru() {
     socket.set_access_channels(websocketpp::log::alevel::none);
     socket.set_error_channels(websocketpp::log::elevel::none);
 
-    socket.set_message_handler([&](websocketpp::connection_hdl handle, client::message_ptr msg) {
-        if (msg->get_opcode() != websocketpp::frame::opcode::binary) {
-            // hanaru doesn't send anything other than ping, pong and binary
-            return;
-        }
-
-        nlohmann::json payload;
-        try {
-            payload = nlohmann::json::parse(msg->get_payload());
-        }
-        catch (const json::parse_error& ex) {
-            shiro::logging::sentry::exception(ex, __FILE__, __LINE__);
-            LOG_F(ERROR, "Exception happend when handling websocket payload: %s", ex.what());
-
-            return;
-        }
-
-        int32_t id = payload["id"].get<int32_t>();
-        int32_t code = payload["status"].get<int32_t>();
-        std::lock_guard<std::mutex> lock(mtx);
-
-        for (auto& callback : cache[id]) {
-            callback(code, payload);
-        }
-
-        cache.erase(id);
-    });
+    socket.set_message_handler(websocketpp::lib::bind(&hanaru::on_message, this, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
 
     socket.set_max_message_size(256 * 1000 * 1000);
     socket.init_asio();
+    socket.set_reuse_addr(true);
+    socket.set_listen_backlog(64);
 
     std::thread running_client([&]() {
         while (true) {
@@ -259,7 +235,7 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
     int32_t beatmapset_id = _result.beatmapset_id;
 
     std::string url =
-        (config::direct::hanaru_url == "localhost"
+        (config::direct::hanaru_url.find("localhost") != std::string::npos
             ? "127.0.0.1:" + std::to_string(config::direct::port)
             : config::direct::hanaru_url
         ) + "/s/" + std::to_string(beatmapset_id);
@@ -333,15 +309,11 @@ void shiro::direct::hanaru::download(crow::response& callback, int32_t beatmap_i
         std::lock_guard<std::mutex> lock(mtx);
 
         required_request = cache.find(beatmap_id) == cache.end();
-        cache[beatmap_id].push_back([&callback](int32_t code, const nlohmann::json& payload) {
-
-            if (!callback.is_alive()) {
-                return;
-            }
+        cache[beatmap_id].push_back([&callback](int32_t code, const std::string& data) {
 
             if (code == 200) {
                 callback.set_header("Content-Type", "application/octet-stream; charset=UTF-8");
-                callback.end(payload["data"].get<std::string>());
+                callback.end(data);
                 return;
             }
 
@@ -357,6 +329,36 @@ void shiro::direct::hanaru::download(crow::response& callback, int32_t beatmap_i
 
 const std::string shiro::direct::hanaru::name() const {
     return "Hanaru";
+}
+
+void shiro::direct::hanaru::on_message(websocketpp::connection_hdl handle, client::message_ptr msg) {
+    if (msg->get_opcode() != websocketpp::frame::opcode::binary) {
+        // hanaru doesn't send anything other than ping, pong and binary
+        return;
+    }
+
+    nlohmann::json payload;
+    try {
+        payload = nlohmann::json::parse(msg->get_payload());
+    }
+    catch (const json::parse_error& ex) {
+        shiro::logging::sentry::exception(ex, __FILE__, __LINE__);
+        LOG_F(ERROR, "Exception happend when handling websocket payload: %s", ex.what());
+
+        return;
+    }
+
+    int32_t id = payload["id"].get<int32_t>();
+    int32_t code = payload["status"].get<int32_t>();
+    std::string data = payload["data"].get<std::string>();
+
+    std::lock_guard<std::mutex> lock(mtx);
+
+    for (auto& callback : cache[id]) {
+        callback(code, data);
+    }
+
+    cache.erase(id);
 }
 
 int32_t shiro::direct::hanaru::sanitize_mode(const std::string& value) {
