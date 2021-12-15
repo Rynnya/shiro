@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,62 +21,35 @@
 #define SHIRO_SERIALIZABLE_HH
 
 #include "../osu_buffer.hh"
+#include "../../traits.hh"
 
 namespace shiro::io {
 
+    template <typename T = uint8_t>
     class serializable {
-    protected:
-        enum class data_type : int {
-            byte = 0,
-            int16 = 1,
-            uint16 = 2,
-            int32 = 3,
-            uint32 = 4,
-            int64 = 5,
-            uint64 = 6,
-            flt = 7,
-            dble = 8,
-            string = 9,
-            array = 10
-        };
-
-    private:
-        data_type type = data_type::byte;
-
     public:
-        uint8_t data_byte = 0;
-        int16_t data_short = 0;
-        uint16_t data_ushort = 0;
-        int32_t data_int = 0;
-        uint32_t data_uint = 0;
-        int64_t data_long = 0;
-        uint64_t data_ulong = 0;
-        float data_float = 0.0f;
-        double data_double = 0.0;
-        std::string data_string;
-        std::vector<int32_t> data_array;
+        typedef T data_type;
+
+        T data = traits::basic_initialization<T>::value;
 
         serializable() = default;
-
-        explicit serializable(uint8_t data);
-        explicit serializable(int16_t data);
-        explicit serializable(uint16_t data);
-        explicit serializable(int32_t data);
-        explicit serializable(uint32_t data);
-        explicit serializable(int64_t data);
-        explicit serializable(uint64_t data);
-        explicit serializable(float data);
-        explicit serializable(double data);
-        explicit serializable(std::string data);
-        explicit serializable(std::vector<int32_t> data);
+        explicit serializable(T data);
 
         virtual shiro::io::buffer marshal();
-        virtual void unmarshal(buffer &buf);
+        virtual void unmarshal(buffer& buf);
 
         virtual int32_t get_size();
-
     };
 
+    // Empty serializable class for derived classes, without additional containers
+    template <>
+    class serializable<void> {
+    public:
+        virtual shiro::io::buffer marshal();
+        virtual void unmarshal(buffer& buf);
+
+        virtual int32_t get_size();
+    };
 }
 
 #endif //SHIRO_SERIALIZABLE_HH

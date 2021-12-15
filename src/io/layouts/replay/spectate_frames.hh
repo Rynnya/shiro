@@ -27,7 +27,7 @@
 
 namespace shiro::io::layouts {
 
-    class spectate_frames : public serializable {
+    class spectate_frames : public serializable<void> {
     public:
         int32_t extra = 0;
         std::vector<replay_frame> replay_frames;

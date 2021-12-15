@@ -39,16 +39,16 @@ shiro::io::buffer shiro::io::layouts::channel::marshal() {
 
     buffer buf;
 
-    buf.write_string(name);
-    buf.write_string(description);
+    buf.write<std::string>(name);
+    buf.write<std::string>(description);
     buf.write<int32_t>(this->user_count);
 
     return buf;
 }
 
 void shiro::io::layouts::channel::unmarshal(shiro::io::buffer &buffer) {
-    this->name = buffer.read_string();
-    this->description = buffer.read_string();
+    this->name = buffer.read<std::string>();
+    this->description = buffer.read<std::string>();
     this->user_count = buffer.read<int32_t>();
 }
 

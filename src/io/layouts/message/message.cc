@@ -38,10 +38,10 @@ shiro::io::buffer shiro::io::layouts::message::marshal() {
 
     buffer buf;
 
-    buf.write_string(sender);
+    buf.write<std::string>(sender);
 
-    buf.write_string(content);
-    buf.write_string(channel);
+    buf.write<std::string>(content);
+    buf.write<std::string>(channel);
 
     buf.write<int32_t>(this->sender_id);
 
@@ -49,16 +49,16 @@ shiro::io::buffer shiro::io::layouts::message::marshal() {
 }
 
 void shiro::io::layouts::message::unmarshal(shiro::io::buffer &buffer) {
-    this->sender = buffer.read_string();
+    this->sender = buffer.read<std::string>();
 
-    std::string content = buffer.read_string();
+    std::string content = buffer.read<std::string>();
 
     if (content.length() > 512) {
         content.resize(512);
     }
 
     this->content = content;
-    this->channel = buffer.read_string();
+    this->channel = buffer.read<std::string>();
 
     this->sender_id = buffer.read<int32_t>();
 }

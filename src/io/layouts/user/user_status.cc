@@ -26,9 +26,9 @@ shiro::io::buffer shiro::io::layouts::user_status::marshal() {
 
 void shiro::io::layouts::user_status::unmarshal(shiro::io::buffer &data) {
     this->activity = data.read<uint8_t>();
-    this->activity_desc = data.read_string();
+    this->activity_desc = data.read<std::string>();
 
-    this->beatmap_checksum = data.read_string();
+    this->beatmap_checksum = data.read<std::string>();
 
     this->current_mods = data.read<uint32_t>();
     this->play_mode = data.read<uint8_t>();

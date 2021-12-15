@@ -34,8 +34,8 @@ bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shi
         return true;
     }
 
-    int32_t size;
-    if (!utils::strings::safe_int(args.at(0), size)) {
+    int32_t size = 0;
+    if (!utils::strings::evaluate(args.at(0), size)) {
         utils::bot::respond("You must provide a number!", user, channel, true);
         utils::bot::respond("Usage: !mp size <number>", user, channel, true);
         return true;

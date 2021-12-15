@@ -253,12 +253,12 @@ void shiro::pp::ctb::ctb_calculator::parse_file(std::string filename) {
         // We already done with CS, AR, OD and HP, so parse only 2 other things
         if (current_sector == "Difficulty") {
             if (line.find("SliderMultiplier") != std::string::npos) {
-                shiro::utils::strings::safe_float(line.erase(0, line.find(":") + 1), this->slider_multiplier);
+                shiro::utils::strings::evaluate(line.erase(0, line.find(":") + 1), this->slider_multiplier);
                 continue;
             }
 
             if (line.find("SliderTickRate") != std::string::npos) {
-                shiro::utils::strings::safe_float(line.erase(0, line.find(":") + 1), this->slider_tick_rate);
+                shiro::utils::strings::evaluate(line.erase(0, line.find(":") + 1), this->slider_tick_rate);
                 continue;
             }
         }
@@ -281,13 +281,13 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line) {
     boost::split(timing_point_split, line, boost::is_any_of(","));
 
     int32_t timing_point_time = 0;
-    safe_int(timing_point_split[0], timing_point_time);
+    evaluate(timing_point_split[0], timing_point_time);
 
     std::string timing_point_focus = timing_point_split[1];
 
     int32_t timing_point_type = 0;
     if (timing_point_split.size() >= 7) {
-        safe_int(timing_point_split[6], timing_point_type);
+        evaluate(timing_point_split[6], timing_point_type);
     }
 
     if (timing_point_type == 0 && timing_point_focus[0] != '-') {
@@ -296,7 +296,7 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line) {
 
     if (timing_point_focus[0] == '-') {
         float temp = -1;
-        safe_float(timing_point_focus, temp);
+        evaluate(timing_point_focus, temp);
         this->timing_points.push_back(timing_point(timing_point_time, -100 / temp, temp, 100, 600));
     }
     else {
@@ -305,7 +305,7 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line) {
         }
 
         float temp = 1;
-        safe_float(timing_point_focus, temp);
+        evaluate(timing_point_focus, temp);
         this->timing_points.push_back(timing_point(timing_point_time, 1, -100, 60000 / temp, temp));
     }
 }
@@ -315,8 +315,8 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
     std::vector<std::string> split_object;
     boost::split(split_object, line, boost::is_any_of(","));
 
-    float time = safe_float(split_object[2]);
-    int32_t object_type = safe_int(split_object[3]);
+    float time = evaluate<float>(split_object[2]);
+    int32_t object_type = evaluate(split_object[3]);
 
     if (!((1 & object_type) || (2 & object_type))) {
         return;
@@ -341,7 +341,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
         for (int32_t i = 0; i < curve_split.size(); i++) {
             std::vector<std::string> vector_split;
             boost::split(vector_split, curve_split[i], boost::is_any_of(":"));
-            curve_points.push_back({ safe_float(vector_split[0]), safe_float(vector_split[1]) });
+            curve_points.push_back({ evaluate<float>(vector_split[0]), evaluate<float>(vector_split[1]) });
         }
 
         std::string slider_type = curve_split[0];
@@ -351,7 +351,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
             }
 
             if (curve_points.size() == 2) {
-                if ((safe_int(split_object[0]) == curve_points[0].x && safe_int(split_object[1]) == curve_points[0].y) || curve_points[0] == curve_points[1]) {
+                if ((evaluate(split_object[0]) == curve_points[0].x && evaluate(split_object[1]) == curve_points[0].y) || curve_points[0] == curve_points[1]) {
                     curve_points.pop_front();
                     slider_type = "L";
                 }
@@ -359,14 +359,14 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
         }
 
         if (curve_points.size() == 0) {
-            hit_object = { safe_float(split_object[0]), safe_float(split_object[1]), time, 1 };
+            hit_object = { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, 1 };
         }
         else {
-            hit_object = { safe_float(split_object[0]), safe_float(split_object[1]), time, object_type, slider_type, curve_points, repeat, pixel_length, time_point, this->slider_multiplier, tick_distance };
+            hit_object = { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, object_type, slider_type, curve_points, repeat, pixel_length, time_point, this->slider_multiplier, tick_distance };
         }
     }
     else {
-        hit_object = { safe_float(split_object[0]), safe_float(split_object[1]), time, object_type };
+        hit_object = { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, object_type };
     }
 
     this->hit_objects.push_back(hit_object);

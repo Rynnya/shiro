@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class user_presence : public serializable {
+    class user_presence : public serializable<void> {
     public:
         int32_t user_id = 0;
         std::string username = "";

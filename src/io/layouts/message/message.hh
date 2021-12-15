@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class message : public serializable {
+    class message : public serializable<void> {
     public:
         message() = default;
         message(std::string sender, int32_t sender_id, std::string content, std::string channel);

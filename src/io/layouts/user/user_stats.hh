@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class user_stats : public serializable {
+    class user_stats : public serializable<void> {
     public:
         int32_t user_id = 0;
 

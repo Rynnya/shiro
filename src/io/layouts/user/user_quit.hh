@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class user_quit : public serializable {
+    class user_quit : public serializable<void> {
     public:
         int32_t user_id = 0;
         uint8_t state = 0;

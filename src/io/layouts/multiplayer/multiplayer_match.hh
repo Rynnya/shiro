@@ -26,7 +26,7 @@
 
 namespace shiro::io::layouts {
 
-    class multiplayer_match : public serializable {
+    class multiplayer_match : public serializable<void> {
     public:
         virtual ~multiplayer_match() = default;
 

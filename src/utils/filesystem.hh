@@ -27,7 +27,7 @@ namespace fs = std::filesystem;
 namespace shiro::utils::filesystem {
 
     // Fix for MSVC's stl preferring wchar_t over char
-    inline constexpr char preferred_separator = (char) fs::path::preferred_separator;
+    inline constexpr char preferred_separator = static_cast<char>(fs::path::preferred_separator);
 
     inline std::string combine(const std::string &a, const std::string &b) {
         return a + preferred_separator + b;

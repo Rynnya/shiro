@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class channel : public serializable {
+    class channel : public serializable<void> {
     public:
         channel() = default;
         channel(uint32_t id, bool auto_join, bool hidden, std::string name, std::string description, int32_t user_count, bool read_only, uint64_t permission);

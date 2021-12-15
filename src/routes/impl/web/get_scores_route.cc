@@ -42,6 +42,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
     if (md5sum == nullptr || beatmapset_id == nullptr || type == nullptr || username == nullptr || hash == nullptr) {
         response.code = 400;
         response.end();
+
         return;
     }
 
@@ -67,8 +68,8 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
     int32_t scoreboard_type = 0;
     beatmaps::beatmap beatmap;
 
-    parse_result &= utils::strings::safe_int(beatmapset_id, beatmap.beatmapset_id);
-    parse_result &= utils::strings::safe_int(type, scoreboard_type);
+    parse_result &= utils::strings::evaluate(beatmapset_id, beatmap.beatmapset_id);
+    parse_result &= utils::strings::evaluate(type, scoreboard_type);
     beatmap.beatmap_md5 = md5sum;
 
     if (!parse_result) {
@@ -77,6 +78,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
         response.code = 500;
         response.end();
+
         return;
     }
 
@@ -109,7 +111,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
                 return;
             }
 
-            if (utils::strings::safe_int(mods, mods_list)) {
+            if (utils::strings::evaluate(mods, mods_list)) {
                 is_relax = (mods_list & static_cast<uint32_t>(utils::mods::relax));
                 score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, is_relax);
                 break;
@@ -120,6 +122,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
             response.code = 500;
             response.end();
+
             return;
         }
         case 3: {
@@ -133,6 +136,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
         default: {
             response.code = 400;
             response.end();
+
             return;
         }
     }

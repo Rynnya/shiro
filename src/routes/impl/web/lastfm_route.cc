@@ -64,12 +64,13 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
 
     int32_t startup_value = 0;
 
-    if (!utils::strings::safe_int(beatmap_str.substr(1), startup_value)) {
+    if (!utils::strings::evaluate(beatmap_str.substr(1), startup_value)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", beatmap_str.substr(1).c_str());
         logging::sentry::exception(std::invalid_argument("Unable to cast startup_value into int32_t."), __FILE__, __LINE__);
 
         response.code = 500;
         response.end();
+
         return;
     }
 

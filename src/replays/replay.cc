@@ -61,10 +61,10 @@ void shiro::replays::replay::parse() {
         }
 
         bool parse_result = true;
-        parse_result &= utils::strings::safe_ll(pieces.at(0), a.w);
-        parse_result &= utils::strings::safe_float(pieces.at(1), a.x);
-        parse_result &= utils::strings::safe_float(pieces.at(2), a.y);
-        parse_result &= utils::strings::safe_int(pieces.at(3), a.z);
+        parse_result &= utils::strings::evaluate<int64_t>(pieces.at(0), a.w);
+        parse_result &= utils::strings::evaluate<float>(pieces.at(1), a.x);
+        parse_result &= utils::strings::evaluate<float>(pieces.at(2), a.y);
+        parse_result &= utils::strings::evaluate(pieces.at(3), a.z);
 
         if (!parse_result) {
             LOG_F(ERROR, "Unable to cast action values into correct data types.");
@@ -81,8 +81,7 @@ std::vector<shiro::replays::action> shiro::replays::replay::get_actions() {
 }
 
 std::string shiro::replays::replay::to_string() const {
-    static std::stringstream stream;
-    stream.clear();
+    std::stringstream stream;
 
     for (const action& a : this->actions) {
         stream << a.to_string();

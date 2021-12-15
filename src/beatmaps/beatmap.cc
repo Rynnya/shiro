@@ -124,7 +124,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
         }
 
         for (auto& part : json_result) {
-            if (!utils::strings::safe_int(part["beatmapset_id"], this->beatmapset_id)) {
+            if (!utils::strings::evaluate(part["beatmapset_id"], this->beatmapset_id)) {
                 LOG_F(ERROR, "Unable to cast response of osu! API to valid data types: bad cast on beatmapset_id (string -> int32_t)");
                 logging::sentry::exception(std::invalid_argument("Invalid data type in beatmapset_id"), __FILE__, __LINE__);
 
@@ -178,47 +178,47 @@ bool shiro::beatmaps::beatmap::fetch_api() {
         std::snprintf(buffer, sizeof(buffer), "%s - %s [%s]", this->artist.c_str(), this->title.c_str(), this->difficulty_name.c_str());
         this->song_name = buffer;
 
-        parse_result &= utils::strings::safe_int  (part["beatmapset_id"], this->beatmapset_id);
-        parse_result &= utils::strings::safe_int  (part["beatmap_id"],    this->beatmap_id);
-        parse_result &= utils::strings::safe_int  (part["approved"],      this->ranked_status);
-        parse_result &= utils::strings::safe_int  (part["hit_length"],    this->hit_length);
-        parse_result &= utils::strings::safe_uchar(part["mode"],          this->play_mode);
-        parse_result &= utils::strings::safe_float(part["diff_size"],     this->cs);
-        parse_result &= utils::strings::safe_float(part["diff_approach"], this->ar);
-        parse_result &= utils::strings::safe_float(part["diff_overall"],  this->od);
-        parse_result &= utils::strings::safe_float(part["diff_drain"],    this->hp);
-        parse_result &= utils::strings::safe_int  (part["bpm"],           this->bpm);
-        parse_result &= utils::strings::safe_int  (part["count_normal"],  this->count_normal);
-        parse_result &= utils::strings::safe_int  (part["count_slider"],  this->count_slider);
-        parse_result &= utils::strings::safe_int  (part["count_spinner"], this->count_spinner);
+        parse_result &= utils::strings::evaluate(part["beatmapset_id"], this->beatmapset_id);
+        parse_result &= utils::strings::evaluate(part["beatmap_id"],    this->beatmap_id);
+        parse_result &= utils::strings::evaluate(part["approved"],      this->ranked_status);
+        parse_result &= utils::strings::evaluate(part["hit_length"],    this->hit_length);
+        parse_result &= utils::strings::evaluate(part["mode"],          this->play_mode);
+        parse_result &= utils::strings::evaluate(part["diff_size"],     this->cs);
+        parse_result &= utils::strings::evaluate(part["diff_approach"], this->ar);
+        parse_result &= utils::strings::evaluate(part["diff_overall"],  this->od);
+        parse_result &= utils::strings::evaluate(part["diff_drain"],    this->hp);
+        parse_result &= utils::strings::evaluate(part["bpm"],           this->bpm);
+        parse_result &= utils::strings::evaluate(part["count_normal"],  this->count_normal);
+        parse_result &= utils::strings::evaluate(part["count_slider"],  this->count_slider);
+        parse_result &= utils::strings::evaluate(part["count_spinner"], this->count_spinner);
 
         switch (static_cast<utils::play_mode>(this->play_mode)) {
             case utils::play_mode::standard: {
-                parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_std);
+                parse_result &= utils::strings::evaluate(part["difficultyrating"], this->difficulty_std);
 
                 // For some older beatmaps the max_combo is null. See ppy/osu-api#130
                 if (part["max_combo"].is_string()) {
-                    parse_result &= utils::strings::safe_int(part["max_combo"], this->max_combo);
+                    parse_result &= utils::strings::evaluate(part["max_combo"], this->max_combo);
                 }
 
                 break;
             }
             case utils::play_mode::taiko: {
-                parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_taiko);
+                parse_result &= utils::strings::evaluate(part["difficultyrating"], this->difficulty_taiko);
                 break;
             }
             case utils::play_mode::fruits: {
-                parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_ctb);
+                parse_result &= utils::strings::evaluate(part["difficultyrating"], this->difficulty_ctb);
 
                 // For some older beatmaps the max_combo is null. See ppy/osu-api#130
                 if (part["max_combo"].is_string()) {
-                    parse_result &= utils::strings::safe_int(part["max_combo"], this->max_combo);
+                    parse_result &= utils::strings::evaluate(part["max_combo"], this->max_combo);
                 }
 
                 break;
             }
             case utils::play_mode::mania: {
-                parse_result &= utils::strings::safe_float(part["difficultyrating"], this->difficulty_mania);
+                parse_result &= utils::strings::evaluate(part["difficultyrating"], this->difficulty_mania);
                 break;
             }
         }

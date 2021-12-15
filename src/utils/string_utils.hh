@@ -20,28 +20,37 @@
 #ifndef SHIRO_STRING_UTILS_HH
 #define SHIRO_STRING_UTILS_HH
 
-#include <vector>
+#include <charconv>
 #include <string>
+
+#include "../traits.hh"
 
 namespace shiro::utils::strings {
 
-    bool safe_uchar(const std::string& src, uint8_t& num);
-    uint8_t safe_uchar(const std::string& src);
+    template <typename T = int32_t>
+    bool evaluate(const std::string& src, T& value) noexcept {
+        static_assert(std::is_arithmetic_v<T>, "T should be arithmetic type (integral or floating)");
 
-    bool safe_int(const std::string& src, int32_t& num);
-    int32_t safe_int(const std::string& src);
+        auto [ptr, ec] = std::from_chars(src.data(), src.data() + src.size(), value);
+        return ec == std::errc();
+    }
 
-    bool safe_uint(const std::string& src, uint32_t& num);
-    uint32_t safe_uint(const std::string& src);
+    template <>
+    bool evaluate(const std::string& src, bool& value) noexcept;
 
-    bool safe_float(const std::string& src, float& num);
-    float safe_float(const std::string& src);
+    template <typename T = int32_t>
+    T evaluate(const std::string& src) noexcept {
+        static_assert(std::is_arithmetic_v<T>, "T should be arithmetic type (integral or floating)");
 
-    bool safe_ll(const std::string& src, int64_t& num);
-    int64_t safe_ll(const std::string& src);
+        T result = traits::basic_initialization<T>::value;
+        static_cast<void>(std::from_chars(src.data(), src.data() + src.size(), result));
+        return result;
+    }
 
-    bool to_bool(std::string src);
-    std::string to_string(bool src);
+    template <>
+    bool evaluate(const std::string& src) noexcept;
+
+    std::string to_string(bool src) noexcept;
 
 }
 

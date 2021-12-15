@@ -154,7 +154,7 @@ void shiro::direct::cheesegull::search_np(crow::response& callback, std::unorder
     sqlpp::mysql::connection db(db_connection->get_config());
     const tables::beatmaps beatmaps_tables{};
 
-    int32_t _beatmap_id = utils::strings::safe_ll(b->second);
+    int32_t _beatmap_id = utils::strings::evaluate(b->second);
     auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
 
     if (result.empty()) {
@@ -288,14 +288,14 @@ std::tuple<std::string, std::string> shiro::direct::cheesegull::sanitize_args(st
 }
 
 void shiro::direct::cheesegull::sanitize_mode(std::string& value) {
-    int32_t mode = utils::strings::safe_int(value);
+    int32_t mode = utils::strings::evaluate(value);
     if (mode == -1 || mode < 0 || mode > 3) {
         value = "-1";
     }
 }
 
 void shiro::direct::cheesegull::sanitize_status(std::string& value) {
-    int32_t status = utils::strings::safe_int(value);
+    int32_t status = utils::strings::evaluate(value);
     if (status == -1) {
         return;
     }
@@ -329,7 +329,7 @@ void shiro::direct::cheesegull::sanitize_query(std::string& value) {
 }
 
 void shiro::direct::cheesegull::sanitize_offset(std::string& value) {
-    int32_t page = utils::strings::safe_int(value);
+    int32_t page = utils::strings::evaluate(value);
     if (page == -1) {
         return;
     }

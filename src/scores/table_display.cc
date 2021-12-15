@@ -61,7 +61,7 @@ std::string shiro::scores::table_display::build_present() {
     push("beatmapSetId", this->beatmap.beatmapset_id);
     push("beatmapPlaycount", this->beatmap.play_count);
     push("beatmapPasscount", this->beatmap.pass_count);
-    push("approvedDate", std::put_time(tm, "%F %X"), true);
+    push("approvedDate", std::put_time(tm, "%F %X"));
 
     push("chartId", "beatmap");
     push("chartUrl", this->beatmap.get_url());
@@ -78,7 +78,7 @@ std::string shiro::scores::table_display::build_present() {
     push("totalScoreAfter", this->score.total_score);
     push("ppBefore", this->old_top_score.pp);
     push("ppAfter", this->score.pp);
-    push("onlineScoreId", this->score.id, true);
+    push<true>("onlineScoreId", this->score.id);
 
     push("chartId", "overall");
     push("chartUrl", this->user->get_url());
@@ -96,7 +96,7 @@ std::string shiro::scores::table_display::build_present() {
     push("ppBefore", this->old_pp);
     push("ppAfter", this->user->stats.pp);
     push("achievements-new", "");
-    push("onlineScoreId", this->score.id, true);
+    push<true>("onlineScoreId", this->score.id);
 
     return this->output.str();
 }
@@ -109,7 +109,7 @@ std::string shiro::scores::table_display::build_legacy() {
     push("beatmapSetId", this->beatmap.beatmapset_id);
     push("beatmapPlaycount", this->beatmap.play_count);
     push("beatmapPasscount", this->beatmap.pass_count);
-    push("approvedDate", std::put_time(tm, "%F %X"), true);
+    push<true>("approvedDate", std::put_time(tm, "%F %X"));
 
     std::string user_above = ranking::helper::get_leaderboard_user(this->user->stats.play_mode, this->user->stats.rank - 1, this->user->is_relax);
     int16_t user_above_pp = ranking::helper::get_pp_for_user(this->user->stats.play_mode, user_above, this->user->is_relax);
@@ -138,7 +138,7 @@ std::string shiro::scores::table_display::build_legacy() {
     push("toNextRankUser", user_above);
     push("achievements", "");
     push("achievements-new", "");
-    push("onlineScoreId", this->score.id, true);
+    push<true>("onlineScoreId", this->score.id);
 
     return this->output.str();
 }

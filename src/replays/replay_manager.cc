@@ -41,8 +41,9 @@
 static fs::path dir = fs::current_path() / "replays";
 
 void shiro::replays::init() {
-    if (!fs::exists(dir))
+    if (!fs::exists(dir)) {
         fs::create_directories(dir);
+    }
 }
 
 void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::beatmap &beatmap, std::string replay) {
@@ -161,9 +162,9 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     buffer.write<uint8_t>(s.play_mode);
     buffer.write<int32_t>(20210520);
 
-    buffer.write_string(beatmap_md5);
-    buffer.write_string(osu_username);
-    buffer.write_string(hash);
+    buffer.write<std::string>(beatmap_md5);
+    buffer.write<std::string>(osu_username);
+    buffer.write<std::string>(hash);
 
     buffer.write<int16_t>(s.count_300);
     buffer.write<int16_t>(s.count_100);
@@ -181,7 +182,7 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     buffer.write<int64_t>(utils::time::get_current_time_ticks());
 
     buffer.write<int32_t>(raw_replay.size());
-    buffer.write_string(raw_replay);
+    buffer.write<std::string>(raw_replay);
 
     buffer.write<int64_t>(s.id);
     buffer.write<int32_t>(0);

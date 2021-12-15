@@ -71,12 +71,12 @@ shiro::io::buffer shiro::io::layouts::multiplayer_match::marshal() {
     buf.write<uint8_t>(this->multi_type);
     buf.write<int32_t>(this->active_mods);
 
-    buf.write_string(game_name);
-    buf.write_string(game_password);
+    buf.write<std::string>(game_name);
+    buf.write<std::string>(game_password);
 
-    buf.write_string(beatmap_name);
+    buf.write<std::string>(beatmap_name);
     buf.write<int32_t>(this->beatmap_id);
-    buf.write_string(beatmap_checksum);
+    buf.write<std::string>(beatmap_checksum);
 
     for (uint8_t status : this->multi_slot_status) {
         buf.write<uint8_t>(status);
@@ -121,12 +121,12 @@ void shiro::io::layouts::multiplayer_match::unmarshal(shiro::io::buffer &buffer)
     this->multi_type = buffer.read<uint8_t>();
     this->active_mods = buffer.read<int32_t>();
 
-    this->game_name = buffer.read_string();
-    this->game_password = buffer.read_string();
+    this->game_name = buffer.read<std::string>();
+    this->game_password = buffer.read<std::string>();
 
-    this->beatmap_name = buffer.read_string();
+    this->beatmap_name = buffer.read<std::string>();
     this->beatmap_id = buffer.read<int32_t>();
-    this->beatmap_checksum = buffer.read_string();
+    this->beatmap_checksum = buffer.read<std::string>();
 
     for (uint8_t &status : this->multi_slot_status) {
         status = buffer.read<uint8_t>();

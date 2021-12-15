@@ -22,16 +22,16 @@ shiro::io::buffer shiro::io::layouts::multiplayer_join::marshal() {
     io::buffer buf;
 
     buf.write<int32_t>(this->match_id);
-    buf.write_string(this->password);
+    buf.write<std::string>(this->password);
 
     return buf;
 }
 
 void shiro::io::layouts::multiplayer_join::unmarshal(shiro::io::buffer &buffer) {
     this->match_id = buffer.read<int32_t>();
-    this->password = buffer.read_string();
+    this->password = buffer.read<std::string>();
 }
 
 int32_t shiro::io::layouts::multiplayer_join::get_size() {
-    return this->marshal().get_size();
+    return static_cast<int32_t>(this->marshal().get_size());
 }

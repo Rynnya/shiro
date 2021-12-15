@@ -79,12 +79,12 @@ void shiro::redis::setup() {
     this->client->sync_commit();
 
     this->sub->subscribe("shiro.user_preferences", 
-        [](const std::string& ch, const std::string& msg) { users::manager::update_preferences(utils::strings::safe_int(msg)); });
+        [](const std::string& ch, const std::string& msg) { users::manager::update_preferences(utils::strings::evaluate(msg)); });
     this->sub->commit();
 }
 
 bool shiro::redis::is_connected() {
-    return this->client != nullptr;
+    return this->client && this->sub;
 }
 
 std::shared_ptr<cpp_redis::client> shiro::redis::get() {

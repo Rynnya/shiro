@@ -54,16 +54,16 @@ namespace shiro::scores {
 
         void set_scoreboard_position(int32_t position);
 
-        template <typename T>
-        void push(const std::string &key, T value, bool flush = false) {
+        template <bool flush = false, typename T>
+        void push(const std::string &key, T value) {
             this->output << key << ":" << value;
 
-            if (!flush) {
-                this->output << "|";
+            if constexpr (flush) {
+                this->output << std::endl;
                 return;
             }
 
-            this->output << std::endl;
+            this->output << "|";
         }
 
         std::string build_present();

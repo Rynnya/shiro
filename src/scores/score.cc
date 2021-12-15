@@ -27,17 +27,14 @@
 
 std::string shiro::scores::score::to_string(std::vector<score> &scores, bool is_relax) {
     std::stringstream stream;
-    std::shared_ptr<users::user> user = users::manager::get_user_by_id(this->user_id);
 
-    if (user == nullptr) {
-        user = std::make_shared<users::user>(this->user_id);
-        if (!user->init()) {
-            return "";
-        }
+    std::string username = users::manager::get_username_by_id(this->user_id);
+    if (username.empty()) {
+        return "";
     }
 
     stream << this->id << "|";
-    stream << user->presence.username << "|";
+    stream << username << "|";
     stream << (is_relax && this->pp > 0 ? static_cast<int32_t>(this->pp) : this->total_score) << "|";
     stream << this->max_combo << "|";
     stream << this->count_50 << "|";

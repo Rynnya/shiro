@@ -40,9 +40,10 @@ void shiro::users::manager::login_user(const std::shared_ptr<shiro::users::user>
     }
 
     // Disallow other threads from both writing and reading
-    std::unique_lock<std::shared_timed_mutex> lock(mutex);
-
-    online_users.emplace_back(user);
+    {
+        std::unique_lock<std::shared_timed_mutex> lock(mutex);
+        online_users.emplace_back(user);
+    }
 
     LOG_F(INFO, "User %s logged in successfully.", user->presence.username.c_str());
 
@@ -57,15 +58,16 @@ void shiro::users::manager::logout_user(const std::shared_ptr<shiro::users::user
     }
 
     // Disallow other threads from both writing and reading
-    std::unique_lock<std::shared_timed_mutex> lock(mutex);
+    {
+        std::unique_lock<std::shared_timed_mutex> lock(mutex);
 
-    auto iterator = std::find(online_users.begin(), online_users.end(), user);
+        auto iterator = std::find(online_users.begin(), online_users.end(), user);
+        if (iterator == online_users.end()) {
+            return;
+        }
 
-    if (iterator == online_users.end()) {
-        return;
+        online_users.erase(iterator);
     }
-
-    online_users.erase(iterator);
 
     LOG_F(INFO, "User %s logged out successfully.", user->presence.username.c_str());
 
@@ -214,6 +216,7 @@ void shiro::users::manager::update_preferences(int32_t id) {
         }
 
         user->preferences = std::move(shiro::users::user_preferences(id));
+        break;
     }
 }
 
@@ -250,5 +253,5 @@ size_t shiro::users::manager::get_online_users() {
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
 
     return std::count_if(online_users.begin(), online_users.end(),
-        [](std::shared_ptr<users::user> &user) { return user->user_id != 1 && !user->hidden; });
+        [](std::shared_ptr<users::user> &user) { return user->client_type != +utils::clients::osu_client::aschente && !user->hidden; });
 }

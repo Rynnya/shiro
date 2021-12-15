@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class user_status : public serializable {
+    class user_status : public serializable<void> {
     public:
         uint8_t activity = 0;
         std::string activity_desc = "";

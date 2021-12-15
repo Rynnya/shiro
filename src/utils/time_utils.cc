@@ -72,7 +72,7 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
         raw_time = input.substr(0, size - it);
     }
 
-    if (!strings::safe_uint(raw_time, time)) {
+    if (strings::evaluate<uint32_t>(raw_time, time) == 0) {
         return std::nullopt;
     }
 

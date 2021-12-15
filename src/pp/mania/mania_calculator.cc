@@ -132,7 +132,7 @@ void shiro::pp::mania::mania_calculator::parse_note(std::string line, int32_t ke
         int32_t key = std::floor(x * keys / 512);
 
         if (matches[3] != "") {
-            end_t = shiro::utils::strings::safe_int(matches[3]);
+            end_t = shiro::utils::strings::evaluate(matches[3]);
         }
 
         end_t = (end_t == -1 ? start_t : end_t);

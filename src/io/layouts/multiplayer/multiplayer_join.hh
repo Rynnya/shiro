@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class multiplayer_join : public serializable {
+    class multiplayer_join : public serializable<void> {
     public:
         int32_t match_id;
         std::string password;

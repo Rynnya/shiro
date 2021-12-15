@@ -65,9 +65,9 @@ shiro::io::buffer shiro::io::layouts::user_stats::marshal() {
     buf.write<int32_t>(this->user_id);
 
     buf.write<uint8_t>(this->activity);
-    buf.write_string(status_text);
+    buf.write<std::string>(status_text);
 
-    buf.write_string(beatmap_checksum);
+    buf.write<std::string>(beatmap_checksum);
 
     buf.write<uint32_t>(this->current_mods);
     buf.write<uint8_t>(this->play_mode);
@@ -90,9 +90,9 @@ void shiro::io::layouts::user_stats::unmarshal(shiro::io::buffer &buffer) {
     this->user_id = buffer.read<int32_t>();
 
     this->activity = buffer.read<uint8_t>();
-    this->activity_desc = buffer.read_string();
+    this->activity_desc = buffer.read<std::string>();
 
-    this->beatmap_checksum = buffer.read_string();
+    this->beatmap_checksum = buffer.read<std::string>();
 
     this->current_mods = buffer.read<uint32_t>();
     this->play_mode = buffer.read<uint8_t>();

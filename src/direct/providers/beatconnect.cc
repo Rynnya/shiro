@@ -151,21 +151,25 @@ void shiro::direct::beatconnect::search_np(crow::response& callback, std::unorde
         parameters.erase("h");
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_tables{};
+    int32_t beatmapset_id = 0;
 
-    int32_t _beatmap_id = utils::strings::safe_ll(b->second);
-    auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
+    {
+        sqlpp::mysql::connection db(db_connection->get_config());
+        const tables::beatmaps beatmaps_tables{};
 
-    if (result.empty()) {
-        callback.code = 504;
-        callback.end();
+        int32_t beatmap_id = utils::strings::evaluate(b->second);
+        auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == beatmap_id).limit(1u));
 
-        return;
+        if (result.empty()) {
+            callback.code = 504;
+            callback.end();
+
+            return;
+        }
+
+        auto& row = result.front();
+        beatmapset_id = row.beatmapset_id;
     }
-
-    auto& _result = result.front();
-    int32_t beatmapset_id = _result.beatmapset_id;
 
     std::string url = "https://beatconnect.io/api/beatmap/" + std::to_string(beatmapset_id) + "/";
     auto [success, output] = utils::curl::get_direct(url);
@@ -221,7 +225,7 @@ void shiro::direct::beatconnect::search_np(crow::response& callback, std::unorde
     // TODO: I really hope Beatconnect will fix this bug cuz this looks really shitty
     out << shiro::beatmaps::helper::fix_beatmap_status(
         json_result["ranked"].is_string()
-        ? utils::strings::safe_int(json_result["ranked"].get<std::string>())
+        ? utils::strings::evaluate(json_result["ranked"].get<std::string>())
         : json_result["ranked"].get<int32_t>()
     ) << "|"; // Ranked status
 
@@ -318,7 +322,7 @@ std::tuple<std::string, std::string> shiro::direct::beatconnect::sanitize_args(s
 void shiro::direct::beatconnect::sanitize_mode(std::string &value) {
     int32_t mode = 0;
 
-    if (!utils::strings::safe_int(value, mode)) {
+    if (!utils::strings::evaluate(value, mode)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", value.c_str());
 
         return;

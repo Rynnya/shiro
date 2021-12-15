@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -53,6 +54,12 @@ namespace shiro::io {
             }
         }
 
+        template <>
+        void write(std::string data);
+
+        template <>
+        void write(std::vector<int32_t> data);
+
         template <typename T = uint8_t>
         T read() {
             T data = *reinterpret_cast<T*>((uintptr_t)this->bytes.data() + this->position);
@@ -61,11 +68,11 @@ namespace shiro::io {
             return data;
         }
 
-        void write_string(std::string data);
-        void write_array(std::vector<int32_t> data);
+        template <>
+        std::string read();
 
-        std::string read_string();
-        std::vector<int32_t> read_array();
+        template <>
+        std::vector<int32_t> read();
 
         std::string serialize();
 

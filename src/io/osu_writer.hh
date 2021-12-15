@@ -43,7 +43,7 @@ namespace shiro::io {
             buf.write<int32_t>(0);
         }
 
-        template <typename T = serializable>
+        template <typename T = serializable<uint8_t>>
         void write(packet_id id, T data) {
             buf.write<int16_t>(static_cast<int16_t>(id));
             buf.write<uint8_t>(0);

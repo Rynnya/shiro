@@ -35,8 +35,8 @@ bool shiro::commands_mp::map(std::deque<std::string>& args, std::shared_ptr<shir
         return true;
     }
 
-    int32_t beatmap_id;
-    if (!shiro::utils::strings::safe_int(args.at(0), beatmap_id)) {
+    int32_t beatmap_id = 0;
+    if (!shiro::utils::strings::evaluate(args.at(0), beatmap_id)) {
         utils::bot::respond("You must provide a number!", user, channel, true);
         utils::bot::respond("Usage: !mp map <beatmap_id>", user, channel, true);
         return true;

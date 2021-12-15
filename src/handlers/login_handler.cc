@@ -133,7 +133,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
             [](char c) { return !std::isdigit(c); }), parseable_version.end());
     }
 
-    if (!utils::strings::safe_int(parseable_version, build)) {
+    if (!utils::strings::evaluate(parseable_version, build)) {
         LOG_F(WARNING, "Unable to cast `%s` to int32_t.", version.c_str());
         logging::sentry::exception(std::invalid_argument("Parseable version was invalid."), __FILE__, __LINE__);
 
@@ -168,14 +168,9 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     user->last_ping = seconds;
 
     uint8_t time_zone = 9;
-
     int32_t parsed_time_zone = 0;
-    if (!utils::strings::safe_int(utc_offset, parsed_time_zone)) {
-        LOG_F(WARNING, "Unable to cast %s to int32_t (uint8_t).", utc_offset.c_str());
-        logging::sentry::exception(std::invalid_argument("UTC Offset was not a number."), __FILE__, __LINE__);
-    }
 
-    if (parsed_time_zone != 0) {
+    if (utils::strings::evaluate(utc_offset, parsed_time_zone)) {
         time_zone = static_cast<uint8_t>(parsed_time_zone + 24);
     }
 

@@ -218,21 +218,26 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         return;
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_tables{};
+    int32_t beatmapset_id = 0;
 
-    int32_t _beatmap_id = utils::strings::safe_ll(b->second);
-    auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == _beatmap_id));
+    {
+        sqlpp::mysql::connection db(db_connection->get_config());
+        const tables::beatmaps beatmaps_tables{};
 
-    if (result.empty()) {
-        callback.code = 504;
-        callback.end();
+        int32_t beatmap_id = utils::strings::evaluate(b->second);
+        auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == beatmap_id));
 
-        return;
+        if (result.empty()) {
+            callback.code = 504;
+            callback.end();
+
+            return;
+        }
+
+        auto& row = result.front();
+        int32_t beatmapset_id = row.beatmapset_id;
     }
 
-    auto& _result = result.front();
-    int32_t beatmapset_id = _result.beatmapset_id;
 
     std::string url =
         (config::direct::hanaru_url.find("localhost") != std::string::npos
@@ -367,7 +372,7 @@ void shiro::direct::hanaru::on_message(websocketpp::connection_hdl handle, clien
 int32_t shiro::direct::hanaru::sanitize_mode(const std::string& value) {
     int32_t mode = 0;
 
-    if (!utils::strings::safe_int(value, mode)) {
+    if (!utils::strings::evaluate(value, mode)) {
         return -1;
     }
 
@@ -382,7 +387,7 @@ int32_t shiro::direct::hanaru::sanitize_mode(const std::string& value) {
 int32_t shiro::direct::hanaru::sanitize_status(const std::string& value) {
     int32_t status = 0;
 
-    if (utils::strings::safe_int(value, status)) {
+    if (utils::strings::evaluate(value, status)) {
         return beatmaps::helper::fix_beatmap_status(status);
     }
 

@@ -172,16 +172,16 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
 
     bool parse_result = true;
 
-    parse_result &= utils::strings::safe_int  (score_metadata.at(3),  score.count_300);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(4),  score.count_100);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(5),  score.count_50);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(6),  score.count_gekis);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(7),  score.count_katus);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(8),  score.count_misses);
-    parse_result &= utils::strings::safe_ll   (score_metadata.at(9),  score.total_score);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(10), score.max_combo);
-    parse_result &= utils::strings::safe_int  (score_metadata.at(13), score.mods);
-    parse_result &= utils::strings::safe_uchar(score_metadata.at(15), score.play_mode);
+    parse_result &= utils::strings::evaluate(score_metadata.at(3),  score.count_300);
+    parse_result &= utils::strings::evaluate(score_metadata.at(4),  score.count_100);
+    parse_result &= utils::strings::evaluate(score_metadata.at(5),  score.count_50);
+    parse_result &= utils::strings::evaluate(score_metadata.at(6),  score.count_gekis);
+    parse_result &= utils::strings::evaluate(score_metadata.at(7),  score.count_katus);
+    parse_result &= utils::strings::evaluate(score_metadata.at(8),  score.count_misses);
+    parse_result &= utils::strings::evaluate(score_metadata.at(9),  score.total_score);
+    parse_result &= utils::strings::evaluate(score_metadata.at(10), score.max_combo);
+    parse_result &= utils::strings::evaluate(score_metadata.at(13), score.mods);
+    parse_result &= utils::strings::evaluate(score_metadata.at(15), score.play_mode);
 
     if (!parse_result) {
         logging::sentry::exception(std::invalid_argument("Score submission arguments was invalid."), __FILE__, __LINE__);
@@ -192,7 +192,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
-    parse_result &= utils::strings::safe_int(score_metadata.at(17), game_version);
+    parse_result &= utils::strings::evaluate(score_metadata.at(17), game_version);
 
     if (!parse_result) {
         logging::sentry::exception(std::invalid_argument("Cannot convert game version into int32_t."), __FILE__, __LINE__);
@@ -208,7 +208,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     int32_t failtime = 0;
     bool failed = false;
     if (fields.find("ft") != fields.end()) {
-        failtime = utils::strings::safe_int(fields.at("ft").body);
+        failtime = utils::strings::evaluate(fields.at("ft").body);
         failed = failtime > 0;
     }
 
@@ -222,8 +222,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     std::chrono::seconds seconds = utils::time::current_time();
 
     score.rank = score_metadata.at(12);
-    score.fc = utils::strings::to_bool(score_metadata.at(11));
-    score.passed = utils::strings::to_bool(score_metadata.at(14));
+    score.fc = utils::strings::evaluate<bool>(score_metadata.at(11));
+    score.passed = utils::strings::evaluate<bool>(score_metadata.at(14));
     score.is_relax = score.mods & static_cast<uint32_t>(utils::mods::relax);
     score.time = seconds.count();
 

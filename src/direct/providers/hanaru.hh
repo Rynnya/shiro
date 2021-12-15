@@ -57,4 +57,4 @@ namespace shiro::direct {
 
 }
 
-#endif
+#endif //SHIRO_HANARU_HH

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -46,11 +47,13 @@ shiro::io::buffer::buffer(std::string data) {
     }
 }
 
-void shiro::io::buffer::write_string(std::string data) {
+template <>
+void shiro::io::buffer::write(std::string data) {
     this->append(data);
 }
 
-void shiro::io::buffer::write_array(std::vector<int32_t> data) {
+template <>
+void shiro::io::buffer::write(std::vector<int32_t> data) {
     this->write<int16_t>(data.size());
 
     for (int32_t item : data) {
@@ -58,7 +61,8 @@ void shiro::io::buffer::write_array(std::vector<int32_t> data) {
     }
 }
 
-std::string shiro::io::buffer::read_string() {
+template <>
+std::string shiro::io::buffer::read() {
     if (this->read<uint8_t>() == 11) {
         int32_t total = 0;
         int32_t shift = 0;
@@ -97,7 +101,8 @@ std::string shiro::io::buffer::read_string() {
     return "";
 }
 
-std::vector<int32_t> shiro::io::buffer::read_array() {
+template <>
+std::vector<int32_t> shiro::io::buffer::read() {
     std::vector<int32_t> result;
     uint16_t size = this->read<uint16_t>();
 

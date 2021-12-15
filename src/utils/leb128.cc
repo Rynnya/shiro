@@ -50,7 +50,7 @@ uint64_t shiro::utils::leb128::read_leb128(shiro::io::buffer &buffer) {
 
 void shiro::utils::leb128::write_leb128(shiro::io::buffer &buffer, uint64_t value) {
     if (value == 0) {
-        buffer.write<uint8_t>(static_cast<std::uint8_t>('\0'));
+        buffer.write<uint8_t>(0);
     }
     else {
         int len = 0;

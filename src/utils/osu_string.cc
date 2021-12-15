@@ -35,7 +35,7 @@ std::string shiro::utils::osu_string(std::string value, bool nullable) {
     else {
         buffer.write<uint8_t>(11);
         utils::leb128::write_leb128(buffer, value.size());
-        buffer.write_string(value);
+        buffer.write<std::string>(value);
     }
 
     return buffer.serialize();

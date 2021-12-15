@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class replay_frame : public serializable {
+    class replay_frame : public serializable<void> {
     public:
         virtual ~replay_frame() = default;
 

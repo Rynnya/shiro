@@ -20,7 +20,7 @@
 #include "user_presence_request_handler.hh"
 
 void shiro::handler::presence::request::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    std::vector<int32_t> requested_users = in.data.read_array();
+    std::vector<int32_t> requested_users = in.data.read<std::vector<int32_t>>();
 
     for (int32_t requested_user : requested_users) {
         if (requested_user == user->user_id) {

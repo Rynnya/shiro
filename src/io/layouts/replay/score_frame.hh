@@ -23,7 +23,7 @@
 
 namespace shiro::io::layouts {
 
-    class score_frame : public serializable {
+    class score_frame : public serializable<void> {
     public:
         int32_t time = 0;
         uint8_t id = 0;

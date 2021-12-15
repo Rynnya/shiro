@@ -504,6 +504,7 @@ void shiro::users::user::verify_address(const std::string& address) {
 
     auto& ip = db(sqlpp::select(user_table.ip).from(user_table).where(user_table.id == this->user_id)).front().ip;
     std::string ip_string = ip.value();
+
     if (address == ip_string) {
         return;
     }
