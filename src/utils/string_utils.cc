@@ -21,6 +21,19 @@
 #include <iterator>
 
 #include "string_utils.hh"
+#include "../thirdparty/fast_float.hh"
+
+template <>
+bool shiro::utils::strings::evaluate(const std::string& src, float& value) noexcept {
+    auto [ptr, ec] = fast_float::from_chars(src.data(), src.data() + src.size(), value);
+    return ec == std::errc();
+}
+
+template <>
+bool shiro::utils::strings::evaluate(const std::string& src, double& value) noexcept {
+    auto [ptr, ec] = fast_float::from_chars(src.data(), src.data() + src.size(), value);
+    return ec == std::errc();
+}
 
 template <>
 bool shiro::utils::strings::evaluate(const std::string& src, bool& value) noexcept {
@@ -30,6 +43,20 @@ bool shiro::utils::strings::evaluate(const std::string& src, bool& value) noexce
     value = (result == "true" || result == "1");
 
     return true;
+}
+
+template <>
+float shiro::utils::strings::evaluate(const std::string& src) noexcept {
+    float result = 0.0f;
+    static_cast<void>(fast_float::from_chars(src.data(), src.data() + src.size(), result));
+    return result;
+}
+
+template <>
+double shiro::utils::strings::evaluate(const std::string& src) noexcept {
+    double result = 0.0;
+    static_cast<void>(fast_float::from_chars(src.data(), src.data() + src.size(), result));
+    return result;
 }
 
 template <>

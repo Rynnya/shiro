@@ -29,23 +29,35 @@ namespace shiro::utils::strings {
 
     template <typename T = int32_t>
     bool evaluate(const std::string& src, T& value) noexcept {
-        static_assert(std::is_arithmetic_v<T>, "T should be arithmetic type (integral or floating)");
+        static_assert(std::is_integral_v<T>, "T should be integral type");
 
         auto [ptr, ec] = std::from_chars(src.data(), src.data() + src.size(), value);
         return ec == std::errc();
     }
 
     template <>
+    bool evaluate(const std::string& src, float& value) noexcept;
+
+    template <>
+    bool evaluate(const std::string& src, double& value) noexcept;
+
+    template <>
     bool evaluate(const std::string& src, bool& value) noexcept;
 
     template <typename T = int32_t>
     T evaluate(const std::string& src) noexcept {
-        static_assert(std::is_arithmetic_v<T>, "T should be arithmetic type (integral or floating)");
+        static_assert(std::is_integral_v<T>, "T should be integral type");
 
         T result = traits::basic_initialization<T>::value;
         static_cast<void>(std::from_chars(src.data(), src.data() + src.size(), result));
         return result;
     }
+
+    template <>
+    float evaluate(const std::string& src) noexcept;
+
+    template <>
+    double evaluate(const std::string& src) noexcept;
 
     template <>
     bool evaluate(const std::string& src) noexcept;
