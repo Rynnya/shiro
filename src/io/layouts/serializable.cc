@@ -20,36 +20,20 @@
 #include "serializable.hh"
 #include "../../utils/osu_string.hh"
 
-template<typename T>
-shiro::io::serializable<T>::serializable(T data) : data(data) {}
+template <>
 shiro::io::serializable<std::string>::serializable(std::string data) : data(std::move(data)) {}
+
+template <>
 shiro::io::serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) : data(std::move(data)) {}
 
-template <typename T>
-shiro::io::buffer shiro::io::serializable<T>::marshal() {
-    buffer buf;
-    buf.write<data_type>(data);
-    return buf;
-}
-
+template <>
 shiro::io::buffer shiro::io::serializable<std::string>::marshal() {
     buffer buf;
     buf.write<std::string>(utils::osu_string(data));
     return buf;
 }
 
-template <typename T>
-void shiro::io::serializable<T>::unmarshal(buffer& buf) {
-    // Nothing, every derived class will do what they need here
-}
-
-template <typename T>
-int32_t shiro::io::serializable<T>::get_size() {
-    return static_cast<int32_t>(this->marshal().get_size());
-}
-
 // Specification for empty serializable class
-
 shiro::io::buffer shiro::io::serializable<void>::marshal() {
     return buffer();
 };

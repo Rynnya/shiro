@@ -54,12 +54,6 @@ namespace shiro::io {
             }
         }
 
-        template <>
-        void write(std::string data);
-
-        template <>
-        void write(std::vector<int32_t> data);
-
         template <typename T = uint8_t>
         T read() {
             T data = *reinterpret_cast<T*>((uintptr_t)this->bytes.data() + this->position);
@@ -67,12 +61,6 @@ namespace shiro::io {
 
             return data;
         }
-
-        template <>
-        std::string read();
-
-        template <>
-        std::vector<int32_t> read();
 
         std::string serialize();
 
@@ -87,6 +75,19 @@ namespace shiro::io {
 
     };
 
+    template <>
+    void buffer::write(std::string data);
+
+    template <>
+    void buffer::write(std::vector<int32_t> data);
+
+    template <>
+    std::string buffer::read();
+
+    template <>
+    std::vector<int32_t> buffer::read();
+
 }
+
 
 #endif //SHIRO_OSU_BUFFER_HH

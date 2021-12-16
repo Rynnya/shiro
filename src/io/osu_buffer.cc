@@ -47,6 +47,36 @@ shiro::io::buffer::buffer(std::string data) {
     }
 }
 
+std::string shiro::io::buffer::serialize() {
+    return std::string(this->bytes.begin(), this->bytes.end());
+}
+
+bool shiro::io::buffer::can_read(size_t amount) noexcept {
+    return amount <= this->written_size - this->position;
+}
+
+bool shiro::io::buffer::is_empty() noexcept {
+    return this->written_size == 0;
+}
+
+void shiro::io::buffer::clear() noexcept {
+    this->bytes.clear();
+    this->written_size = 0;
+    this->position = 0;
+}
+
+void shiro::io::buffer::seek(size_t position) noexcept {
+    this->position = position;
+}
+
+void shiro::io::buffer::advance(size_t amount) noexcept {
+    this->position += amount;
+}
+
+size_t shiro::io::buffer::get_size() noexcept {
+    return this->written_size;
+}
+
 template <>
 void shiro::io::buffer::write(std::string data) {
     this->append(data);
@@ -111,34 +141,4 @@ std::vector<int32_t> shiro::io::buffer::read() {
     }
 
     return result;
-}
-
-std::string shiro::io::buffer::serialize() {
-    return std::string(this->bytes.begin(), this->bytes.end());
-}
-
-bool shiro::io::buffer::can_read(size_t amount) noexcept {
-    return amount <= this->written_size - this->position;
-}
-
-bool shiro::io::buffer::is_empty() noexcept {
-    return this->written_size == 0;
-}
-
-void shiro::io::buffer::clear() noexcept {
-    this->bytes.clear();
-    this->written_size = 0;
-    this->position = 0;
-}
-
-void shiro::io::buffer::seek(size_t position) noexcept {
-    this->position = position;
-}
-
-void shiro::io::buffer::advance(size_t amount) noexcept {
-    this->position += amount;
-}
-
-size_t shiro::io::buffer::get_size() noexcept {
-    return this->written_size;
 }

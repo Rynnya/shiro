@@ -33,12 +33,19 @@ namespace shiro::io {
         T data = traits::basic_initialization<T>::value;
 
         serializable() = default;
-        explicit serializable(T data);
+        explicit serializable(T data) : data(data) {}
 
-        virtual shiro::io::buffer marshal();
-        virtual void unmarshal(buffer& buf);
+        virtual shiro::io::buffer marshal() {
+            buffer buf;
+            buf.write<data_type>(data);
+            return buf;
+        }
 
-        virtual int32_t get_size();
+        virtual void unmarshal(buffer& buf) { /* Nothing, derived classes will override it */ }
+
+        virtual int32_t get_size() {
+            return static_cast<int32_t>(this->marshal().get_size());
+        }
     };
 
     // Empty serializable class for derived classes, without additional containers
@@ -50,6 +57,15 @@ namespace shiro::io {
 
         virtual int32_t get_size();
     };
+
+    template <>
+    serializable<std::string>::serializable(std::string data);
+
+    template <>
+    serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data);
+
+    template <>
+    shiro::io::buffer serializable<std::string>::marshal();
 }
 
 #endif //SHIRO_SERIALIZABLE_HH
