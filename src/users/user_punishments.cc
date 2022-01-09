@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cinttypes>
+
 #include "../channels/discord_webhook.hh"
 #include "../config/ipc_file.hh"
 #include "../database/tables/punishments_table.hh"
@@ -56,7 +58,7 @@ void shiro::users::punishments::init() {
 
                 switch (type) {
                     case utils::punishment_type::silence: {
-                        LOG_F(INFO, "User %lli has been unsilenced automatically.", row.id.value());
+                        LOG_F(INFO, "User %" PRIi64 " has been unsilenced automatically.", row.id.value());
                         break;
                     }
                     case utils::punishment_type::restrict: {
@@ -71,11 +73,11 @@ void shiro::users::punishments::init() {
                             user->queue.enqueue(writer);
                         }
 
-                        LOG_F(INFO, "User %lli has been unrestricted automatically.", row.id.value());
+                        LOG_F(INFO, "User %" PRIi64 " has been unrestricted automatically.", row.id.value());
                         break;
                     }
                     case utils::punishment_type::ban: {
-                        LOG_F(INFO, "User %lli has been unbanned automatically.", row.id.value());
+                        LOG_F(INFO, "User %" PRIi64 " has been unbanned automatically.", row.id.value());
                         break;
                     }
                     default: {
@@ -146,7 +148,7 @@ void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_
     std::string username = manager::get_username_by_id(user_id);
     std::string origin_username = manager::get_username_by_id(origin);
 
-    LOG_F(INFO, "%s has been silenced for %i seconds for %s by %s.", username.c_str(), duration, reason.c_str(), origin_username.c_str());
+    LOG_F(INFO, "%s has been silenced for %u seconds for %s by %s.", username.c_str(), duration, reason.c_str(), origin_username.c_str());
 
     shiro::channels::discord_webhook::send_silence_message(username, origin_username, reason, duration);
 

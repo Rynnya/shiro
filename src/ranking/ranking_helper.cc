@@ -137,8 +137,8 @@ int32_t shiro::ranking::helper::get_leaderboard_position(uint8_t mode, std::stri
     return 0;
 }
 
-std::string shiro::ranking::helper::get_leaderboard_user(uint8_t mode, int32_t pos, bool is_relax) {
-    if (pos < 1) {
+std::string shiro::ranking::helper::get_leaderboard_user(uint8_t mode, size_t pos, bool is_relax) {
+    if (pos == 0) {
         return "";
     }
 

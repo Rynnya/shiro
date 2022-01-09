@@ -37,6 +37,7 @@ namespace shiro::traits {
 
         template <>
         struct is_string<std::string> : std::true_type {};
+
     }
 
     template <typename T, typename E = void>

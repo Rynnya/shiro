@@ -28,12 +28,17 @@ namespace shiro::io {
     template <typename T = uint8_t>
     class serializable {
     public:
+        static_assert(
+            std::is_arithmetic<T>::value || traits::detail::is_string<T>::value || traits::detail::is_vector<T>::value,
+            "serializable type must be arithmetic, std::string or std::vector (void specialization declared below)"
+        );
+
         typedef T data_type;
 
-        T data = traits::basic_initialization<T>::value;
+        data_type data = traits::basic_initialization<T>::value;
 
         serializable() = default;
-        explicit serializable(T data) : data(data) {}
+        explicit serializable(data_type data) : data(data) {}
 
         virtual shiro::io::buffer marshal() {
             buffer buf;
@@ -52,10 +57,10 @@ namespace shiro::io {
     template <>
     class serializable<void> {
     public:
-        virtual shiro::io::buffer marshal();
-        virtual void unmarshal(buffer& buf);
+        virtual shiro::io::buffer marshal() = 0;
+        virtual void unmarshal(buffer& buf) = 0;
 
-        virtual int32_t get_size();
+        virtual int32_t get_size() = 0;
     };
 
     template <>

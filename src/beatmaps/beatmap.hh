@@ -74,6 +74,7 @@ namespace shiro::beatmaps {
         void fetch(bool force_peppster = false);
         bool fetch_db();
         bool fetch_api();
+
         // Requires when map cannot be found by md5, but might exist by beatmapset_id
         bool exist();
 

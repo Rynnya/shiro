@@ -242,11 +242,13 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 
         std::string last_update = part["last_update"];
 
-        std::tm time{};
-        std::stringstream stream(last_update);
+        std::tm time = std::tm();
+        std::stringstream stream = std::stringstream(last_update);
+
         stream >> std::get_time(&time, "%Y-%m-%d %H:%M:%S");
         std::chrono::time_point time_point = std::chrono::system_clock::from_time_t(std::mktime(&time));
         std::chrono::seconds seconds = std::chrono::time_point_cast<std::chrono::seconds>(time_point).time_since_epoch();
+
         this->last_update = seconds.count();
 
         save();

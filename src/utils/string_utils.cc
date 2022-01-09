@@ -23,6 +23,9 @@
 #include "string_utils.hh"
 #include "../thirdparty/fast_float.hh"
 
+// TODO: Replace with std::from_chars when every major compiler will support floats and doubles
+// This might only happend when transfering shiro to C++20
+
 template <>
 bool shiro::utils::strings::evaluate(const std::string& src, float& value) noexcept {
     auto [ptr, ec] = fast_float::from_chars(src.data(), src.data() + src.size(), value);

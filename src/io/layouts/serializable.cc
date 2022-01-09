@@ -32,14 +32,3 @@ shiro::io::buffer shiro::io::serializable<std::string>::marshal() {
     buf.write<std::string>(utils::osu_string(data));
     return buf;
 }
-
-// Specification for empty serializable class
-shiro::io::buffer shiro::io::serializable<void>::marshal() {
-    return buffer();
-};
-
-void shiro::io::serializable<void>::unmarshal(buffer& buf) {};
-
-int32_t shiro::io::serializable<void>::get_size() {
-    return 0;
-}

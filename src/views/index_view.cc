@@ -24,27 +24,7 @@
 #include "../shiro.hh"
 #include "index_view.hh"
 
-static bool ran_once = false;
-
-void shiro::views::index::replace_hash(std::string &view) {
-
-    if (!ran_once) {
-        ran_once = true;
-
-        if (fs::exists("commit.txt")) {
-            std::ifstream stream("commit.txt");
-
-            std::stringstream buffer;
-            buffer << stream.rdbuf();
-
-            commit = buffer.str();
-        }
-    }
-
-    boost::replace_all(view, "{{hash}}", commit);
-}
-
-void shiro::views::index::replace_time(std::string &view) {
+std::string shiro::views::index::replace_time(const std::string &view) {
     double difference = std::difftime(std::time(nullptr), start_time);
     std::time_t seconds((std::time_t) difference);
     std::tm *p = std::gmtime(&seconds);
@@ -56,32 +36,46 @@ void shiro::views::index::replace_time(std::string &view) {
 
     char buffer[64];
     std::snprintf(
-            buffer,
-            sizeof(buffer),
-            "%i %s %i %s %i %s %i %s",
-            days, days == 1 ? "day" : "days",
-            hours, hours == 1 ? "hour" : "hours",
-            minutes, minutes == 1 ? "minute" : "minutes",
-            secs, secs == 1 ? "second" : "seconds"
+        buffer,
+        sizeof(buffer),
+        "%i %s %i %s %i %s %i %s",
+        days, days == 1 ? "day" : "days",
+        hours, hours == 1 ? "hour" : "hours",
+        minutes, minutes == 1 ? "minute" : "minutes",
+        secs, secs == 1 ? "second" : "seconds"
     );
 
-    boost::replace_all(view, "{{uptime}}", buffer);
+    return boost::replace_all_copy(view, "{{uptime}}", buffer);
 }
 
 std::string shiro::views::index::get_view() {
     static std::string view;
-    if (!ran_once) {
-        std::ifstream stream("shiro.html");
+    static std::once_flag once;
 
-        std::stringstream buffer;
-        buffer << stream.rdbuf();
+    std::call_once(once, [&]() {
 
-        view = buffer.str();
-    }
+        {
+            std::ifstream stream("shiro.html");
+
+            std::stringstream buffer;
+            buffer << stream.rdbuf();
+
+            view = buffer.str();
+        }
+
+        if (fs::exists("commit.txt")) {
+            std::ifstream stream("commit.txt");
+
+            std::stringstream buffer;
+            buffer << stream.rdbuf();
+
+            commit = buffer.str();
+        }
+
+    });
 
     // Templates are overrated anyway
-    replace_hash(view);
-    replace_time(view);
+    boost::replace_all(view, "{{hash}}", commit);
 
-    return view;
+    return replace_time(view);
 }

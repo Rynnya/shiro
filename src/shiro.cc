@@ -83,6 +83,7 @@ int shiro::init(int argc, char **argv) {
     config::discord_webhook::parse();
     config::score_submission::parse();
 
+    // Direct might required to use database, so initialize it right after parsing configurations
     db_connection = std::make_shared<database>(
         config::database::address, config::database::port, config::database::database,
         config::database::username, config::database::password

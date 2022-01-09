@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cinttypes>
+
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <cmath>
@@ -55,7 +57,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received invalid login request from %s: Login body has wrong length (%llu != 4).", request.get_ip_address().c_str(), lines.size());
+        LOG_F(WARNING, "Received invalid login request from %s: Login body has wrong length (%" PRIi64 " != 4).", request.get_ip_address().c_str(), lines.size());
         return;
     }
 
