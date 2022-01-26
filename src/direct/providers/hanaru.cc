@@ -50,7 +50,8 @@ shiro::direct::hanaru::hanaru() {
                     LOG_F(ERROR, "Cannot connect through websocket: %s", msg.c_str());
 
                     connection_ptr = nullptr;
-                    return;
+                    std::this_thread::sleep_for(std::chrono::seconds(5));
+                    continue;
                 }
 
                 socket.connect(connection_ptr);
@@ -210,40 +211,19 @@ void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<
 }
 
 void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
-    auto b = parameters.find("b");
-    if (b == parameters.end()) {
+    auto beatmap_id = parameters.find("b");
+    if (beatmap_id == parameters.end()) {
         callback.code = 504;
         callback.end();
 
         return;
     }
 
-    int32_t beatmapset_id = 0;
-
-    {
-        sqlpp::mysql::connection db(db_connection->get_config());
-        const tables::beatmaps beatmaps_tables{};
-
-        int32_t beatmap_id = utils::strings::evaluate(b->second);
-        auto result = db(sqlpp::select(beatmaps_tables.beatmapset_id).from(beatmaps_tables).where(beatmaps_tables.beatmap_id == beatmap_id));
-
-        if (result.empty()) {
-            callback.code = 504;
-            callback.end();
-
-            return;
-        }
-
-        auto& row = result.front();
-        int32_t beatmapset_id = row.beatmapset_id;
-    }
-
-
     std::string url =
         (config::direct::hanaru_url.find("localhost") != std::string::npos
             ? "127.0.0.1:" + std::to_string(config::direct::port)
             : config::direct::hanaru_url
-        ) + "/s/" + std::to_string(beatmapset_id);
+        ) + "/b/" + beatmap_id->second;
     auto [success, output] = shiro::utils::curl::get_direct(url);
 
     if (!success) {
@@ -270,8 +250,7 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
 
     std::stringstream out;
 
-    json_result = json_result[0];
-    std::string beatmap_id = std::to_string(json_result["beatmapset_id"].get<int32_t>());
+    std::string beatmapset_id = std::to_string(json_result["beatmapset_id"].get<int32_t>());
     bool has_video = false; // Hanaru doesn't provide beatmaps with video
     std::string last_updated = "-";
 
@@ -279,15 +258,15 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         last_updated = json_result["latest_update"];
     }
 
-    out << beatmap_id << ".osz" << "|"; // Filename
+    out << beatmapset_id << ".osz" << "|"; // Filename
     out << json_result["artist"].get<std::string>() << "|"; // Artist
     out << json_result["title"].get<std::string>() << "|"; // Song
     out << json_result["creator"].get<std::string>() << "|"; // Mapper
     out << shiro::beatmaps::helper::fix_beatmap_status(json_result["ranked_status"].get<int32_t>()) << "|"; // Ranked status
     out << 0.0 << "|"; // Average Rating
     out << last_updated << "|"; // Last updated
-    out << beatmap_id << "|"; // Beatmap id
-    out << beatmap_id << "|"; // Beatmap id?
+    out << beatmapset_id << "|"; // Beatmap id
+    out << beatmapset_id << "|"; // Beatmap id?
     out << 0 << "|"; // Video?
     out << 0 << "|"; // ?
     out << 0 << "|"; // ?
@@ -323,7 +302,7 @@ void shiro::direct::hanaru::download(crow::response& callback, int32_t beatmap_i
             }
 
             callback.code = 504;
-            callback.end();
+            callback.end(data);
         });
     }
 
@@ -355,10 +334,7 @@ void shiro::direct::hanaru::on_message(websocketpp::connection_hdl handle, clien
 
     int32_t id = payload["id"].get<int32_t>();
     int32_t code = payload["status"].get<int32_t>();
-
-    std::string data = code == 200
-        ? websocketpp::base64_decode(payload["data"].get<std::string>())
-        : payload["data"].get<std::string>();
+    std::string data = websocketpp::base64_decode(payload["data"].get<std::string>());
 
     std::lock_guard<std::mutex> lock(mtx);
 
