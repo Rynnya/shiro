@@ -29,9 +29,9 @@
 static PDH_HQUERY cpu_query;
 static PDH_HCOUNTER cpu_total;
 
-static ULARGE_INTEGER last_cpu;
-static ULARGE_INTEGER last_sys_cpu;
-static ULARGE_INTEGER last_user_cpu;
+static ULARGE_INTEGER last_cpu = { 0 };
+static ULARGE_INTEGER last_sys_cpu = { 0 };
+static ULARGE_INTEGER last_user_cpu = { 0 };
 
 static int32_t thread_count = 0; // CPU threads
 
@@ -61,7 +61,7 @@ void shiro::native::system_stats::init() {
 }
 
 uint64_t shiro::native::system_stats::get_total_memory() {
-    MEMORYSTATUSEX memory_status;
+    MEMORYSTATUSEX memory_status = { 0 };
     memory_status.dwLength = sizeof(MEMORYSTATUSEX);
 
     GlobalMemoryStatusEx(&memory_status);
@@ -70,7 +70,7 @@ uint64_t shiro::native::system_stats::get_total_memory() {
 }
 
 uint64_t shiro::native::system_stats::get_memory_usage() {
-    MEMORYSTATUSEX memory_status;
+    MEMORYSTATUSEX memory_status = { 0 };
     memory_status.dwLength = sizeof(MEMORYSTATUSEX);
 
     GlobalMemoryStatusEx(&memory_status);
@@ -79,7 +79,7 @@ uint64_t shiro::native::system_stats::get_memory_usage() {
 }
 
 uint64_t shiro::native::system_stats::get_process_memory_usage() {
-    PROCESS_MEMORY_COUNTERS_EX process_memory_counters;
+    PROCESS_MEMORY_COUNTERS_EX process_memory_counters = { 0 };
 
     GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS) &process_memory_counters, sizeof(PROCESS_MEMORY_COUNTERS_EX));
 
@@ -87,7 +87,7 @@ uint64_t shiro::native::system_stats::get_process_memory_usage() {
 }
 
 uint64_t shiro::native::system_stats::get_total_physical_memory() {
-    MEMORYSTATUSEX memory_status;
+    MEMORYSTATUSEX memory_status = { 0 };
     memory_status.dwLength = sizeof(MEMORYSTATUSEX);
 
     GlobalMemoryStatusEx(&memory_status);
@@ -96,7 +96,7 @@ uint64_t shiro::native::system_stats::get_total_physical_memory() {
 }
 
 uint64_t shiro::native::system_stats::get_physical_memory_usage() {
-    MEMORYSTATUSEX memory_status;
+    MEMORYSTATUSEX memory_status = { 0 };
     memory_status.dwLength = sizeof(MEMORYSTATUSEX);
 
     GlobalMemoryStatusEx(&memory_status);
@@ -105,7 +105,7 @@ uint64_t shiro::native::system_stats::get_physical_memory_usage() {
 }
 
 uint64_t shiro::native::system_stats::get_physical_process_memory_usage() {
-    PROCESS_MEMORY_COUNTERS_EX process_memory_counters;
+    PROCESS_MEMORY_COUNTERS_EX process_memory_counters = { 0 };
 
     GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS) &process_memory_counters, sizeof(PROCESS_MEMORY_COUNTERS_EX));
 
@@ -113,7 +113,7 @@ uint64_t shiro::native::system_stats::get_physical_process_memory_usage() {
 }
 
 double shiro::native::system_stats::get_cpu_usage() {
-    PDH_FMT_COUNTERVALUE counter_value;
+    PDH_FMT_COUNTERVALUE counter_value = { 0 };
 
     PdhCollectQueryData(cpu_query);
     PdhGetFormattedCounterValue(cpu_total, PDH_FMT_DOUBLE, nullptr, &counter_value);

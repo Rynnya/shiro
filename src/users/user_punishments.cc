@@ -21,7 +21,7 @@
 #include "../channels/discord_webhook.hh"
 #include "../config/ipc_file.hh"
 #include "../database/tables/punishments_table.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/bot_utils.hh"
 #include "../utils/login_responses.hh"
 #include "../utils/punishment_type.hh"
@@ -31,12 +31,9 @@
 #include "user_punishments.hh"
 
 void shiro::users::punishments::init() {
-    scheduler.Schedule(1min, [](tsc::TaskContext ctx)
-    {
-        sqlpp::mysql::connection db(db_connection->get_config());
-        const tables::punishments punishments_table {};
-
-        auto result = db(select(all_of(punishments_table)).from(punishments_table).where(punishments_table.active));
+    scheduler.Schedule(1min, [](tsc::TaskContext ctx) {
+        auto db = shiro::database::instance->pop();
+        auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(tables::punishments_table.active));
 
         if (result.empty()) {
             ctx.Repeat();
@@ -46,19 +43,20 @@ void shiro::users::punishments::init() {
         std::chrono::seconds seconds = utils::time::current_time();
 
         for (const auto &row : result) {
-            if (row.duration.is_null())
+            if (row.duration.is_null()) {
                 continue;
+            }
 
             utils::punishment_type type = static_cast<utils::punishment_type>(row.type.value());
             int32_t timestamp = row.time;
             int32_t duration = row.duration;
 
             if (seconds.count() >= (timestamp + duration)) {
-                db(update(punishments_table).set(punishments_table.active = false).where(punishments_table.id == row.id));
+                db(update(tables::punishments_table).set(tables::punishments_table.active = false).where(tables::punishments_table.id == row.id));
 
                 switch (type) {
                     case utils::punishment_type::silence: {
-                        LOG_F(INFO, "User %" PRIi64 " has been unsilenced automatically.", row.id.value());
+                        LOG_F(INFO, "User {} has been unsilenced automatically.", static_cast<int64_t>(row.id));
                         break;
                     }
                     case utils::punishment_type::restrict: {
@@ -73,11 +71,11 @@ void shiro::users::punishments::init() {
                             user->queue.enqueue(writer);
                         }
 
-                        LOG_F(INFO, "User %" PRIi64 " has been unrestricted automatically.", row.id.value());
+                        LOG_F(INFO, "User {} has been unrestricted automatically.", static_cast<int64_t>(row.id));
                         break;
                     }
                     case utils::punishment_type::ban: {
-                        LOG_F(INFO, "User %" PRIi64 " has been unbanned automatically.", row.id.value());
+                        LOG_F(INFO, "User {} has been unbanned automatically.", static_cast<int64_t>(row.id));
                         break;
                     }
                     default: {
@@ -94,23 +92,22 @@ void shiro::users::punishments::init() {
 void shiro::users::punishments::kick(int32_t user_id, int32_t origin, const std::string &reason) {
     std::chrono::seconds seconds = utils::time::current_time();
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
+    auto db = shiro::database::instance->pop();
 
-    db(insert_into(punishments_table).set(
-            punishments_table.user_id = user_id,
-            punishments_table.origin_id = origin,
-            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::kick),
-            punishments_table.time = seconds.count(),
-            punishments_table.active = false,
-            punishments_table.reason = reason
+    db(insert_into(tables::punishments_table).set(
+        tables::punishments_table.user_id = user_id,
+        tables::punishments_table.origin_id = origin,
+        tables::punishments_table.type = static_cast<uint16_t>(utils::punishment_type::kick),
+        tables::punishments_table.time = seconds.count(),
+        tables::punishments_table.active = false,
+        tables::punishments_table.reason = reason
     ));
 
     std::shared_ptr<user> user = manager::get_user_by_id(user_id);
     std::string username = manager::get_username_by_id(user_id);
     std::string origin_username = manager::get_username_by_id(origin);
 
-    LOG_F(INFO, "%s has been kicked for %s by %s.", username.c_str(), reason.c_str(), origin_username.c_str());
+    LOG_F(INFO, "{} has been kicked for '{}' by {}.", username, reason, origin_username);
 
     if (user == nullptr) {
         return;
@@ -130,25 +127,23 @@ void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_
     }
 
     std::chrono::seconds seconds = utils::time::current_time();
+    auto db = shiro::database::instance->pop();
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
-
-    db(insert_into(punishments_table).set(
-            punishments_table.user_id = user_id,
-            punishments_table.origin_id = origin,
-            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::silence),
-            punishments_table.time = seconds.count(),
-            punishments_table.duration = duration,
-            punishments_table.active = true,
-            punishments_table.reason = reason
+    db(insert_into(tables::punishments_table).set(
+        tables::punishments_table.user_id = user_id,
+        tables::punishments_table.origin_id = origin,
+        tables::punishments_table.type = static_cast<uint16_t>(utils::punishment_type::silence),
+        tables::punishments_table.time = seconds.count(),
+        tables::punishments_table.duration = duration,
+        tables::punishments_table.active = true,
+        tables::punishments_table.reason = reason
     ));
 
     std::shared_ptr<user> user = manager::get_user_by_id(user_id);
     std::string username = manager::get_username_by_id(user_id);
     std::string origin_username = manager::get_username_by_id(origin);
 
-    LOG_F(INFO, "%s has been silenced for %u seconds for %s by %s.", username.c_str(), duration, reason.c_str(), origin_username.c_str());
+    LOG_F(INFO, "{} has been silenced for {} seconds ({} minutes)  for '{}' by {}.", username, duration, duration / 60, reason, origin_username);
 
     shiro::channels::discord_webhook::send_silence_message(username, origin_username, reason, duration);
 
@@ -164,7 +159,7 @@ void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_
     }, true);
 
     utils::bot::respond(
-            "You have been silenced for " + std::to_string(duration) + " seconds for " + reason + ".",
+            fmt::format("You have been silenced for {} seconds for '{}'.", duration, reason),
             user, config::bot::name, true
     );
 
@@ -180,24 +175,22 @@ void shiro::users::punishments::restrict(int32_t user_id, int32_t origin, const 
     }
 
     std::chrono::seconds seconds = utils::time::current_time();
+    auto db = shiro::database::instance->pop();
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
-
-    db(insert_into(punishments_table).set(
-            punishments_table.user_id = user_id,
-            punishments_table.origin_id = origin,
-            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::restrict),
-            punishments_table.time = seconds.count(),
-            punishments_table.active = true,
-            punishments_table.reason = reason
+    db(insert_into(tables::punishments_table).set(
+        tables::punishments_table.user_id = user_id,
+        tables::punishments_table.origin_id = origin,
+        tables::punishments_table.type = static_cast<uint16_t>(utils::punishment_type::restrict),
+        tables::punishments_table.time = seconds.count(),
+        tables::punishments_table.active = true,
+        tables::punishments_table.reason = reason
     ));
 
     std::shared_ptr<user> user = manager::get_user_by_id(user_id);
     std::string username = manager::get_username_by_id(user_id);
     std::string origin_username = manager::get_username_by_id(origin);
 
-    LOG_F(INFO, "%s has been restricted for %s by %s.", username.c_str(), reason.c_str(), origin_username.c_str());
+    LOG_F(INFO, "{} has been restricted for '{}' by {}.", username, reason, origin_username);
 
     shiro::channels::discord_webhook::send_restrict_message(username, origin_username, reason);
 
@@ -207,12 +200,13 @@ void shiro::users::punishments::restrict(int32_t user_id, int32_t origin, const 
 
     user->hidden = true;
 
-    utils::bot::respond(
-            "[" + user->get_url() + " Your account has been restricted]. "
+    utils::bot::respond(fmt::format(
+            "[{} Your account has been restricted]. "
             "Because of that, your profile has been hidden from the public. "
-            "If you believe this is a mistake, [" + config::ipc::frontend_url + "support contact support] "
-            "to have your account status reviewed.",
-            user, config::bot::name, true
+            "If you believe this is a mistake, [{} support contact support] "
+            "to have your account status reviewed.", 
+        user->get_url(), config::ipc::frontend_url
+    ),  user, config::bot::name, true
     );
 
     io::layouts::user_quit quit;
@@ -238,24 +232,22 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
     }
 
     std::chrono::seconds seconds = utils::time::current_time();
+    auto db = shiro::database::instance->pop();
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
-
-    db(insert_into(punishments_table).set(
-            punishments_table.user_id = user_id,
-            punishments_table.origin_id = origin,
-            punishments_table.type = static_cast<uint16_t>(utils::punishment_type::ban),
-            punishments_table.time = seconds.count(),
-            punishments_table.active = true,
-            punishments_table.reason = reason
+    db(insert_into(tables::punishments_table).set(
+        tables::punishments_table.user_id = user_id,
+        tables::punishments_table.origin_id = origin,
+        tables::punishments_table.type = static_cast<uint16_t>(utils::punishment_type::ban),
+        tables::punishments_table.time = seconds.count(),
+        tables::punishments_table.active = true,
+        tables::punishments_table.reason = reason
     ));
 
     std::shared_ptr<user> user = manager::get_user_by_id(user_id);
     std::string username = manager::get_username_by_id(user_id);
     std::string origin_username = manager::get_username_by_id(origin);
 
-    LOG_F(INFO, "%s has been banned for %s by %s.", username.c_str(), reason.c_str(), origin_username.c_str());
+    LOG_F(INFO, "{} has been banned for '{}' by {}.", username, reason, origin_username);
 
     shiro::channels::discord_webhook::send_ban_message(username, origin_username, reason);
 
@@ -272,39 +264,36 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
 }
 
 bool shiro::users::punishments::is_silenced(int32_t user_id) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
-            punishments_table.user_id == user_id and
-            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
-            punishments_table.active == true
+    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+        tables::punishments_table.user_id == user_id and
+        tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
+        tables::punishments_table.active == true
     ).limit(1u));
 
     return !result.empty();
 }
 
 bool shiro::users::punishments::is_restricted(int32_t user_id) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
-            punishments_table.user_id == user_id and
-            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict) and
-            punishments_table.active == true
+    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+        tables::punishments_table.user_id == user_id and
+        tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict) and
+        tables::punishments_table.active == true
     ).limit(1u));
 
     return !result.empty();
 }
 
 bool shiro::users::punishments::is_banned(int32_t user_id) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
-            punishments_table.user_id == user_id and
-            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) and
-            punishments_table.active == true
+    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+        tables::punishments_table.user_id == user_id and
+        tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) and
+        tables::punishments_table.active == true
     ).limit(1u));
 
     return !result.empty();
@@ -325,14 +314,13 @@ bool shiro::users::punishments::can_chat(int32_t user_id) {
 }
 
 bool shiro::users::punishments::has_scores(int32_t user_id) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table{};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
-        punishments_table.user_id == user_id and
-        (punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) or
-        punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict)) and
-        punishments_table.active == true
+    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+        tables::punishments_table.user_id == user_id and
+        (tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) or
+        tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict)) and
+        tables::punishments_table.active == true
     ).limit(1u));
 
     return result.empty();
@@ -343,13 +331,12 @@ std::tuple<int32_t, uint32_t> shiro::users::punishments::get_silence_time(int32_
         return {};
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::punishments punishments_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(punishments_table)).from(punishments_table).where(
-            punishments_table.user_id == user_id and
-            punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
-            punishments_table.active == true
+    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+        tables::punishments_table.user_id == user_id and
+        tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
+        tables::punishments_table.active == true
     ).limit(1u));
 
     if (result.empty()) {

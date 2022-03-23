@@ -37,4 +37,6 @@ void shiro::handler::spectating::cant_spectate::handle(shiro::io::osu_packet &in
     for (const std::shared_ptr<shiro::users::user> &fellow_spectator : shiro::spectating::manager::get_spectators(host)) {
         fellow_spectator->queue.enqueue(writer);
     }
+    
+    // TODO: Bot should send beatmap in #spectator chat
 }

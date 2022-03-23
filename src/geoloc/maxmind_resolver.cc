@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -29,7 +30,7 @@
 
 #include <cstring>
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/curler.hh"
 #include "maxmind_resolver.hh"
 
@@ -42,7 +43,7 @@ void shiro::geoloc::maxmind::init() {
         return;
     }
 
-    ABORT_F("Unable to open maxmind db database: %s", MMDB_strerror(code));
+    ABORT_F("Unable to open maxmind db database: {}", MMDB_strerror(code));
 }
 
 void shiro::geoloc::maxmind::destroy() {
@@ -56,17 +57,17 @@ std::tuple<std::string, int32_t, int32_t> shiro::geoloc::maxmind::locate(const s
     MMDB_lookup_result_s result = MMDB_lookup_string(&mmdb, ip_address.c_str(), &gai_error, &mmdb_error);
 
     if (gai_error != 0) {
-        LOG_F(WARNING, "Unable to get address info: %s", std::strerror(gai_error));
+        LOG_F(WARNING, "Unable to get address info: {}", std::strerror(gai_error));
         return { "XX", 0, 0 };
     }
 
     if (mmdb_error != MMDB_SUCCESS) {
-        LOG_F(WARNING, "Unable to resolve ip address in maxmind database: %s", MMDB_strerror(mmdb_error));
+        LOG_F(WARNING, "Unable to resolve ip address in maxmind database: {}", MMDB_strerror(mmdb_error));
         return { "XX", 0, 0 };
     }
 
     if (!result.found_entry) {
-        LOG_F(WARNING, "IP address does not exist in maxmind database: %s", ip_address.c_str());
+        LOG_F(WARNING, "IP address does not exist in maxmind database: {}", ip_address);
         return { "XX", 0, 0 };
     }
 
@@ -79,7 +80,7 @@ std::tuple<std::string, int32_t, int32_t> shiro::geoloc::maxmind::locate(const s
     int longitude_status = MMDB_get_value(&result.entry, &longitude_entry_data, "location", "longitude", nullptr);
 
     if (country_status != MMDB_SUCCESS || !country_entry_data.has_data) {
-        LOG_F(WARNING, "Unable to resolve country for address %s", ip_address.c_str());
+        LOG_F(WARNING, "Unable to resolve country for address: {}", ip_address);
         return { "XX", 0, 0 };
     }
 
@@ -87,12 +88,12 @@ std::tuple<std::string, int32_t, int32_t> shiro::geoloc::maxmind::locate(const s
     country.resize(2, 'X');
 
     if (latitude_status != MMDB_SUCCESS || !latitude_entry_data.has_data) {
-        LOG_F(WARNING, "Unable to resolve latitude for address %s", ip_address.c_str());
+        LOG_F(WARNING, "Unable to resolve latitude for address: {}", ip_address);
         return { country, 0, 0 };
     }
 
     if (longitude_status != MMDB_SUCCESS || !longitude_entry_data.has_data) {
-        LOG_F(WARNING, "Unable to resolve longitude for address %s", ip_address.c_str());
+        LOG_F(WARNING, "Unable to resolve longitude for address: {}", ip_address);
         return { country, latitude_entry_data.double_value, 0 };
     }
 

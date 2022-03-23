@@ -22,7 +22,6 @@
 
 #include "../../channels/channel_manager.hh"
 #include "../../io/layouts/message/message.hh"
-#include "../../thirdparty/loguru.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
 #include "../../utils/bot_utils.hh"

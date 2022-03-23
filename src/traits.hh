@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -62,7 +62,6 @@ namespace shiro::traits {
     struct basic_initialization<T, std::enable_if_t<detail::is_string<T>::value>> {
         static constexpr T value = "";
     };
-
 }
 
 #endif

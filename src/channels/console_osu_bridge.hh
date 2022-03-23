@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,15 +20,15 @@
 #ifndef SHIRO_CONSOLE_OSU_BRIDGE_HH
 #define SHIRO_CONSOLE_OSU_BRIDGE_HH
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 
 namespace shiro::channels::bridge {
 
     void install();
 
-    void callback(void *user_data, const loguru::Message &message);
+    void callback(std::any& user_data, const naga::log_message& message);
 
-    uint8_t get_permission(loguru::Verbosity verbosity);
+    uint8_t get_permission(naga::log_level level);
 
 }
 

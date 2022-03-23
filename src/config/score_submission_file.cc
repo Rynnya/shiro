@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,8 +19,6 @@
 
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/cpptoml.hh"
-#include "../thirdparty/loguru.hh"
-#include "cli_args.hh"
 #include "score_submission_file.hh"
 
 // From the same creators as country_ids.cc
@@ -100,8 +99,8 @@ void shiro::config::score_submission::parse() {
         config_file = cpptoml::parse_file("score_submission.toml");
     }
     catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Failed to parse score_submission.toml file: %s.", ex.what());
+        CAPTURE_EXCEPTION(ex);
+        ABORT_F("Failed to parse score_submission.toml file: {}.", ex.what());
     }
 
     save_failed_scores = config_file->get_qualified_as<bool>("save_failed_scores").value_or(true);
@@ -169,11 +168,4 @@ void shiro::config::score_submission::parse() {
     key_coop_ranked = config_file->get_qualified_as<bool>("ranked_keys.key_coop").value_or(false);
 
     LOG_F(INFO, "Successfully parsed score_submission.toml.");
-
-    // Most of these values here are boolean
-    // Passing booleans as CLI arguments is a limitation of the CLI library
-    // Passing them results in getting them set to true
-    // Not passing them results in getting them set to false
-    // To not overwrite anything, we don't add support for CLI yet.
-    // Needs fixing in the future.
 }

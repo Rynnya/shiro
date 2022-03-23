@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,26 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "route_logger.hh"
 
 void shiro::logging::route_logger::log(std::string message, crow::LogLevel level) {
     switch (level) {
         case crow::LogLevel::Info: {
-            LOG_F(INFO, "%s", message.c_str());
+            LOG_F(INFO, "{}", message);
             break;
         }
         case crow::LogLevel::Warning: {
-            LOG_F(WARNING, "%s", message.c_str());
+            LOG_F(WARNING, "{}", message);
             break;
         }
         case crow::LogLevel::Error: {
             #undef ERROR // Windows bug
-            LOG_F(ERROR, "%s", message.c_str());
+            LOG_F(ERROR, "{}", message);
             break;
         }
         case crow::LogLevel::Critical: {
-            ABORT_F("%s", message.c_str());
+            ABORT_F("{}", message);
             break;
         }
         default: {

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,32 +21,29 @@
 #include <ctime>
 #include <fstream>
 
+#include "../thirdparty/fmt/format.hh"
 #include "../utils/filesystem.hh"
 #include "../shiro.hh"
 #include "index_view.hh"
 
 std::string shiro::views::index::replace_time(const std::string &view) {
-    double difference = std::difftime(std::time(nullptr), start_time);
-    std::time_t seconds((std::time_t) difference);
+    std::time_t seconds = static_cast<std::time_t>(std::difftime(std::time(nullptr), start_time));
     std::tm *p = std::gmtime(&seconds);
 
-    int days = p->tm_yday;
-    int hours = p->tm_hour;
-    int minutes = p->tm_min;
-    int secs = p->tm_sec;
+    int32_t days = p->tm_yday;
+    int32_t hours = p->tm_hour;
+    int32_t minutes = p->tm_min;
+    int32_t secs = p->tm_sec;
 
-    char buffer[64];
-    std::snprintf(
-        buffer,
-        sizeof(buffer),
-        "%i %s %i %s %i %s %i %s",
-        days, days == 1 ? "day" : "days",
-        hours, hours == 1 ? "hour" : "hours",
-        minutes, minutes == 1 ? "minute" : "minutes",
-        secs, secs == 1 ? "second" : "seconds"
+    return boost::replace_all_copy(view, "{{uptime}}", 
+        fmt::format(
+            "{} {} {} {} {} {} {} {}",
+            days, days == 1 ? "day" : "days",
+            hours, hours == 1 ? "hour" : "hours",
+            minutes, minutes == 1 ? "minute" : "minutes",
+            secs, secs == 1 ? "second" : "seconds"
+        )
     );
-
-    return boost::replace_all_copy(view, "{{uptime}}", buffer);
 }
 
 std::string shiro::views::index::get_view() {

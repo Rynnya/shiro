@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,7 +21,7 @@
 #include "../../utils/bot_utils.hh"
 #include "localclear_command.hh"
 
-bool shiro::commands::localclear(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+bool shiro::commands::localclear(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     io::osu_writer writer;
 
     users::manager::iterate([&writer](std::shared_ptr<users::user> online_user) {
@@ -29,6 +30,6 @@ bool shiro::commands::localclear(std::deque<std::string> &args, std::shared_ptr<
 
     user->queue.enqueue(writer);
 
-    utils::bot::respond("You have cleared your local chat.", std::move(user), std::move(channel), true);
+    utils::bot::respond("You have cleared your local chat.", user, channel, true);
     return true;
 }

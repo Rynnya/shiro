@@ -16,15 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
 #include <deque>
-#include <vector>
 
 #include "../../channels/channel_manager.hh"
 #include "../../io/layouts/message/message.hh"
 #include "../../multiplayer/match_manager.hh"
 #include "../../spectating/spectator_manager.hh"
-#include "../../thirdparty/loguru.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
 #include "../../utils/bot_utils.hh"

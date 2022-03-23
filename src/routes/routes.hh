@@ -40,8 +40,8 @@ namespace shiro::routes {
         try {                                                                                                                       \
             handler(request, response);                                                                                             \
         } catch (...) {                                                                                                             \
-            logging::sentry::exception(std::current_exception(), __FILE__, __LINE__);                                               \
-            LOG_F(ERROR, "A exception occurred in %s: %s", #handler, boost::current_exception_diagnostic_information().c_str());    \
+            LOG_F(ERROR, "A exception occurred in {}: {}", #handler, boost::current_exception_diagnostic_information());            \
+            CAPTURE_EXCEPTION(std::current_exception());                                                                            \
                                                                                                                                     \
             response.code = 500;                                                                                                    \
             response.end();                                                                                                         \
@@ -56,8 +56,8 @@ namespace shiro::routes {
         try {                                                                                                                       \
             handler(request, response, param);                                                                                      \
         } catch (...) {                                                                                                             \
-            logging::sentry::exception(std::current_exception(), __FILE__, __LINE__);                                               \
-            LOG_F(ERROR, "A exception occurred in %s: %s", #handler, boost::current_exception_diagnostic_information().c_str());    \
+            LOG_F(ERROR, "A exception occurred in {}: {}", #handler, boost::current_exception_diagnostic_information());            \
+            CAPTURE_EXCEPTION(std::current_exception());                                                                            \
                                                                                                                                     \
             response.code = 500;                                                                                                    \
             response.end();                                                                                                         \

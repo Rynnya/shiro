@@ -21,7 +21,7 @@
 #include "../../handlers/login_handler.hh"
 #include "../../io/osu_reader.hh"
 #include "../../io/osu_writer.hh"
-#include "../../thirdparty/loguru.hh"
+#include "../../thirdparty/naga.hh"
 #include "../../users/user_manager.hh"
 #include "../../views/index_view.hh"
 #include "../../shiro.hh"
@@ -56,7 +56,7 @@ void shiro::routes::root::handle(const crow::request &request, crow::response &r
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received POST from %s without osu! user agent.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received POST from {} without osu! user agent.", request.get_ip_address());
         return;
     }
 
@@ -75,7 +75,7 @@ void shiro::routes::root::handle(const crow::request &request, crow::response &r
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "%s sent a request with a invalid osu token.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "{} sent a request with a invalid osu token.", request.get_ip_address());
         return;
     }
 

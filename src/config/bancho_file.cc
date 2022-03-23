@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,9 +19,7 @@
 
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/cpptoml.hh"
-#include "../thirdparty/loguru.hh"
 #include "bancho_file.hh"
-#include "cli_args.hh"
 
 static std::shared_ptr<cpptoml::table> config_file = nullptr;
 
@@ -50,8 +49,9 @@ void shiro::config::bancho::parse() {
         config_file = cpptoml::parse_file("bancho.toml");
     }
     catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Failed to parse bancho.toml file: %s.", ex.what());
+        // We cannot capture exception here, because Sentry wasn't initialized and client is nullptr
+        // CAPTURE_EXCEPTION(ex);
+        ABORT_F("Failed to parse bancho.toml file: {}.", ex.what());
     }
 
     host = config_file->get_qualified_as<std::string>("server.host").value_or("127.0.0.1");
@@ -72,20 +72,4 @@ void shiro::config::bancho::parse() {
     breadcrumb_limit = config_file->get_qualified_as<int32_t>("integrations.breadcrumb_limit").value_or(100);
 
     LOG_F(INFO, "Successfully parsed bancho.toml.");
-
-    cli::cli_app.add_option("--bancho-host", host, "Host that Bancho should bind to");
-    cli::cli_app.add_option("--bancho-port", port, "Port that Bancho should bind to");
-    cli::cli_app.add_option("--bancho-concurrency", concurrency, "Amount of concurrent connections that should be handled");
-
-    // Boolean flags are not yet supported fully in cli, see score_submission_file.cc
-    //cli::cli_app.add_option("--bancho-default-supporter", default_Supporter, "Allow users with no roles / permissions to have supporter in-game?");
-
-    cli::cli_app.add_option("--bancho-api-key", api_key, "API key for accessing official osu!Bancho API");
-
-    cli::cli_app.add_option("--bancho-motd-alert", alert, "Alert to be displayed on login");
-    cli::cli_app.add_option("--bancho-motd-title-image", title_image, "Title image to be displayed in osu! main menu");
-    cli::cli_app.add_option("--bancho-motd-title-url", title_url, "Title url which opens when clicking on title image");
-
-    // Boolean flags are not yet supported fully in cli, see above
-    //cli::cli_app.add_option("--bancho-sentry-integration", sentry_integration, "Integrate Shiro with Sentry.io error reporting?");
 }

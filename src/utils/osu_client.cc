@@ -18,6 +18,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "../thirdparty/naga.hh"
 #include "../users/user_manager.hh"
 #include "osu_client.hh"
 
@@ -96,7 +97,7 @@ shiro::utils::clients::osu_client shiro::utils::clients::parse_version(const std
         return osu_client::stable;
     }
 
-    LOG_F(INFO, "Tried to process osu! version with unknown version: %s (%i -> %s)", client_version.c_str(), client_build, subversion.c_str());
+    LOG_F(INFO, "Tried to process osu! version with unknown version: {} ({} -> {})", client_version, client_build, subversion);
 
     return osu_client::unknown;
 }

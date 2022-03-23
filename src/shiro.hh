@@ -30,7 +30,6 @@
 
 namespace shiro {
 
-    extern std::shared_ptr<database> db_connection;
     extern std::shared_ptr<redis> redis_connection;
 
     using namespace std::chrono_literals;

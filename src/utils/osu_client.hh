@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "../thirdparty/enum.hh"
-#include "../thirdparty/loguru.hh"
 #include "../users/user.hh"
 
 namespace shiro::utils::clients {

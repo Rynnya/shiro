@@ -54,7 +54,7 @@
 #include "../handlers/ping_handler.hh"
 #include "../handlers/request_status_update_handler.hh"
 #include "../handlers/user_status_handler.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/time_utils.hh"
 #include "packet_router.hh"
 
@@ -259,7 +259,7 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             break;
         }
         default: {
-            LOG_F(WARNING, "Packet %i was sent for incoming packet handling while being outbound.", static_cast<uint16_t>(packet_id));
+            LOG_F(WARNING, "Packet {} was sent for incoming packet handling while being outbound.", static_cast<uint16_t>(packet_id));
             return;
         }
     }

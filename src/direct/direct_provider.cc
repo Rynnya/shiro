@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,11 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stdexcept>
-
 #include "../config/direct_file.hh"
 #include "../logger/sentry_logger.hh"
-#include "../thirdparty/loguru.hh"
+
 #include "providers/beatconnect.hh"
 #include "providers/cheesegull.hh"
 #include "providers/emulation.hh"
@@ -56,7 +55,7 @@ void shiro::direct::init() {
             break;
         }
         default: {
-            LOG_F(ERROR, "Invalid direct mode has been provided in bancho.toml: %u.", config::direct::provider);
+            LOG_F(ERROR, "Invalid direct mode has been provided in bancho.toml: {}.", config::direct::provider);
             break;
         }
     }

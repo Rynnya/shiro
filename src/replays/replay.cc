@@ -22,16 +22,12 @@
 #include <utility>
 
 #include "../logger/sentry_logger.hh"
-#include "../thirdparty/loguru.hh"
 #include "../utils/crypto.hh"
 #include "../utils/string_utils.hh"
 #include "replay.hh"
 
 std::string shiro::replays::action::to_string() const {
-    return std::to_string(this->w) + "|" +
-           std::to_string(this->x) + "|" +
-           std::to_string(this->y) + "|" +
-           std::to_string(this->z) + ",";
+    return fmt::format("{}|{}|{}|{},", w, x, y, z);
 }
 
 shiro::replays::replay::replay(shiro::scores::score s, std::string replay)
@@ -68,7 +64,7 @@ void shiro::replays::replay::parse() {
 
         if (!parse_result) {
             LOG_F(ERROR, "Unable to cast action values into correct data types.");
-            logging::sentry::exception(std::invalid_argument("Action string was invalid."), __FILE__, __LINE__);
+            CAPTURE_EXCEPTION(std::invalid_argument("Action string was invalid."));
             continue;
         }
 
@@ -80,12 +76,13 @@ std::vector<shiro::replays::action> shiro::replays::replay::get_actions() {
     return this->actions;
 }
 
-std::string shiro::replays::replay::to_string() const {
-    std::stringstream stream;
-
-    for (const action& a : this->actions) {
-        stream << a.to_string();
+template <> struct fmt::formatter<shiro::replays::action> : fmt::formatter<std::string> {
+    template <typename FormatContext>
+    auto format(const shiro::replays::action& a, FormatContext& ctx) const -> decltype(ctx.out()) {
+        return formatter<std::string>::format(a.to_string(), ctx);
     }
+};
 
-    return stream.str();
+std::string shiro::replays::replay::to_string() const {
+    return fmt::format("{}", fmt::join(this->actions, ""));
 }

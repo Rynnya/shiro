@@ -21,7 +21,7 @@
 #include "../database/tables/user_table.hh"
 #include "../scores/score.hh"
 #include "../scores/score_helper.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../shiro.hh"
 #include "user.hh"
 #include "user_activity.hh"
@@ -29,13 +29,12 @@
 
 void shiro::users::activity::init() {
     scheduler.Schedule(1min, [](tsc::TaskContext ctx) {
-        sqlpp::mysql::connection db(db_connection->get_config());
-        const tables::users user_table {};
+        auto db = shiro::database::instance->pop();
 
-        users::manager::iterate([&db, &user_table](const std::shared_ptr<users::user> &user) {
-            db(update(user_table).set(
-                    user_table.latest_activity = user->last_ping.count()
-            ).where(user_table.id == user->user_id));
+        users::manager::iterate([&db](const std::shared_ptr<users::user> &user) {
+            db(update(tables::users_table).set(
+                tables::users_table.latest_activity = user->last_ping.count()
+            ).where(tables::users_table.id == user->user_id));
         }, true);
 
         ctx.Repeat();
@@ -61,7 +60,7 @@ bool shiro::users::activity::is_inactive(int32_t id, const utils::play_mode &mod
     bool inactive = difference > 90; // Users which haven't submitted a score in 90 days are considered inactive
 
     if (inactive) {
-        LOG_F(MAX, "User %i is inactive (%i days since last score submission)", id, difference);
+        LOG_F(FILE_ONLY, "User {} is inactive ({} days since last score submission)", id, difference);
     }
 
     return inactive;

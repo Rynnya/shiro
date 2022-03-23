@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,11 +19,15 @@
 
 #include "../../config/bot_file.hh"
 #include "../../permissions/role_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "clear_command.hh"
 
-bool shiro::commands::clear(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+using fmt::format;
+
+bool shiro::commands::clear(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     std::shared_ptr<users::user> target = nullptr;
 
     if (args.size() >= 2) {
@@ -31,7 +36,7 @@ bool shiro::commands::clear(std::deque<std::string> &args, std::shared_ptr<shiro
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_clear)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_clear)) + ")", user, channel, true);
+        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_clear)), user, channel, true);
         return false;
     }
 
@@ -39,7 +44,7 @@ bool shiro::commands::clear(std::deque<std::string> &args, std::shared_ptr<shiro
         target = users::manager::get_user_by_username(args.at(0));
 
         if (target == nullptr) {
-            utils::bot::respond(args.at(0) + " is currently not online or does not exist.", user, channel, true);
+            utils::bot::respond(format("{} is currently not online or does not exist.", args.at(0)), user, channel, true);
             return false;
         }
     }
@@ -52,13 +57,13 @@ bool shiro::commands::clear(std::deque<std::string> &args, std::shared_ptr<shiro
 
     if (target != nullptr) {
         target->queue.enqueue(writer);
-        utils::bot::respond("Successfully cleared chat for " + target->presence.username + ".", user, channel, true);
+        utils::bot::respond(format("Successfully cleared chat for {}.", target->presence.username), user, channel, true);
         return true;
     }
 
     users::manager::iterate([user, &writer](std::shared_ptr<users::user> online_user) {
         online_user->queue.enqueue(writer);
-        utils::bot::respond("Your chat was cleared by " + user->presence.username + ".", online_user, config::bot::name, true);
+        utils::bot::respond(format("Your chat was cleared by {}.", user->presence.username), online_user, config::bot::name, true);
     }, true);
 
     utils::bot::respond("Successfully cleared chat for all online users.", user, channel, true);

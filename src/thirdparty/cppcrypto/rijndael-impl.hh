@@ -7,8 +7,11 @@ and released into public domain.
 #define CPPCRYPTO_RIJNDAELIMPL_H
 
 #include <stdint.h>
-#include <emmintrin.h>
 #include "block_cipher.hh"
+
+#if defined(_SSE2_AVAILABLE) && defined(_AES_NI_AVAILABLE)
+#   include <emmintrin.h>
+#endif // defined(_SSE2_AVAILABLE) && defined(_AES_NI_AVAILABLE)
 
 namespace cppcrypto {
     namespace detail {
@@ -20,6 +23,9 @@ namespace cppcrypto {
             virtual void encrypt_block(const unsigned char *in, unsigned char *out)        = 0;
             virtual void decrypt_block(const unsigned char *in, unsigned char *out)        = 0;
         };
+
+// We must exclude this code from compiler, as it contains __m128i, which might be not supported at all
+#if defined(_SSE2_AVAILABLE) && defined(_AES_NI_AVAILABLE)
 
         class rijndael128_128_impl_aesni : public rijndael_impl {
         private:
@@ -225,6 +231,9 @@ namespace cppcrypto {
             void encrypt_block(const unsigned char *in, unsigned char *out) override;
             void decrypt_block(const unsigned char *in, unsigned char *out) override;
         };
+
+#endif // defined(_SSE2_AVAILABLE) && defined(_AES_NI_AVAILABLE)
+
     }
 }
 #endif

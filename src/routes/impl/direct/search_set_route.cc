@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -17,7 +17,6 @@
  */
 
 #include "../../../direct/direct_provider.hh"
-#include "../../../thirdparty/loguru.hh"
 #include "search_set_route.hh"
 
 void shiro::routes::direct::search::set::handle(const crow::request& request, crow::response& response) {

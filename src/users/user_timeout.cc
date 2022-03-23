@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/time_utils.hh"
 #include "../shiro.hh"
 #include "user_timeout.hh"
@@ -31,8 +31,9 @@ void shiro::users::timeout::init() {
         users::manager::iterate([now, &dead](const std::shared_ptr<users::user> &user) {
             int64_t difference = std::chrono::duration_cast<std::chrono::seconds>(now - user->last_ping).count();
 
-            if (difference < 60)
+            if (difference < 60) {
                 return;
+            }
 
             dead.emplace_back(user);
         }, true);
@@ -43,7 +44,7 @@ void shiro::users::timeout::init() {
         quit.state = 0;
 
         for (const std::shared_ptr<users::user> &user : dead) {
-            LOG_F(WARNING, "User %s didn't send a ping in 60 seconds, timing out.", user->presence.username.c_str());
+            LOG_F(WARNING, "User {} didn't send a ping in 60 seconds, timing out.", user->presence.username);
             users::manager::logout_user(user);
 
             quit.user_id = user->user_id;

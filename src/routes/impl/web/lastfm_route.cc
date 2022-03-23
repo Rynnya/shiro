@@ -18,7 +18,6 @@
 
 #include "../../../config/score_submission_file.hh"
 #include "../../../logger/sentry_logger.hh"
-#include "../../../thirdparty/loguru.hh"
 #include "../../../users/user.hh"
 #include "../../../users/user_punishments.hh"
 #include "../../../utils/client_side_flags.hh"
@@ -65,8 +64,8 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
     int32_t startup_value = 0;
 
     if (!utils::strings::evaluate(beatmap_str.substr(1), startup_value)) {
-        LOG_F(WARNING, "Unable to cast `%s` to int32_t.", beatmap_str.substr(1).c_str());
-        logging::sentry::exception(std::invalid_argument("Unable to cast startup_value into int32_t."), __FILE__, __LINE__);
+        LOG_F(WARNING, "Unable to cast `{}` to int32_t.", beatmap_str.substr(1));
+        CAPTURE_EXCEPTION(std::invalid_argument("Unable to cast startup_value into int32_t."));
 
         response.code = 500;
         response.end();
@@ -91,12 +90,12 @@ void shiro::routes::web::lastfm::handle(const crow::request &request, crow::resp
             result.at(index + 1) = std::toupper(result.at(index + 1));
         }
 
-        LOG_F(WARNING, "%s has client flag set: %s (%i & %i).", username, result.c_str(), startup_value, numeric_flag);
+        LOG_F(WARNING, "{} has client flag set: {} ({} & {}).", username, result, startup_value, numeric_flag);
 
         if (!config::score_submission::consider_client_side_flags || numeric_flag < 8) {
             continue;
         }
 
-        users::punishments::restrict(user->user_id, 10, "Detected client flag: " + result);
+        users::punishments::restrict(user->user_id, 10, fmt::format("Detected client flag: {}", result));
     }
 }

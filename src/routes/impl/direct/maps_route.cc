@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../../thirdparty/loguru.hh"
+#include "../../../thirdparty/naga.hh"
 #include "../../../thread/thread_pool.hh"
 #include "../../../utils/curler.hh"
 #include "maps_route.hh"
@@ -25,13 +25,13 @@ void shiro::routes::direct::maps::handle(const crow::request& request, crow::res
     response.set_header("Content-Type", "text/plain; charset=UTF-8");
     response.set_header("cho-server", "shiro (https://github.com/Rynnya/shiro)");
 
-    auto [success, result] = shiro::utils::curl::get("https://osu.ppy.sh/web/maps/" + args);
+    auto [success, result] = shiro::utils::curl::get(fmt::format("https://osu.ppy.sh/web/maps/{}", args));
 
     if (!success) {
         response.code = 504;
         response.end();
 
-        LOG_F(WARNING, "Maps returned invalid response, message: %s", result.c_str());
+        LOG_F(WARNING, "Maps returned invalid response, message: {}", result);
 
         return;
     }

@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -30,8 +30,8 @@ void shiro::logging::sentry::init() {
     }
 
     client = std::make_shared<nlohmann::crow>(config::bancho::sentry_dsn);
-    loguru::add_callback("sentry.io", logging::sentry::callback, nullptr, loguru::Verbosity_INFO);
-    loguru::set_fatal_handler(logging::sentry::fatal_callback);
+    naga::add_callback("sentry.io", logging::sentry::callback, naga::log_level::info);
+    naga::set_fatal_handler(logging::sentry::fatal_callback);
 
     LOG_F(INFO, "Sentry successfully started.");
     if (config::bancho::enable_breadcrumb) {
@@ -46,18 +46,21 @@ void shiro::logging::sentry::init() {
     }
 }
 
-void shiro::logging::sentry::callback(void *user_data, const loguru::Message &message) {
-    switch (message.verbosity) {
-        case loguru::Verbosity_ERROR:
-        case loguru::Verbosity_FATAL: {
+void shiro::logging::sentry::callback(std::any& user_data, const naga::log_message& message) {
+    switch (message.level) {
+        case naga::log_level::error:
+        case naga::log_level::assertions:
+        case naga::log_level::fatal: {
             client->capture_message(message.message, {
-                { "level", verbosity_to_sentry_level(message.verbosity) },
+                { "level", verbosity_to_sentry_level(message.level) },
                 { "extra",
                     {
-                        { "verbosity", message.verbosity },
-                        { "filename", message.filename },
+                        { "verbosity", static_cast<uint8_t>(message.level) },
+                        { "filename", message.file },
                         { "line", message.line },
-                        { "prefix", message.prefix }
+                        { "date", message.date },
+                        { "seconds", message.seconds },
+                        { "thread", message.thread_hash }
                     }
                 }
             });
@@ -65,13 +68,15 @@ void shiro::logging::sentry::callback(void *user_data, const loguru::Message &me
         }
         default: {
             client->add_breadcrumb(message.message, {
-                { "level", verbosity_to_sentry_level(message.verbosity) },
+                { "level", verbosity_to_sentry_level(message.level) },
                 { "data",
                     {
-                        { "verbosity", message.verbosity },
-                        { "filename", message.filename },
+                        { "verbosity", static_cast<uint8_t>(message.level) },
+                        { "filename", message.file },
                         { "line", message.line },
-                        { "prefix", message.prefix }
+                        { "date", message.date },
+                        { "seconds", message.seconds },
+                        { "thread", message.thread_hash }
                     }
                 }
             });
@@ -80,16 +85,18 @@ void shiro::logging::sentry::callback(void *user_data, const loguru::Message &me
     }
 }
 
-void shiro::logging::sentry::fatal_callback(const loguru::Message &message) {
+void shiro::logging::sentry::fatal_callback(const naga::log_message& message) {
     client->add_breadcrumb("!! FATAL ERROR OCCURRED, EXITING NOW !!");
     client->capture_message(message.message, {
         { "level", "fatal" },
         { "extra",
             {
-                { "verbosity", message.verbosity },
-                { "filename", message.filename },
+                { "verbosity", static_cast<uint8_t>(message.level) },
+                { "filename", message.file },
                 { "line", message.line },
-                { "prefix", message.prefix }
+                { "date", message.date },
+                { "seconds", message.seconds },
+                { "thread", message.thread_hash }
             }
         }
     });
@@ -170,22 +177,26 @@ void shiro::logging::sentry::http_request_in(const ::crow::request &request) {
     client->add_request_context(req);
 }
 
-std::string shiro::logging::sentry::verbosity_to_sentry_level(const loguru::Verbosity &verbosity) {
+std::string shiro::logging::sentry::verbosity_to_sentry_level(const naga::log_level& verbosity) {
     switch (verbosity) {
-        case loguru::Verbosity_ERROR: {
-            return "error";
-        }
-        case loguru::Verbosity_FATAL: {
-            return "fatal";
-        }
-        case loguru::Verbosity_WARNING: {
-            return "warning";
-        }
-        case loguru::Verbosity_INFO: {
-            return "info";
-        }
+        case naga::log_level::all:
         default: {
             return "debug";
+        }
+        case naga::log_level::info: {
+            return "info";
+        }
+        case naga::log_level::warning: {
+            return "warning";
+        }
+        case naga::log_level::error: {
+            return "error";
+        }
+        case naga::log_level::assertions: {
+            return "assertion";
+        }
+        case naga::log_level::fatal: {
+            return "fatal";
         }
     }
 }

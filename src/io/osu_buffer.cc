@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -36,7 +36,7 @@ void shiro::io::buffer::append(buffer &buf) {
 }
 
 shiro::io::buffer::buffer(const buffer &buf) {
-    for (uint8_t byte : buf.bytes) {
+    for (const uint8_t byte : buf.bytes) {
         this->write<uint8_t>(byte);
     }
 }
@@ -86,7 +86,7 @@ template <>
 void shiro::io::buffer::write(std::vector<int32_t> data) {
     this->write<int16_t>(data.size());
 
-    for (int32_t item : data) {
+    for (const int32_t item : data) {
         this->write<int32_t>(item);
     }
 }
@@ -134,7 +134,7 @@ std::string shiro::io::buffer::read() {
 template <>
 std::vector<int32_t> shiro::io::buffer::read() {
     std::vector<int32_t> result;
-    uint16_t size = this->read<uint16_t>();
+    const uint16_t size = this->read<uint16_t>();
 
     for (uint16_t i = 0; i < size; i++) {
         result.emplace_back(this->read<int32_t>());

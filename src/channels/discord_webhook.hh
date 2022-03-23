@@ -1,7 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -37,20 +36,20 @@ namespace shiro::channels::discord_webhook {
 
     void init();
 
-    void send_message(const std::string &message);
-    void send_message(const nlohmann::json &message);
+    void send_message(const std::string& message);
+    void send_message(const nlohmann::json& message);
 
     // Make own username and avatar (if override is true)
     nlohmann::json create_basis();
     // Helper to create simple message
-    nlohmann::json create_embed(std::string title, std::string description = "", uint32_t color = 0);
+    nlohmann::json create_embed(const std::string& title, std::string description = "", uint32_t color = 0);
     // Helper to get Discord emote from rank
-    std::string get_rank_emote(std::string rank);
+    std::string get_rank_emote(const std::string& rank);
     
     // Regular helpers
-    void send_restrict_message(std::string username, std::string origin_username, std::string reason);
-    void send_ban_message(std::string username, std::string origin_username, std::string reason);
-    void send_silence_message(std::string username, std::string origin_username, std::string reason, uint32_t duration);
+    void send_restrict_message(const std::string& username, const std::string& origin_username, const std::string& reason);
+    void send_ban_message(const std::string& username, const std::string& origin_username, const std::string& reason);
+    void send_silence_message(const std::string& username, const std::string& origin_username, const std::string& reason, uint32_t duration);
 
     void send_top1_message(std::shared_ptr<shiro::users::user> user, shiro::beatmaps::beatmap beatmap, scores::score score);
 }

@@ -16,11 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/cpptoml.hh"
-#include "../thirdparty/loguru.hh"
 #include "direct_file.hh"
 
 static std::shared_ptr<cpptoml::table> config_file = nullptr;
@@ -53,8 +50,8 @@ void shiro::config::direct::parse() {
         config_file = cpptoml::parse_file("direct.toml");
     }
     catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Failed to parse direct.toml file: %s.", ex.what());
+        CAPTURE_EXCEPTION(ex);
+        ABORT_F("Failed to parse direct.toml file: {}.", ex.what());
     }
 
     enabled = config_file->get_qualified_as<bool>("direct.enabled").value_or(true);
@@ -87,11 +84,9 @@ void shiro::config::direct::parse() {
             break;
         }
         default: {
-            ABORT_F("Invalid direct mode provided in direct.toml: %i", provider);
+            ABORT_F("Invalid direct mode provided in direct.toml: {}", provider);
         }
     }
 
     LOG_F(INFO, "Successfully parsed direct.toml.");
-
-    // CLI is currently not supported as these values are related to each other.
 }

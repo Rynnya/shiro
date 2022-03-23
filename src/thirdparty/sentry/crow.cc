@@ -53,7 +53,7 @@ SOFTWARE.
 #include "../../config/bancho_file.hh"
 #include "../../native/system_info.hh"
 #include "../../native/system_statistics.hh"
-#include "../../thirdparty/loguru.hh"
+#include "../../thirdparty/naga.hh"
 #include "../../thread/thread_pool.hh"
 
 using json = nlohmann::json;
@@ -93,16 +93,21 @@ nlohmann::crow::crow(const std::string& dsn, const json& context, const double s
                 m_store_url = scheme + "://" + host + "/api/" + project_id + "/store/";
             }
             else {
-                // We cannot use macro here, because of strange instability in 'operator>', caused by json.hh
-                // Also this log really important, even when owner disables warnings
-                loguru::log(loguru::Verbosity_WARNING, __FILE__, __LINE__, "DSN Sentry link was invalid, disabling to minimize performance losses.");
+                // This log really important, even when owner disables warnings
+                naga::detail::printer<naga::detail::print_types::WARNING>::call(
+                    "DSN Sentry link was invalid, disabling to minimize performance losses.",
+                     __FILE__, __LINE__
+                );
                 shiro::config::bancho::sentry_integration = false;
                 m_enabled = false;
                 return;
             }
         }
         else {
-            loguru::log(loguru::Verbosity_INFO, __FILE__, __LINE__, "DSN Sentry link was empty, disabling to minimize performance losses.");
+            naga::detail::printer<naga::detail::print_types::WARNING>::call(
+                "DSN Sentry link was empty, disabling to minimize performance losses.",
+                __FILE__, __LINE__
+            );
             shiro::config::bancho::sentry_integration = false;
             m_enabled = false;
             return;
@@ -171,9 +176,6 @@ void nlohmann::crow::capture_exception(const std::exception& exception, const ch
         return;
     }
 
-    std::stringstream thread_id;
-    thread_id << std::this_thread::get_id();
-
     const std::string& type = crow_utilities::pretty_name(typeid(exception).name());
     const std::string ex_position = std::string(file) + ":" + std::to_string(line);
     m_payload["exception"]["values"].push_back({
@@ -191,7 +193,7 @@ void nlohmann::crow::capture_exception(const std::exception& exception, const ch
         { "stacktrace", {
             { "frames", crow_utilities::get_backtrace() }
         }},
-        { "thread_id", thread_id.str() }
+        { "thread_id", naga::get_thread_name() }
     });
     m_payload["event_id"] = crow_utilities::generate_uuid();
     m_payload["timestamp"] = nlohmann::crow_utilities::get_iso8601();
@@ -359,6 +361,36 @@ void nlohmann::crow::clear_context() {
     m_payload["contexts"]["os"]["version"] = shiro::native::system_info::get_os_version();
     m_payload["contexts"]["os"]["build"] = shiro::native::system_info::get_os_build();
     m_payload["contexts"]["os"]["kernel_version"] = shiro::native::system_info::get_os_version();
+
+#if defined(_SSE2_AVAILABLE)
+    m_payload["contexts"]["cpu"]["sse2"] = true;
+#else
+    m_payload["contexts"]["cpu"]["sse2"] = false;
+#endif
+
+#if defined(_SSE4_1_AVAILABLE)
+    m_payload["contexts"]["cpu"]["sse4_1"] = true;
+#else
+    m_payload["contexts"]["cpu"]["sse4_1"] = false;
+#endif
+
+#if defined(_AVX_AVAILABLE)
+    m_payload["contexts"]["cpu"]["avx"] = true;
+#else
+    m_payload["contexts"]["cpu"]["avx"] = false;
+#endif
+
+#if defined(_AVX2_AVAILABLE)
+    m_payload["contexts"]["cpu"]["avx2"] = true;
+#else
+    m_payload["contexts"]["cpu"]["avx2"] = false;
+#endif
+
+#if defined(_AES_NI_AVAILABLE)
+    m_payload["contexts"]["cpu"]["aes-ni"] = true;
+#else
+    m_payload["contexts"]["cpu"]["aes-ni"] = false;
+#endif
 
 // Utilities for strings in compiler
 #define str_helper(x) #x

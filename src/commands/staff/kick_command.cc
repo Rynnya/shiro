@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,23 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
-
 #include "../../permissions/permissions.hh"
 #include "../../permissions/role_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "kick_command.hh"
 
-bool shiro::commands::kick(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+using fmt::format;
+
+bool shiro::commands::kick(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() < 2) {
         utils::bot::respond("Usage: !kick <user> [reason]", user, channel, true);
         return false;
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_kick)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_kick)) + ")", user, channel, true);
+        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_kick)), user, channel, true);
         return false;
     }
 
@@ -40,7 +43,7 @@ bool shiro::commands::kick(std::deque<std::string> &args, std::shared_ptr<shiro:
     std::string reason = "You have been kicked.";
 
     if (target == nullptr) {
-        utils::bot::respond(args.at(0) + " could not be found. Are they online?", user, channel, true);
+        utils::bot::respond(format("{} could not be found. Are they online?", args.at(0)), user, channel, true);
         return false;
     }
 
@@ -50,19 +53,11 @@ bool shiro::commands::kick(std::deque<std::string> &args, std::shared_ptr<shiro:
     }
 
     if (args.size() >= 3) {
-        std::stringstream stream;
-
         args.pop_front();
-
-        for (const std::string &arg : args) {
-            stream << arg << " ";
-        }
-
-        reason = stream.str();
-        reason.pop_back();
+        reason = format("{}", fmt::join(args, " "));
     }
 
     users::punishments::kick(target->user_id, user->user_id, reason);
-    utils::bot::respond(target->presence.username + " has been kicked for " + reason + ".", user, channel, true);
+    utils::bot::respond(format("{} has been kicked for '{}'.", target->presence.username, reason), user, channel, true);
     return true;
 }

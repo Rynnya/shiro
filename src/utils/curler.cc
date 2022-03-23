@@ -1,7 +1,7 @@
-/*
+﻿/*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -21,7 +21,7 @@
 
 #include "../config/direct_file.hh"
 #include "../logger/sentry_logger.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "curler.hh"
 
 std::tuple<bool, std::string> shiro::utils::curl::get(const std::string &url) {
@@ -86,7 +86,7 @@ std::tuple<bool, std::string> shiro::utils::curl::get_direct(const std::string &
         case 2: {
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "shiro (https://github.com/Rynnya/shiro)");
 
-            static std::string header = "Token: " + config::direct::api_key;
+            const static std::string header = fmt::format("Token: {}", config::direct::api_key);
             struct curl_slist *chunk = nullptr;
 
             chunk = curl_slist_append(chunk, "cho-server: shiro (https://github.com/Rynnya/shiro)");
@@ -189,13 +189,13 @@ size_t shiro::utils::curl::internal_callback(void *raw_data, size_t size, size_t
 
     try {
         ptr->resize(old_length + new_length);
-    } catch (const std::bad_alloc &ex) {
-        LOG_F(ERROR, "Unable to allocate new memory for http response: %s.", ex.what());
-        logging::sentry::exception(ex, __FILE__, __LINE__);
+    } catch (const std::bad_alloc &ex) { // do you even think this might happend? if so - then whole shiro will crash ¯\_(ツ)_/¯
+        LOG_F(ERROR, "Unable to allocate new memory for http response: {}.", ex.what());
+        CAPTURE_EXCEPTION(ex);
 
         return 0;
     }
 
-    std::copy((char*) raw_data, (char*) raw_data + new_length, ptr->begin() + old_length);
+    std::copy(static_cast<char*>(raw_data), static_cast<char*>(raw_data) + new_length, ptr->begin() + old_length);
     return size * memory;
 }

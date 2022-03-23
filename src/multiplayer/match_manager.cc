@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../users/user_manager.hh"
 #include "../utils/curler.hh"
 #include "../utils/match_team_type.hh"
@@ -70,7 +71,7 @@ void shiro::multiplayer::match_manager::create_match(shiro::io::layouts::multipl
         return;
     }
 
-    LOG_F(INFO, "New multiplayer room (\"%s\" id %i) was initialized by %s.", match.game_name.c_str(), match.match_id, host->presence.username.c_str());
+    LOG_F(INFO, "New multiplayer room (\"{}\" id {}) was initialized by {}.", match.game_name, match.match_id, host->presence.username);
 }
 
 std::optional<shiro::io::layouts::multiplayer_match> shiro::multiplayer::match_manager::join_match(io::layouts::multiplayer_join request, std::shared_ptr<shiro::users::user> user) {

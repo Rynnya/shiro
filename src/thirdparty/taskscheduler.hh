@@ -513,12 +513,12 @@ namespace tsc
                 : _task(task), _owner(owner), _consumed(std::make_shared<bool>(false)) { }
 
         // Move construct
-        TaskContext(TaskContext&& right)
+        TaskContext(TaskContext&& right) noexcept
                 : _task(std::move(right._task)), _owner(std::move(right._owner)),
                   _consumed(std::move(right._consumed)) { }
 
         // Move assign
-        TaskContext& operator= (TaskContext&& right)
+        TaskContext& operator= (TaskContext&& right) noexcept
         {
             _task = std::move(right._task);
             _owner = std::move(right._owner);

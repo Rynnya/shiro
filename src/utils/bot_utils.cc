@@ -31,21 +31,24 @@
 #include "string_utils.hh"
 
 void shiro::utils::bot::handle(shiro::io::layouts::message message, std::shared_ptr<users::user> user) {
-    if (message.content.length() > 0 && message.content[0] != '!') {
+    if (message.content.length() == 0) {
+        return;
+    }
+
+    if (message.content[0] != '!') {
         return;
     }
 
     std::string removed_index = message.content.substr(1);
 
-    std::vector<std::string> splitted;
-    boost::split(splitted, removed_index, boost::is_any_of(" "));
+    std::deque<std::string> args;
+    boost::split(args, removed_index, boost::is_any_of(" "));
 
-    if (splitted.empty()) {
+    if (args.empty()) {
         return;
     }
 
-    std::string command = splitted.at(0);
-    std::deque<std::string> args(splitted.begin(), splitted.end());
+    std::string command = args.front();
     args.pop_front(); // Remove command which is the first argument
 
     // Workaround for MSVC which incorrectly overloads 'transform' and 'tolower'
@@ -55,18 +58,17 @@ void shiro::utils::bot::handle(shiro::io::layouts::message message, std::shared_
     if (command == "mp") {
         // If player just typed '!mp' then we returns help
         if (args.size() > 0) {
-            command = args.at(0);
+            command = args.front();
             args.pop_front();
         }
 
-        shiro::bot::handle_mp(command, args, std::move(user), message.channel);
-        return;
+        return static_cast<void>(shiro::bot::handle_mp(command, args, std::move(user), message.channel));
     }
 
-    shiro::bot::handle(command, args, std::move(user), message.channel);
+    return static_cast<void>(shiro::bot::handle(command, args, std::move(user), message.channel));
 }
 
-void shiro::utils::bot::respond(std::string message, std::shared_ptr<shiro::users::user> user, std::string channel, bool only_user) {
+void shiro::utils::bot::respond(const std::string& message, std::shared_ptr<shiro::users::user> user, const std::string& channel, bool only_user) {
     io::osu_writer buffer;
     io::layouts::message response;
     int32_t user_id = 0;

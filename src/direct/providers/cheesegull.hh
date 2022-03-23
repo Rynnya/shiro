@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -37,10 +37,10 @@ namespace shiro::direct {
         // Translates osu!direct arguments to their Cheesegull equivalents
         std::tuple<std::string, std::string> sanitize_args(std::string key, std::string value, bool url_escape = false);
 
-        static void sanitize_mode(std::string& value);
-        static void sanitize_status(std::string& value);
-        static void sanitize_query(std::string& value);
-        static void sanitize_offset(std::string& value);
+        void sanitize_mode(std::string& value);
+        void sanitize_status(std::string& value);
+        void sanitize_query(std::string& value);
+        void sanitize_offset(std::string& value);
     };
 
 }

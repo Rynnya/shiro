@@ -1,8 +1,6 @@
 #ifndef SHIRO_MULTIPARTPARSER_H
 #define SHIRO_MULTIPARTPARSER_H
 
-#include <functional>
-
 // Disable all warnings from gcc/clang:
 #if defined(__clang__)
 #pragma clang system_header
@@ -13,8 +11,8 @@
 typedef struct multipartparser multipartparser;
 typedef struct multipartparser_callbacks multipartparser_callbacks;
 
-using multipart_cb = std::function<int(multipartparser*)>;
-using multipart_data_cb = std::function<int(multipartparser*, const char*, size_t)>;
+typedef int (*multipart_cb)(multipartparser*);
+typedef int (*multipart_data_cb)(multipartparser*, const char*, size_t);
 
 #ifdef __cplusplus
 extern "C" {

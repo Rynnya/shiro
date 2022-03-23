@@ -21,7 +21,7 @@
 #include <cstdio>
 #include <windows.h>
 
-#include "../../thirdparty/loguru.hh"
+#include "../../thirdparty/naga.hh"
 #include "../signal_handler.hh"
 
 bool handle_signal(unsigned int signal) {

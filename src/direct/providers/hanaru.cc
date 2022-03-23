@@ -1,6 +1,6 @@
 ﻿/*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -46,8 +46,7 @@ shiro::direct::hanaru::hanaru() {
                 websocketpp::lib::error_code ec;
                 connection_ptr = socket.get_connection("ws://127.0.0.1:" + std::to_string(config::direct::port) + "/", ec);
                 if (ec) {
-                    std::string msg = ec.message();
-                    LOG_F(ERROR, "Cannot connect through websocket: %s", msg.c_str());
+                    LOG_F(ERROR, "Cannot connect through websocket: {}", ec.message());
 
                     connection_ptr = nullptr;
                     std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -68,16 +67,19 @@ shiro::direct::hanaru::hanaru() {
 }
 
 void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_tables {};
+    auto db = shiro::database::instance->pop();
 
-    auto statement = sqlpp::dynamic_select(db, all_of(beatmaps_tables)).from(beatmaps_tables).dynamic_where().order_by(beatmaps_tables.beatmapset_id.desc()).limit(1000U);
+    auto statement = sqlpp::dynamic_select(*db, all_of(tables::beatmaps_table))
+        .from(tables::beatmaps_table)
+        .dynamic_where()
+        .order_by(tables::beatmaps_table.beatmapset_id.desc())
+        .limit(1000U);
 
     for (const auto &[header, value] : parameters) {
         if (header == "r") {
             int32_t status = sanitize_status(value);
             if (status != -3) {
-                statement.where.add(beatmaps_tables.ranked_status == status);
+                statement.where.add(tables::beatmaps_table.ranked_status == status);
             }
             continue;
         }
@@ -85,7 +87,7 @@ void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<
         if (header == "m") {
             int32_t mode = sanitize_mode(value);
             if (mode != -1) {
-                statement.where.add(beatmaps_tables.mode == mode);
+                statement.where.add(tables::beatmaps_table.mode == mode);
             }
             continue;
         }
@@ -93,6 +95,7 @@ void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<
 
     auto result = db(statement);
 
+    // TODO: Replace with fmt
     std::stringstream out;
     out << 1 << std::endl;
 
@@ -219,18 +222,18 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         return;
     }
 
-    std::string url =
-        (config::direct::hanaru_url.find("localhost") != std::string::npos
-            ? "127.0.0.1:" + std::to_string(config::direct::port)
-            : config::direct::hanaru_url
-        ) + "/b/" + beatmap_id->second;
+    std::string url = fmt::format(
+        "{}/b/{}",
+        (config::direct::hanaru_url.find("localhost") != std::string::npos ? "127.0.0.1:" + std::to_string(config::direct::port): config::direct::hanaru_url),
+        beatmap_id->second
+    );
     auto [success, output] = shiro::utils::curl::get_direct(url);
 
     if (!success) {
         callback.code = 504;
         callback.end();
 
-        LOG_F(WARNING, "Hanaru search_np returned invalid response, message: %s", output.c_str());
+        LOG_F(WARNING, "Hanaru search_np returned invalid response, message: {}", output);
         return;
     }
 
@@ -239,8 +242,8 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         json_result = nlohmann::json::parse(output);
     }
     catch (const json::parse_error& ex) {
-        LOG_F(ERROR, "Unable to parse json response from Hanaru: %s.", ex.what());
-        logging::sentry::exception(ex, __FILE__, __LINE__);
+        LOG_F(ERROR, "Unable to parse json response from Hanaru: {}.");
+        CAPTURE_EXCEPTION(ex);
 
         callback.code = 504;
         callback.end();
@@ -248,6 +251,7 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         return;
     }
 
+    // TODO: Replace with fmt
     std::stringstream out;
 
     std::string beatmapset_id = std::to_string(json_result["beatmapset_id"].get<int32_t>());
@@ -326,8 +330,8 @@ void shiro::direct::hanaru::on_message(websocketpp::connection_hdl handle, clien
         payload = nlohmann::json::parse(msg->get_payload());
     }
     catch (const json::parse_error& ex) {
-        shiro::logging::sentry::exception(ex, __FILE__, __LINE__);
-        LOG_F(ERROR, "Exception happend when handling websocket payload: %s", ex.what());
+        LOG_F(ERROR, "Exception happend when handling websocket payload: {}", ex.what());
+        CAPTURE_EXCEPTION(ex);
 
         return;
     }

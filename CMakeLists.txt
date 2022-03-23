@@ -16,6 +16,9 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RELEASE)
 endif()
 
+# Verify if CPU supports any crypto optimizations
+include("cmake/CPUID.cmake")
+
 if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter")
@@ -24,6 +27,20 @@ if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -ggdb3")
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG=1")
+
+    if (AVX2_SUPPORT)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
+    elseif (AVX_SUPPORT)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx")
+    endif()
+
+    if (SSE4_1_SUPPORT)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    endif()
+
+    if (AES_NI_SUPPORT)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes")
+    endif()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -50,10 +67,16 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     link_directories("${MYSQL_LIB_DIR}")
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DNDEBUG=1 /MP /w")
-endif()
 
-# Disable use of avx2 in cppcrypto algorithms
-add_definitions(-DNO_OPTIMIZED_VERSIONS)
+    if (AVX2_SUPPORT)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2")
+    elseif (AVX_SUPPORT)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX")
+    endif()
+
+    add_compile_definitions(_WIN32_WINNT=0x0601)
+    add_compile_definitions(WIN32_LEAN_AND_MEAN)
+endif()
 
 # Threading library (Win32 threads, pthreads)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -95,7 +118,7 @@ if (Tcmalloc_FOUND)
 endif()
 
 # Enable logging with streams in Loguru
-add_definitions(-DLOGURU_REDEFINE_ASSERT=1)
+# add_definitions(-DLOGURU_REDEFINE_ASSERT=1)
 
 # Resources
 file(GLOB_RECURSE RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/*)

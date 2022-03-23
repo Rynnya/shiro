@@ -27,7 +27,7 @@ namespace shiro::utils::bot {
 
     void handle(io::layouts::message message, std::shared_ptr<users::user> user);
 
-    void respond(std::string message, std::shared_ptr<users::user> user, std::string channel, bool only_user = false);
+    void respond(const std::string& message, std::shared_ptr<users::user> user, const std::string& channel, bool only_user = false);
 
 }
 

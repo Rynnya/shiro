@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -27,29 +27,29 @@ namespace shiro::pp::ctb {
     // replacement for std::pair<float, float>
     class point {
     public:
-        point(float x = 0.0f, float y = 0.0f);
+        point(double x = 0.0, double y = 0.0);
         bool operator==(const point& other);
 
-        float x = 0.0f;
-        float y = 0.0f;
+        double x = 0.0;
+        double y = 0.0;
     };
 
     namespace constants {
 
-        static constexpr float STAR_SCALING_FACTOR = 0.145f;
-        static constexpr float STRAIN_STEP = 750.0f;
-        static constexpr float DECAY_WEIGHT = 0.94f;
-        static constexpr float DECAY_BASE = 0.2f;
-        static constexpr float ABSOLUTE_PLAYER_POSITIONING_ERROR = 16.0f;
-        static constexpr float NORMALIZED_HITOBJECT_RADIUS = 41.0f;
-        static constexpr float DIRECTION_CHANGE_BONUS = 12.5f;
-        static constexpr float SLIDER_QUALITY = 50.0f;
+        static constexpr double STAR_SCALING_FACTOR = 0.145;
+        static constexpr double STRAIN_STEP = 750.0;
+        static constexpr double DECAY_WEIGHT = 0.94;
+        static constexpr double DECAY_BASE = 0.2;
+        static constexpr double ABSOLUTE_PLAYER_POSITIONING_ERROR = 16.0;
+        static constexpr double NORMALIZED_HITOBJECT_RADIUS = 41.0;
+        static constexpr double DIRECTION_CHANGE_BONUS = 12.5;
+        static constexpr double SLIDER_QUALITY = 50.0;
     }
 
     class math {
     public:
-        static point point_at_distance(std::deque<point> arr, float distance);
-        static point point_on_line(point p0, point p1, float length);
+        static point point_at_distance(std::deque<point> arr, double distance);
+        static point point_on_line(point p0, point p1, double length);
         static float distance_from_points(std::deque<point> arr);
 
         template <typename T>

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -23,20 +24,18 @@
 #include <cerrno>
 #include <cstring>
 
-#include "../../config/cli_args.hh"
 #include "../../native/process_info.hh"
 #include "../../permissions/role_manager.hh"
-#include "../../thirdparty/loguru.hh"
+#include "../../thirdparty/naga.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "restart_command.hh"
 
-bool shiro::commands::restart(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+bool shiro::commands::restart(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (!roles::manager::has_permission(user, permissions::perms::cmd_restart)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_restart)) + ")", std::move(user), std::move(channel), true);
+        utils::bot::respond(fmt::format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_restart)), user, channel, true);
         return false;
     }
-
-    auto [_, argv] = config::cli::get_args();
 
     // If we're on Mac or Linux, close all file descriptors except stdin (0), stdout (1) and stderr (2)
     // This is because a call to execve retains the open file descriptors, which includes our binding ports
@@ -48,9 +47,10 @@ bool shiro::commands::restart(std::deque<std::string> &args, std::shared_ptr<shi
         }
     #endif
 
-    execve(native::process_info::get_executable_location().c_str(), argv, nullptr);
+    char* execve_args[2] = { "", nullptr };
+    execve(native::process_info::get_executable_location().c_str(), execve_args, nullptr);
 
     // execve does not return if it runs successful.
     // We can't notify the user as we closed all file descriptors above, so we'll abort
-    ABORT_F("Unable to fully restart Shiro: %s", std::strerror(errno));
+    ABORT_F("Unable to fully restart Shiro: {}", std::strerror(errno));
 }

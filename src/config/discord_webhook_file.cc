@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,7 +19,6 @@
 
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/cpptoml.hh"
-#include "../thirdparty/loguru.hh"
 #include "discord_webhook_file.hh"
 
 static std::shared_ptr<cpptoml::table> config_file = nullptr;
@@ -39,8 +38,8 @@ void shiro::config::discord_webhook::parse() {
         config_file = cpptoml::parse_file("discord_webhook.toml");
     }
     catch (const cpptoml::parse_exception& ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Failed to parse discord_webhook.toml file: %s.", ex.what());
+        CAPTURE_EXCEPTION(ex);
+        ABORT_F("Failed to parse discord_webhook.toml file: {}.", ex.what());
     }
 
     enabled = config_file->get_qualified_as<bool>("webhook.enabled").value_or(false);

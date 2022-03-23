@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,23 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/lexical_cast.hpp>
-
 #include "../../permissions/role_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "../../utils/time_utils.hh"
 #include "silence_command.hh"
 
-bool shiro::commands::silence(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+using fmt::format;
+
+bool shiro::commands::silence(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() < 2) {
         utils::bot::respond("Usage: !silence <user> <duration>[s,min,h,d,w,m] [reason]", user, channel, true);
         return false;
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_silence)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_silence)) + ")", user, channel, true);
+        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_silence)), user, channel, true);
         return false;
     }
 
@@ -41,7 +44,7 @@ bool shiro::commands::silence(std::deque<std::string> &args, std::shared_ptr<shi
     std::string reason = "You have been silenced";
 
     if (target == -1) {
-        utils::bot::respond(target_username + " could not be found.", user, channel, true);
+        utils::bot::respond(format("{} could not be found.", target_username), user, channel, true);
         return false;
     }
 
@@ -64,17 +67,10 @@ bool shiro::commands::silence(std::deque<std::string> &args, std::shared_ptr<shi
     args.pop_front();
 
     if (!args.empty()) {
-        std::stringstream stream;
-
-        for (const std::string &arg : args) {
-            stream << arg << " ";
-        }
-
-        reason = stream.str();
-        reason.pop_back();
+        reason = format("{}", fmt::join(args, " "));
     }
 
     users::punishments::silence(target, user->user_id, time, reason);
-    utils::bot::respond(target_username + " has been silenced for " + std::to_string(time) + " seconds.", user, channel, true);
+    utils::bot::respond(format("{} has been silenced for {} seconds.", target_username, time), user, channel, true);
     return true;
 }

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,6 +21,10 @@
 
 #include "../../../utils/osu_string.hh"
 #include "channel.hh"
+
+// Theres a reason to use 'thread_local' -> https://stackoverflow.com/a/62133688
+static thread_local std::hash<uint32_t> number_hash {};
+static thread_local std::hash<std::string> string_hash {};
 
 shiro::io::layouts::channel::channel(uint32_t id, bool auto_join, bool hidden, std::string name, std::string description, int32_t user_count, bool read_only, uint64_t permission)
         : id(id)
@@ -65,9 +70,9 @@ bool shiro::io::layouts::channel::operator!=(const shiro::io::layouts::channel &
 }
 
 size_t std::hash<shiro::io::layouts::channel>::operator()(const shiro::io::layouts::channel &channel) const noexcept {
-    size_t id_hash = std::hash<uint32_t>()(channel.id);
-    size_t name_hash = std::hash<std::string>()(channel.name);
-    size_t description_hash = std::hash<std::string>()(channel.description);
+    const size_t id_hash = number_hash(channel.id);
+    const size_t name_hash = string_hash(channel.name);
+    const size_t description_hash = string_hash(channel.description);
 
     return ((id_hash ^ (name_hash << 1)) >> 1) ^ (description_hash << 1);
 }

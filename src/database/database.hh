@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -22,32 +22,64 @@
 #include <sqlpp11/mysql/mysql.h>
 #include <sqlpp11/sqlpp11.h>
 
+#include <deque>
 #include <memory>
+#include <mutex>
 #include <string>
 
-namespace shiro {
+namespace shiro::database {
 
-    class database {
-    private:
-        std::shared_ptr<sqlpp::mysql::connection_config> config = nullptr;
+    class pool;
 
-        std::string address;
-        uint32_t port;
-        std::string db;
+    extern std::unique_ptr<pool> instance;
 
-        std::string username;
-        std::string password;
-
+    class connection {
     public:
-        database(const std::string &address, uint32_t port, const std::string &db, const std::string &username, const std::string &password);
+        friend class pool;
+        typedef std::unique_ptr<sqlpp::mysql::connection> handle_t;
 
-        void connect();
+        ~connection();
+        
+        connection() = delete;
+        connection(const connection& other) = delete;
+        connection& operator=(const connection& other) = delete;
 
-        bool is_connected(bool abort = false);
-        std::shared_ptr<sqlpp::mysql::connection_config> get_config();
+        connection(connection&& other) noexcept;
+        connection& operator=(connection&& other) noexcept;
 
+        sqlpp::mysql::connection& operator*() const noexcept;
+
+        template <typename T>
+        auto operator()(const T& sql) const {
+            return this->handle->operator()(sql);
+        }
+
+    private:
+        connection(const std::shared_ptr<sqlpp::mysql::connection_config>& config);
+        connection(handle_t&& handle);
+
+        void dispose() noexcept;
+
+        handle_t handle = nullptr;
     };
 
+    class pool {
+    public:
+        friend class connection;
+
+        pool(const std::string& address, uint32_t port, const std::string& db_name, const std::string& username, const std::string& password, size_t size = 10);
+
+        connection pop();
+        void destroy();
+
+    private:
+        void push(connection::handle_t&& handle);
+        connection create_new();
+
+        std::shared_ptr<sqlpp::mysql::connection_config> config = nullptr;
+        std::deque<connection> stack = {};
+        std::mutex mtx;
+    };
 }
 
 #endif //SHIRO_DATABASE_HH

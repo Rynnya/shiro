@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -28,7 +29,6 @@
 #include "config/api_file.hh"
 #include "config/bancho_file.hh"
 #include "config/bot_file.hh"
-#include "config/cli_args.hh"
 #include "config/db_file.hh"
 #include "config/direct_file.hh"
 #include "config/discord_webhook_file.hh"
@@ -45,8 +45,6 @@
 #include "permissions/role_manager.hh"
 #include "replays/replay_manager.hh"
 #include "routes/routes.hh"
-#include "thirdparty/cli11.hh"
-#include "thirdparty/loguru.hh"
 #include "users/user_activity.hh"
 #include "users/user_punishments.hh"
 #include "users/user_timeout.hh"
@@ -54,20 +52,18 @@
 #include "utils/curler.hh"
 #include "shiro.hh"
 
-std::shared_ptr<shiro::database> shiro::db_connection = nullptr;
 std::shared_ptr<shiro::redis> shiro::redis_connection = nullptr;
 tsc::TaskScheduler shiro::scheduler;
 std::time_t shiro::start_time = std::time(nullptr);
 std::string shiro::commit = "60a2885";
 
 int shiro::init(int argc, char **argv) {
-    logging::init(argc, argv);
+    logging::init();
+    sqlpp::mysql::global_library_init(argc, argv);
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     std::srand(utils::crypto::make_seed());
-
-    config::cli::parse(argc, argv);
 
     // Parse Bancho config before every other config to check if integrations are enabled
     config::bancho::parse();
@@ -84,11 +80,13 @@ int shiro::init(int argc, char **argv) {
     config::score_submission::parse();
 
     // Direct might required to use database, so initialize it right after parsing configurations
-    db_connection = std::make_shared<database>(
-        config::database::address, config::database::port, config::database::database,
-        config::database::username, config::database::password
-        );
-    db_connection->connect();
+    shiro::database::instance = std::make_unique<shiro::database::pool>(
+        config::database::address,
+        config::database::port,
+        config::database::database,
+        config::database::username,
+        config::database::password
+    );
 
     beatmaps::helper::init();
     direct::init();
@@ -129,7 +127,7 @@ int shiro::init(int argc, char **argv) {
     native::system_stats::init();
     native::signal_handler::install();
 
-    LOG_F(INFO, "Welcome to Shiro. Listening on http://%s:%i/.", config::bancho::host.c_str(), config::bancho::port);
+    LOG_F(INFO, "Welcome to Shiro. Listening on http://{}:{}/.", config::bancho::host, config::bancho::port);
     LOG_F(INFO, "Press CTRL + C to quit.");
 
     routes::init();
@@ -138,7 +136,9 @@ int shiro::init(int argc, char **argv) {
 }
 
 void shiro::destroy() {
+    
     redis_connection->disconnect();
+    shiro::database::instance->destroy();
 
     curl_global_cleanup();
 

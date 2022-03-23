@@ -60,6 +60,7 @@ void shiro::spectating::manager::stop_spectating(std::shared_ptr<shiro::users::u
 
         user->queue.enqueue(writer);
 
+        // TODO: Must be a better way to perform this task
         // Check if the host is now lonely by iterating over the whole list again (goodbye performance)
         // I would use is_spectating here but we would dead lock if we call it from here
         for (const auto &[iterated_user, iterated_host] : currently_spectating) {

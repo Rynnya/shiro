@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -26,13 +27,11 @@
 std::vector<shiro::permissions::role> shiro::roles::manager::roles;
 
 void shiro::roles::manager::init() {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::roles roles_table {};
-
-    auto result = db(select(all_of(roles_table)).from(roles_table).unconditionally());
+    auto db = shiro::database::instance->pop();
+    auto result = db(select(all_of(tables::roles_table)).from(tables::roles_table).unconditionally());
 
     for (const auto &row : result) {
-        permissions::role role(row.id, row.name, row.permissions, row.color);
+        permissions::role role{ static_cast<uint32_t>(row.id), row.name, row.permissions, static_cast<uint8_t>(row.color) };
         roles.emplace_back(role);
     }
 }

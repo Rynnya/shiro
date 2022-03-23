@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -50,7 +50,7 @@ float shiro::pp::ctb::ctb_calculator::calculate() {
         return 0;
     }
 
-    float pp = std::pow(((5 * this->star_rate / 0.0049) - 4), 2) / 100000;
+    float pp = std::pow(((5.0 * this->star_rate / 0.0049) - 4.0), 2) / 100000;
     float length_bonus = 0.95 + 0.4 * std::min(1U, this->combo / 3000);
 
     if (this->combo > 3000) {
@@ -62,15 +62,15 @@ float shiro::pp::ctb::ctb_calculator::calculate() {
     pp *= std::min(std::pow(this->combo, 0.8) / std::pow(this->max_combo, 0.8), 1.0);
 
     if (this->ar > 9) {
-        pp *= 1 + 0.1 * (this->ar - 9);
+        pp *= 1 + 0.1 * (this->ar - 9.0);
     }
 
     if (this->ar < 8) {
-        pp *= 1 + 0.025 * (8 - this->ar);
+        pp *= 1 + 0.025 * (8.0 - this->ar);
     }
 
     if (this->mods & static_cast<uint32_t>(shiro::utils::mods::hidden)) {
-        pp *= 1.05 + 0.075 * (10 - std::min(10.0f, this->ar));
+        pp *= 1.05 + 0.075 * (10 - std::min(10.0, this->ar));
     }
 
     if (this->mods & static_cast<uint32_t>(shiro::utils::mods::flashlight)) {
@@ -126,7 +126,7 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars() {
     this->player_width = 305 / 1.6 * ((102.4 * (1 - 0.7 * (this->cs - 5) / 5)) / 128) * 0.7;
 
     for (slider_tick& tick : this->hit_object_with_ticks) {
-        this->difficulty_objects.push_back(difficulty_object(tick, this->player_width * 0.4));
+        this->difficulty_objects.push_back(difficulty_object{ tick, this->player_width * 0.4 });
     }
 
     update_hyperdash_distance();
@@ -146,7 +146,7 @@ void shiro::pp::ctb::ctb_calculator::update_hyperdash_distance() {
     difficulty_object current;
     difficulty_object next;
 
-    for (uint32_t i = 0; i < this->difficulty_objects.size() - 1; i++) {
+    for (size_t i = 0; i < this->difficulty_objects.size() - 1; i++) {
         current = this->difficulty_objects[i];
         next = this->difficulty_objects[i + 1];
 
@@ -192,13 +192,9 @@ float shiro::pp::ctb::ctb_calculator::calculate_difficulty() {
     for (difficulty_object& diff_object : this->difficulty_objects) {
         while (diff_object.object.time > interval) {
             highest_strains.push_back(max_strain);
-            if (last.empty) {
-                max_strain = 0;
-            }
-            else {
-                float decay = std::pow(constants::DECAY_BASE, ((interval - last.object.time) / 1000));
-                max_strain = last.strain * decay;
-            }
+            max_strain = (last.empty)
+                ? 0
+                : last.strain * std::pow(constants::DECAY_BASE, ((interval - last.object.time) / 1000));
 
             interval += strain_step;
         }
@@ -224,14 +220,14 @@ float shiro::pp::ctb::ctb_calculator::calculate_difficulty() {
 }
 
 void shiro::pp::ctb::ctb_calculator::parse_file(std::string filename) {
-    std::ifstream file(filename, std::ifstream::binary);
+    std::ifstream file{ filename, std::ifstream::binary };
     std::string line;
     std::string current_sector = "";
 
     // Parse version
     std::getline(file, line);
     line.erase(std::remove_if(line.begin(), line.end(), [](char c) { return !std::isdigit(c); }));
-    this->version = std::atoi(line.c_str());
+    this->version = shiro::utils::strings::evaluate(line);
 
     while (std::getline(file, line)) {
         // Get rid of '\n' symbol
@@ -297,7 +293,7 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line) {
     if (timing_point_focus[0] == '-') {
         float temp = -1;
         evaluate(timing_point_focus, temp);
-        this->timing_points.push_back(timing_point(timing_point_time, -100 / temp, temp, 100, 600));
+        this->timing_points.push_back(timing_point{ static_cast<double>(timing_point_time), -100 / temp, temp, 100, 600 });
     }
     else {
         if (this->timing_points.size() == 0) {
@@ -306,7 +302,7 @@ void shiro::pp::ctb::ctb_calculator::parse_timing_point(std::string line) {
 
         float temp = 1;
         evaluate(timing_point_focus, temp);
-        this->timing_points.push_back(timing_point(timing_point_time, 1, -100, 60000 / temp, temp));
+        this->timing_points.push_back(timing_point{ static_cast<double>(timing_point_time), 1, -100, 60000 / temp, temp });
     }
 }
 
@@ -331,7 +327,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
 
         float tick_distance = (100 * this->slider_multiplier) / this->slider_tick_rate;
         if (this->version >= 8) {
-            tick_distance /= (std::clamp(-time_point.raw_spm, 10.0f, 1000.0f) / 100);
+            tick_distance /= (std::clamp(-time_point.raw_spm, 10.0, 1000.0) / 100);
         }
 
         std::vector<std::string> curve_split;
@@ -344,26 +340,24 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
             curve_points.push_back({ evaluate<float>(vector_split[0]), evaluate<float>(vector_split[1]) });
         }
 
-        std::string slider_type = curve_split[0];
+        slider_t slider_type = slider_t::type::linear;
+
         if (this->version <= 6 && curve_points.size() >= 2) {
-            if (slider_type == "L") {
-                slider_type = "B";
+            if (curve_split[0] == "L") {
+                slider_type = slider_t::type::bezier;
             }
 
             if (curve_points.size() == 2) {
                 if ((evaluate(split_object[0]) == curve_points[0].x && evaluate(split_object[1]) == curve_points[0].y) || curve_points[0] == curve_points[1]) {
                     curve_points.pop_front();
-                    slider_type = "L";
+                    slider_type = slider_t::type::linear;
                 }
             }
         }
 
-        if (curve_points.size() == 0) {
-            hit_object = { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, 1 };
-        }
-        else {
-            hit_object = { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, object_type, slider_type, curve_points, repeat, pixel_length, time_point, this->slider_multiplier, tick_distance };
-        }
+        hit_object = (curve_points.size() == 0)
+            ? fruit { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, 1 }
+            : fruit { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, object_type, slider_type, curve_points, repeat, pixel_length, time_point, this->slider_multiplier, tick_distance };
     }
     else {
         hit_object = { evaluate<float>(split_object[0]), evaluate<float>(split_object[1]), time, object_type };
@@ -383,14 +377,6 @@ shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_a
     return timing_point();
 }
 
-shiro::pp::ctb::fruit::~fruit() {
-    if (_curve == nullptr) {
-        return;
-    }
-
-    delete _curve;
-}
-
 int32_t shiro::pp::ctb::fruit::get_combo() {
     int32_t result = 1;
     if (2 & this->type) {
@@ -407,42 +393,38 @@ shiro::pp::ctb::slider_tick shiro::pp::ctb::fruit::to_tick() noexcept {
 
 void shiro::pp::ctb::fruit::calculate_slider() {
     using namespace shiro::pp::ctb;
+    std::unique_ptr<abstract_curve> curve = nullptr;
 
-    if (slider_type == "P" && curve_points.size() > 3) {
-        slider_type = "B";
+    if (slider_type == slider_t::type::perfect && curve_points.size() > 3) {
+        slider_type = slider_t::type::bezier;
     }
     else if (curve_points.size() == 2) {
-        slider_type = "L";
+        slider_type = slider_t::type::linear;
     }
 
-    if (slider_type == "P") {
+    if (slider_type == slider_t::type::perfect) {
         try {
-            _curve = new perfect(this->curve_points);
+            curve = std::make_unique<perfect>(this->curve_points);
         }
         catch (const std::exception& /* ex */) {
-            _curve = new bezier(this->curve_points);
-            slider_type = "B";
+            curve = std::make_unique<bezier>(this->curve_points);
+            slider_type = slider_t::type::bezier;
         }
     }
-    else if (slider_type == "B") {
-        _curve = new bezier(this->curve_points);
+    else if (slider_type == slider_t::type::bezier) {
+        curve = std::make_unique<bezier>(this->curve_points);
     }
-    else if (slider_type == "C") {
-        _curve = new catmull(this->curve_points);
+    else if (slider_type == slider_t::type::catmull) {
+        curve = std::make_unique<catmull>(this->curve_points);
     }
 
     float current_distance = this->tick_distance;
-    float time_add = this->duration * (this->tick_distance / (this->pixel_length * this->repeat));
+    double time_add = this->duration * (this->tick_distance / (this->pixel_length * this->repeat));
 
     while (current_distance < this->pixel_length - this->tick_distance / 8) {
-        point ptr;
-
-        if (slider_type == "L") {
-            ptr = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
-        }
-        else {
-            ptr = _curve->point_at_distance(current_distance);
-        }
+        point ptr = (slider_type.is_linear())
+            ? math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance)
+            : curve->point_at_distance(current_distance);
 
         this->ticks.push_back({ ptr.x, ptr.y, this->time + time_add * (this->ticks.size() + 1) });
         current_distance += this->tick_distance;
@@ -454,14 +436,9 @@ void shiro::pp::ctb::fruit::calculate_slider() {
         int32_t dist = (1 & repeat_id) * this->pixel_length;
         float time_offset = (this->duration / this->repeat) * repeat_id;
 
-        point ptr;
-
-        if (slider_type == "L") {
-            ptr = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
-        }
-        else {
-            ptr = _curve->point_at_distance(current_distance);
-        }
+        point ptr = (slider_type.is_linear())
+            ? math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance)
+            : curve->point_at_distance(current_distance);
 
         this->end_ticks.push_back({ ptr.x, ptr.y, this->time + time_offset });
 
@@ -487,13 +464,9 @@ void shiro::pp::ctb::fruit::calculate_slider() {
     this->ticks.insert(this->ticks.end(), repeat_bonus_ticks.begin(), repeat_bonus_ticks.end());
 
     float dist_end = (1 & this->repeat) * this->pixel_length;
-    point ptr;
-    if (slider_type == "L") {
-        ptr = math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance);
-    }
-    else {
-        ptr = _curve->point_at_distance(current_distance);
-    }
+    point ptr = (slider_type.is_linear())
+        ? math::point_on_line(this->curve_points[0], this->curve_points[1], current_distance)
+        : curve->point_at_distance(current_distance);
 
     this->end_ticks.push_back({ ptr.x, ptr.y, this->time + this->duration });
 }
@@ -519,7 +492,7 @@ void shiro::pp::ctb::difficulty_object::calculate_strain(difficulty_object last,
     if (std::abs(this->last_movement) > 0.1) {
         if (std::abs(last.last_movement) > 0.1 && ctb::math::sign(this->last_movement) != ctb::math::sign(last.last_movement)) {
             float bonus = constants::DIRECTION_CHANGE_BONUS / sqrt_time;
-            float bonus_factor = std::min(static_cast<float>(this->error_margin), std::abs(this->last_movement)) / this->error_margin;
+            float bonus_factor = std::min(this->error_margin, std::abs(this->last_movement)) / this->error_margin;
 
             addition += bonus * bonus_factor;
 
@@ -528,7 +501,7 @@ void shiro::pp::ctb::difficulty_object::calculate_strain(difficulty_object last,
             }
         }
 
-        addition += 7.5 * std::min(std::abs(this->last_movement), constants::NORMALIZED_HITOBJECT_RADIUS * 2) / (constants::NORMALIZED_HITOBJECT_RADIUS * 6) / sqrt_time;
+        addition += 7.5 * std::min(std::abs(this->last_movement), constants::NORMALIZED_HITOBJECT_RADIUS * 2.0) / (constants::NORMALIZED_HITOBJECT_RADIUS * 6.0) / sqrt_time;
     }
 
     if (last.hyperdash_distance <= 10) {

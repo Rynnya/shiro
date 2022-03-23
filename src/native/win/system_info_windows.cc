@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -35,8 +36,8 @@ std::string shiro::native::system_info::get_architecture() {
 }
 
 std::string shiro::native::system_info::get_host_name() {
-    char buffer[32767];
-    unsigned long char_count = 32767;
+    char buffer[16300];
+    unsigned long char_count = 16300;
 
     if (!GetComputerName(buffer, &char_count)) {
         return "";
@@ -49,25 +50,44 @@ std::string shiro::native::system_info::get_hw_model() {
     return "";
 }
 
+// Original code was taken from https://stackoverflow.com/a/36545162
+// Modified, so we need only 1 call of 'get_rtl_os_version' to has all data required
+// Will run perfectly on any system that modern than Windows 2000 (as W2000 is NT 5.0, in this version RtlGetVersion was created)
+// The reason why using this instead of 'GetVersionEx' is because Microsoft broke this function in Windows 8.1
+// Read more here: https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getversionexa
+namespace detail {
+
+    // https://docs.microsoft.com/en-us/windows/win32/devnotes/rtlgetversion
+    typedef LONG NTSTATUS, * PNTSTATUS;
+    typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+    static RTL_OSVERSIONINFOW instance = { 0 };
+
+    RTL_OSVERSIONINFOW get_rtl_os_version() {
+        if (instance.dwOSVersionInfoSize == 0) {
+            instance.dwOSVersionInfoSize = sizeof(instance);
+            HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
+
+            if (hMod) {
+                RtlGetVersionPtr fxPtr = reinterpret_cast<RtlGetVersionPtr>(::GetProcAddress(hMod, "RtlGetVersion"));
+                if (fxPtr != nullptr && fxPtr(&instance) == 0x00000000) {
+                    return instance;
+                }
+            }
+        }
+        
+        return instance;
+    }
+}
+
 std::string shiro::native::system_info::get_os_version() {
-    //OSVERSIONINFO info;
-    //std::memset(&info, 0, sizeof(OSVERSIONINFOEX));
-    //info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-    //GetVersionEx(&info);
-
-    return "6.2.9200";
-    //return std::to_string(info.dwMajorVersion) + "." + std::to_string(info.dwMinorVersion) + "." + std::to_string(info.dwBuildNumber);
+    auto info = detail::get_rtl_os_version();
+    return std::to_string(info.dwMajorVersion) + "." + std::to_string(info.dwMinorVersion) + "." + std::to_string(info.dwBuildNumber);
 }
 
 std::string shiro::native::system_info::get_os_build() {
-    //OSVERSIONINFO info;
-    //std::memset(&info, 0, sizeof(OSVERSIONINFOEX));
-    //info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-    //GetVersionEx(&info);
-    return "9200";
-    //return std::to_string(info.dwBuildNumber);
+    auto info = detail::get_rtl_os_version();
+    return std::to_string(info.dwBuildNumber);
 }
 
 #endif

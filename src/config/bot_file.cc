@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,9 +19,7 @@
 
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/cpptoml.hh"
-#include "../thirdparty/loguru.hh"
 #include "bot_file.hh"
-#include "cli_args.hh"
 
 static std::shared_ptr<cpptoml::table> config_file = nullptr;
 
@@ -35,13 +34,11 @@ void shiro::config::bot::parse() {
         config_file = cpptoml::parse_file("bot.toml");
     }
     catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Failed to parse bot.toml file: %s.", ex.what());
+        CAPTURE_EXCEPTION(ex);
+        ABORT_F("Failed to parse bot.toml file: {}.", ex.what());
     }
 
     name = config_file->get_qualified_as<std::string>("bot.name").value_or("Shiro");
 
     LOG_F(INFO, "Successfully parsed bot.toml.");
-
-    cli::cli_app.add_option("--bot-name", name, "Name of the chat bot");
 }

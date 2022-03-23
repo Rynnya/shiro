@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,18 +19,22 @@
 
 #include "../../permissions/role_manager.hh"
 #include "../../users/user_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/osu_client.hh"
+#include "../../utils/string_utils.hh"
 #include "clients_command.hh"
 
-bool shiro::commands::clients(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+using fmt::format;
+
+bool shiro::commands::clients(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() >= 2) {
         utils::bot::respond("Usage: !clients [user]", user, channel, true);
         return false;
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_clients)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_clients)) + ")", user, channel, true);
+        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_clients)), user, channel, true);
         return false;
     }
 
@@ -37,36 +42,35 @@ bool shiro::commands::clients(std::deque<std::string> &args, std::shared_ptr<shi
         std::shared_ptr<users::user> target = users::manager::get_user_by_username(args.at(0));
 
         if (target == nullptr) {
-            utils::bot::respond(args.at(1) + " is currently not online or does not exist.", user, channel, true);
+            utils::bot::respond(format("{} is currently not online or does not exist.", args.at(0)), user, channel, true);
             return false;
         }
 
-        char buffer[256];
-        std::snprintf(
-                buffer, sizeof(buffer),
-                "%s is using %s. (%s -> %i)",
-                target->presence.username.c_str(),
-                utils::clients::to_pretty_string(utils::clients::osu_client::_from_integral(target->client_type)).c_str(),
-                target->client_version.c_str(),
-                target->client_build
+        const std::string client = format(
+            "{} is using {}. ({} -> {})",
+            target->presence.username,
+            utils::clients::to_pretty_string(utils::clients::osu_client::_from_integral(target->client_type)),
+            target->client_version,
+            target->client_build
         );
 
-        utils::bot::respond(buffer, user, channel, true);
+        utils::bot::respond(client, user, channel, true);
         return true;
     }
 
-    std::vector<std::string> lines;
+    std::vector<std::string> lines {};
 
     for (const utils::clients::osu_client &client : utils::clients::osu_client::_values()) {
         std::vector<std::shared_ptr<users::user>> users = utils::clients::get_users(client);
 
         if (users.empty()) {
-            lines.emplace_back(utils::clients::to_pretty_string(client) + " (0):");
+            lines.emplace_back(format("{} (0): No one uses this type.", utils::clients::to_pretty_string(client)));
             continue;
         }
 
-        std::string line = utils::clients::to_pretty_string(client) + " (" + std::to_string(users.size()) + "): ";
+        std::string line = format("{} ({}): ", utils::clients::to_pretty_string(client), users.size());
 
+        // We cannot use format("{}", fmt::join here, as shiro::user is custom type :c
         for (const std::shared_ptr<users::user> &client_user : users) {
             line += client_user->presence.username + ", ";
         }

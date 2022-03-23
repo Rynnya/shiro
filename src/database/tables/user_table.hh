@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -262,6 +263,11 @@ namespace shiro::tables {
         users_preferences_objects::score_overwrite_ctb,
         users_preferences_objects::score_overwrite_mania
     );
+
+    constexpr users             users_table {};
+    constexpr users_stats       users_stats_table {};
+    constexpr users_stats_relax users_relax_table {};
+    constexpr users_preferences users_preferences_table {};
 }
 
 #endif  // SHIRO_USER_TABLE_HH

@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -17,11 +17,13 @@
  */
 
 #include "../../multiplayer/match_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "host_command.hh"
 
-bool shiro::commands_mp::host(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+bool shiro::commands_mp::host(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() < 1) {
         utils::bot::respond("Usage: !mp host <username>", user, channel, true);
         return true;
@@ -47,8 +49,10 @@ bool shiro::commands_mp::host(std::deque<std::string>& args, std::shared_ptr<shi
 
     io::layouts::multiplayer_match match = *optional;
     if (match.host_id == user->user_id) {
+
         for (size_t i = 0; i < match.multi_slot_id.size(); i++) {
             int32_t user_id = match.multi_slot_id.at(i);
+
             if (user_id == target->user_id) {
                 match.host_id = user_id;
                 match.send_update(true);
@@ -57,7 +61,7 @@ bool shiro::commands_mp::host(std::deque<std::string>& args, std::shared_ptr<shi
                 writer.match_transfer_host();
 
                 target->queue.enqueue(writer);
-                utils::bot::respond("Host was transfered to " + target->presence.username, user, channel, true);
+                utils::bot::respond(fmt::format("Host was transfered to {}", target->presence.username), user, channel, true);
                 return true;
             }
         }

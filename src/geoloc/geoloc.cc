@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/curler.hh"
 #include "country_ids.hh"
 #include "geoloc.hh"
@@ -30,7 +31,8 @@ void shiro::geoloc::init() {
     auto [success, output] = utils::curl::get("https://api.ipify.org/");
 
     if (!success) {
-        LOG_F(WARNING, "Unable to resolve own local IP address: %s", output.c_str());
+        LOG_F(WARNING, "Unable to resolve own local IP address: {}", output);
+        return;
     }
 
     localhost_ip = output;

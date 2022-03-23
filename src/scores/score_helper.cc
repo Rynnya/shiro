@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -22,12 +22,14 @@
 #include "../config/score_submission_file.hh"
 #include "../database/tables/score_table.hh"
 #include "../geoloc/country_ids.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../thirdparty/oppai.hh"
 #include "../users/user_manager.hh"
 #include "../users/user_punishments.hh"
 #include "../utils/mods.hh"
 #include "score_helper.hh"
+
+// Internal function to sort arrays
 
 bool score_sorting(const shiro::scores::score& s_left, const shiro::scores::score& s_right) {
     return s_left.total_score > s_right.total_score;
@@ -37,15 +39,18 @@ bool pp_sorting(const shiro::scores::score& s_left, const shiro::scores::score& 
     return s_left.pp > s_right.pp;
 };
 
-shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+// End of internal functions
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.beatmap_md5 == beatmap_md5sum and 
-        score_table.user_id == user->user_id and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+#undef ERROR
+
+shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax) {
+    auto db = shiro::database::instance->pop();
+
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.beatmap_md5 == beatmap_md5sum and
+        tables::scores_table.user_id == user->user_id and
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -101,13 +106,12 @@ shiro::scores::score shiro::scores::helper::fetch_top_score_user(std::string bea
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::string beatmap_md5sum, bool is_relax, size_t limit) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.beatmap_md5 == beatmap_md5sum and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.beatmap_md5 == beatmap_md5sum and
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -118,7 +122,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
     map.beatmap_md5 = beatmap_md5sum;
 
     if (!map.fetch_db()) {
-        LOG_F(ERROR, "Tried to fetch scores for beatmap hash %s without it being in database.", beatmap_md5sum.c_str());
+        LOG_F(ERROR, "Tried to fetch scores for beatmap hash {} without it being in database.", beatmap_md5sum);
         return {};
     }
 
@@ -193,13 +197,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_scores(std::s
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(std::string beatmap_md5sum, uint8_t country, bool is_relax, size_t limit) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.beatmap_md5 == beatmap_md5sum and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.beatmap_md5 == beatmap_md5sum and
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -210,7 +213,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
     map.beatmap_md5 = beatmap_md5sum;
 
     if (!map.fetch_db()) {
-        LOG_F(ERROR, "Tried to fetch scores for beatmap hash %s without it being in database.", beatmap_md5sum.c_str());
+        LOG_F(ERROR, "Tried to fetch scores for beatmap hash {} without it being in database.", beatmap_md5sum);
         return {};
     }
 
@@ -300,13 +303,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_country_scores(st
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::string beatmap_md5sum, int32_t mods, bool is_relax, size_t limit) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.beatmap_md5 == beatmap_md5sum and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.beatmap_md5 == beatmap_md5sum and 
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -317,7 +319,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
     map.beatmap_md5 = beatmap_md5sum;
 
     if (!map.fetch_db()) {
-        LOG_F(ERROR, "Tried to fetch scores for beatmap hash %s without it being in database.", beatmap_md5sum.c_str());
+        LOG_F(ERROR, "Tried to fetch scores for beatmap hash {} without it being in database.", beatmap_md5sum);
         return {};
     }
 
@@ -396,13 +398,12 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_mod_scores(std::s
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax, size_t limit) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.beatmap_md5 == beatmap_md5sum and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.beatmap_md5 == beatmap_md5sum and 
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -413,7 +414,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
     map.beatmap_md5 = beatmap_md5sum;
 
     if (!map.fetch_db()) {
-        LOG_F(ERROR, "Tried to fetch scores for beatmap hash %s without it being in database.", beatmap_md5sum.c_str());
+        LOG_F(ERROR, "Tried to fetch scores for beatmap hash {} without it being in database.", beatmap_md5sum);
         return {};
     }
 
@@ -506,14 +507,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_friend_scores(std
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::string beatmap_md5sum, std::shared_ptr<shiro::users::user> user, bool is_relax, size_t limit) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.beatmap_md5 == beatmap_md5sum and 
-        score_table.user_id == user->user_id and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.beatmap_md5 == beatmap_md5sum and 
+        tables::scores_table.user_id == user->user_id and 
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -524,7 +524,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
     map.beatmap_md5 = beatmap_md5sum;
 
     if (!map.fetch_db()) {
-        LOG_F(ERROR, "Tried to fetch scores for beatmap hash %s without it being in database.", beatmap_md5sum.c_str());
+        LOG_F(ERROR, "Tried to fetch scores for beatmap hash {} without it being in database.", beatmap_md5sum);
         return {};
     }
 
@@ -581,12 +581,11 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_user_scores(std::
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(int32_t user_id, bool is_relax, size_t limit) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.user_id == user_id and 
-        score_table.is_relax == is_relax
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.user_id == user_id and 
+        tables::scores_table.is_relax == is_relax
     ));
 
     if (result.empty()) {
@@ -638,14 +637,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_all_user_scores(i
 }
 
 std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro::utils::play_mode mode, int32_t user_id, bool is_relax) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.user_id == user_id and 
-        score_table.play_mode == static_cast<uint8_t>(mode) and 
-        score_table.is_relax == is_relax and
-        score_table.completed == true
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.user_id == user_id and 
+        tables::scores_table.play_mode == static_cast<uint8_t>(mode) and 
+        tables::scores_table.is_relax == is_relax and
+        tables::scores_table.completed == true
     ));
 
     if (result.empty()) {
@@ -697,7 +695,7 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
 
         // How do we have a score on the beatmap without having the beatmap in the db?
         if (!beatmap.fetch_db()) {
-            LOG_F(ERROR, "Found score for user %i without having beatmap hash %s in database.", user_id, s.beatmap_md5.c_str());
+            LOG_F(ERROR, "Found score for user {} without having beatmap hash {} in database.", user_id, s.beatmap_md5);
             return true;
         }
 
@@ -728,14 +726,13 @@ std::vector<shiro::scores::score> shiro::scores::helper::fetch_top100_user(shiro
 }
 
 std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int32_t user_id, const utils::play_mode &mode, bool is_relax) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(
-        score_table.user_id == user_id and
-        score_table.play_mode == static_cast<uint8_t>(mode) and
-        score_table.is_relax == is_relax
-    ).order_by(score_table.time.desc()).limit(1u));
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(
+        tables::scores_table.user_id == user_id and
+        tables::scores_table.play_mode == static_cast<uint8_t>(mode) and
+        tables::scores_table.is_relax == is_relax
+    ).order_by(tables::scores_table.time.desc()).limit(1u));
 
     if (result.empty()) {
         return std::nullopt;
@@ -777,10 +774,9 @@ std::optional<shiro::scores::score> shiro::scores::helper::get_latest_score(int3
 }
 
 shiro::scores::score shiro::scores::helper::get_score(int32_t id) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(score_table)).from(score_table).where(score_table.id == id).limit(1u));
+    auto result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(tables::scores_table.id == id).limit(1u));
 
     if (result.empty()) {
         return score(-1);

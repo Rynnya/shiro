@@ -23,12 +23,14 @@
 #include <cstring>
 
 #include "../../../config/api_file.hh"
-#include "../../../thirdparty/loguru.hh"
+#include "../../../thirdparty/naga.hh"
 #include "../../../users/user.hh"
 #include "../../../users/user_manager.hh"
 #include "../../../utils/filesystem.hh"
 #include "../../../utils/multipart_parser.hh"
 #include "ci_trigger_route.hh"
+
+#undef ERROR
 
 void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::response &response) {
     if (!config::api::deploy_enabled) {
@@ -46,7 +48,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received CI trigger from %s without a CI user agent.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received CI trigger from {} without a CI user agent.", request.get_ip_address());
         return;
     }
 
@@ -56,7 +58,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         response.code = 400;
         response.end();
 
-        LOG_F(WARNING, "Received CI trigger from %s without content type.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received CI trigger from {} without content type.", request.get_ip_address());
         return;
     }
 
@@ -72,7 +74,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received CI trigger from %s without token.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received CI trigger from {} without token.", request.get_ip_address());
         return;
     }
 
@@ -80,7 +82,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         response.code = 400;
         response.end();
 
-        LOG_F(WARNING, "Received CI trigger from %s without commit SHA1.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received CI trigger from {} without commit SHA1.", request.get_ip_address());
         return;
     }
 
@@ -88,7 +90,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         response.code = 400;
         response.end();
 
-        LOG_F(WARNING, "Received CI trigger from %s without attached file.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received CI trigger from {} without attached file.", request.get_ip_address());
         return;
     }
 
@@ -98,7 +100,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received CI trigger from %s with invalid token (%s).", request.get_ip_address().c_str(), token.c_str());
+        LOG_F(WARNING, "Received CI trigger from {} with invalid token ({}).", request.get_ip_address(), token);
         return;
     }
 
@@ -111,7 +113,7 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
     if (fs::exists(shiro_executable)) {
         // Remove file only if it exists
         if (!fs::remove(shiro_executable)) {
-            LOG_F(ERROR, "Shiro was unable to delete old version: %s (%i)", std::strerror(errno), errno);
+            LOG_F(ERROR, "Shiro was unable to delete old version: {} ({})", std::strerror(errno), errno);
             return;
         }
     }
@@ -132,13 +134,14 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
     commit_stream << short_hash;
     commit_stream.close();
 
-    LOG_F(INFO, "A new version of Shiro has been deployed by CI (%s).", short_hash.c_str());
+    LOG_F(INFO, "A new version of Shiro has been deployed by CI ({}).", short_hash);
 
     io::osu_writer announce_writer;
-    announce_writer.announce(
-        "Shiro is deploying a new version (" + short_hash + "). "
-        "You will be automatically reconnected in a few seconds."
-    );
+    announce_writer.announce(fmt::format(
+        "Shiro is deploying a new version ({}). "
+        "You will be automatically reconnected in a few seconds.",
+        short_hash
+    ));
 
     io::osu_writer restart_writer;
     restart_writer.bancho_restart(10000);
@@ -151,13 +154,14 @@ void shiro::routes::api::ci_trigger::handle(const crow::request &request, crow::
     std::thread deploy_thread([]() {
         std::this_thread::sleep_for(5s);
 
+        // TODO: Replace with something... something, which will not trigger every freaking antivirus in this world
         int32_t exit_code = std::system(config::api::deploy_command.c_str());
 
         if (exit_code == 0) {
             return;
         }
 
-        LOG_F(ERROR, "Shiro was unable to invoke the deployment command. Process returned %i.", exit_code);
+        LOG_F(ERROR, "Shiro was unable to invoke the deployment command. Process returned {}.", exit_code);
     });
     deploy_thread.detach();
 }

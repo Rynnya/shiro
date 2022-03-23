@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -37,8 +37,16 @@ namespace shiro::io {
 
         data_type data = traits::basic_initialization<T>::value;
 
-        serializable() = default;
-        explicit serializable(data_type data) : data(data) {}
+        serializable() noexcept = default;
+        explicit serializable(data_type data) noexcept : data(data) {}
+
+        virtual ~serializable() = default;
+
+        serializable(const serializable& other) = delete;
+        serializable(serializable&& other) = delete;
+
+        serializable& operator=(const serializable& other) = delete;
+        serializable& operator=(serializable&& other) = delete;
 
         virtual shiro::io::buffer marshal() {
             buffer buf;
@@ -46,7 +54,7 @@ namespace shiro::io {
             return buf;
         }
 
-        virtual void unmarshal(buffer& buf) { /* Nothing, derived classes will override it */ }
+        virtual void unmarshal(buffer& buf) noexcept { /* Nothing, derived classes will override it */ }
 
         virtual int32_t get_size() {
             return static_cast<int32_t>(this->marshal().get_size());
@@ -63,14 +71,10 @@ namespace shiro::io {
         virtual int32_t get_size() = 0;
     };
 
-    template <>
-    serializable<std::string>::serializable(std::string data);
-
-    template <>
-    serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data);
-
-    template <>
+    serializable<std::string>::serializable(std::string data) noexcept;
     shiro::io::buffer serializable<std::string>::marshal();
+
+    serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) noexcept;
 }
 
 #endif //SHIRO_SERIALIZABLE_HH

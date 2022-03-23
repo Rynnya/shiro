@@ -20,7 +20,6 @@
 #define SHIRO_API_FILE_HH
 
 #include <string>
-#include <vector>
 
 namespace shiro::config::api {
 

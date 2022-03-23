@@ -16,39 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
-#include <memory>
-
 #include "../replays/replay_manager.hh"
+#include "../thirdparty/fmt/format.hh"
 #include "../users/user.hh"
 #include "../users/user_manager.hh"
 #include "score.hh"
 #include "score_helper.hh"
 
 std::string shiro::scores::score::to_string(std::vector<score> &scores, bool is_relax) {
-    std::stringstream stream;
-
     std::string username = users::manager::get_username_by_id(this->user_id);
     if (username.empty()) {
         return "";
     }
 
-    stream << this->id << "|";
-    stream << username << "|";
-    stream << (is_relax && this->pp > 0 ? static_cast<int32_t>(this->pp) : this->total_score) << "|";
-    stream << this->max_combo << "|";
-    stream << this->count_50 << "|";
-    stream << this->count_100 << "|";
-    stream << this->count_300 << "|";
-    stream << this->count_misses << "|";
-    stream << this->count_katus << "|";
-    stream << this->count_gekis << "|";
-    stream << (this->fc ? "True" : "False") << "|";
-    stream << this->mods << "|";
-    stream << this->user_id << "|";
-    stream << helper::get_scoreboard_position(*this, scores) << "|";
-    stream << this->time << "|";
-    stream << (replays::has_replay(*this) ? "1" : "0") << std::endl;
-
-    return stream.str();
+    return fmt::format(
+        "{}|{}|{}|" \
+        "{}|{}|{}|{}" \
+        "{}|{}|{}" \
+        "{}|{}|{}" \
+        "{}|{}|{}\n",
+        this->id, username, (is_relax && this->pp > 0 ? static_cast<int64_t>(this->pp) : this->total_score),
+        this->max_combo, this->count_50, this->count_100, this->count_300,
+        this->count_misses, this->count_katus, this->count_gekis, 
+        (this->fc ? "True" : "False"), this->mods, this->user_id,
+        helper::get_scoreboard_position(*this, scores), this->time, (replays::has_replay(*this) ? "1" : "0")
+    );
 }

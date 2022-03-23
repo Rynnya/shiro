@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -21,7 +21,6 @@
 
 #include "../../utils/string_utils.hh"
 #include "../../beatmaps/beatmap_helper.hh"
-#include "../../utils/mods.hh"
 #include "mania_calculator.hh"
 
 // Based on https://github.com/toxicpie/ompp-web
@@ -53,9 +52,9 @@ float shiro::pp::mania::mania_calculator::calculate() {
 
     double score_rate = 1;
 
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::easy)) score_rate *= 0.5;
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::no_fail)) score_rate *= 0.5;
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::half_time)) score_rate *= 0.5;
+    adjust_modifier(shiro::utils::mods::easy, score_rate, 0.5);
+    adjust_modifier(shiro::utils::mods::no_fail, score_rate, 0.5);
+    adjust_modifier(shiro::utils::mods::half_time, score_rate, 0.5);
 
     double real_score = score / score_rate;
     if (real_score > 1000000) {
@@ -88,10 +87,16 @@ float shiro::pp::mania::mania_calculator::calculate() {
     double acc_value = std::max(0.0, 0.2 - ((hit300_window - 34) * 0.006667)) * strain_value * std::pow((std::max(0.0, real_score - 960000) / 40000), 1.1);
 
     double pp_multiplier = 0.8;
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::no_fail)) pp_multiplier *= 0.9;
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::easy)) pp_multiplier *= 0.5;
+    adjust_modifier(shiro::utils::mods::no_fail, pp_multiplier, 0.9);
+    adjust_modifier(shiro::utils::mods::easy, pp_multiplier, 0.5);
 
     return std::pow(std::pow(strain_value, 1.32) + std::pow(acc_value, 1.1), (1 / 1.1) * pp_multiplier);
+}
+
+constexpr void shiro::pp::mania::mania_calculator::adjust_modifier(shiro::utils::mods mod, double& modifier, double multiplier) {
+    if (this->mods & static_cast<int32_t>(mod)) {
+        modifier *= multiplier;
+    }
 }
 
 void shiro::pp::mania::mania_calculator::parse_file(std::string filename) {
@@ -126,26 +131,26 @@ void shiro::pp::mania::mania_calculator::parse_note(std::string line, int32_t ke
     std::smatch matches;
 
     if (std::regex_search(line, matches, note_regex)) {
-        int32_t x = std::stoi(matches[1]);
-        int32_t start_t = std::stoi(matches[2]);
-        int32_t end_t = -1;
-        int32_t key = std::floor(x * keys / 512);
+        size_t x = utils::strings::evaluate<size_t>(matches[1]);
+        size_t start_t = utils::strings::evaluate<size_t>(matches[2]);
+        size_t end_t = -1;
+        double key = std::floor(x * keys / 512);
 
         if (matches[3] != "") {
-            end_t = shiro::utils::strings::evaluate(matches[3]);
+            end_t = shiro::utils::strings::evaluate<size_t>(matches[3]);
         }
 
         end_t = (end_t == -1 ? start_t : end_t);
 
-        this->notes.push_back({ static_cast<double>(key), start_t, end_t, 0 });
+        this->notes.push_back({ key, start_t, end_t, 0 });
     }
 }
 
 void shiro::pp::mania::mania_calculator::calculate_stars() {
     double time_scale = 1;
 
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::double_time)) time_scale = 1.5;
-    if (this->mods & static_cast<int32_t>(shiro::utils::mods::half_time)) time_scale = 0.75;
+    adjust_modifier(shiro::utils::mods::double_time, time_scale, 1.5);
+    adjust_modifier(shiro::utils::mods::half_time, time_scale, 0.75);
 
     double strain_step = 400 * time_scale;
     double weight_decay_base = 0.9;
@@ -153,9 +158,11 @@ void shiro::pp::mania::mania_calculator::calculate_stars() {
     double overall_decay_base = 0.3;
     double star_scaling_factor = 0.018;
 
-    int32_t notes_size = this->notes.size();
-    std::vector<double> held_until(notes_size, 0);
-    for (int32_t i = 0; i < notes_size; i++) {
+    size_t notes_size = this->notes.size();
+    std::vector<double> held_until {};
+    held_until.reserve(notes_size);
+
+    for (size_t i = 0; i < notes_size; i++) {
         held_until[i] = this->notes[i].end_t;
     }
 

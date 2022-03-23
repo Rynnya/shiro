@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -72,7 +72,7 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
         raw_time = input.substr(0, size - it);
     }
 
-    if (strings::evaluate<uint32_t>(raw_time, time) == 0) {
+    if (!strings::evaluate<uint32_t>(raw_time, time)) {
         return std::nullopt;
     }
 

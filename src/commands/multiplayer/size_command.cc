@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -17,13 +17,14 @@
  */
 
 #include "../../multiplayer/match_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/slot_status.hh"
 #include "../../utils/string_utils.hh"
 #include "size_command.hh"
 
-bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+bool shiro::commands_mp::size(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() < 1) {
         utils::bot::respond("Usage: !mp size <number>", user, channel, true);
         return true;
@@ -76,7 +77,7 @@ bool shiro::commands_mp::size(std::deque<std::string>& args, std::shared_ptr<shi
             }
 
             match.send_update(true);
-            utils::bot::respond("Size was changed to " + std::to_string(size), user, channel, true);
+            utils::bot::respond(fmt::format("Size was changed to {}", size), user, channel, true);
             return true;
         }
 

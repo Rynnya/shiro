@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -17,13 +17,15 @@
  */
 
 #include "../../multiplayer/match_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/curler.hh"
 #include "../../utils/osu_client.hh"
+#include "../../utils/string_utils.hh"
 #include "invite_command.hh"
 
-bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+bool shiro::commands_mp::invite(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() < 1) {
         utils::bot::respond("Usage: !mp invite <username>", user, channel, true);
         return true;
@@ -54,7 +56,7 @@ bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<s
     }
 
     io::layouts::multiplayer_match match = *optional;
-    std::string url = "osump://" + std::to_string(match.match_id) + "/";
+    std::string url = fmt::format("osump://{}/", match.match_id);
     auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
     // If the sending user is in the lobby themselves, we can send the password without a problem
@@ -68,7 +70,7 @@ bool shiro::commands_mp::invite(std::deque<std::string>& args, std::shared_ptr<s
     message.sender = user->presence.username;
     message.sender_id = user->user_id;
 
-    message.content = "Hey! Come and join my multiplayer room: [" + url + " " + match.game_name + "]";
+    message.content = fmt::format("Hey! Come and join my multiplayer room: [{} {}]", url, match.game_name);
     message.channel = target->presence.username;
 
     writer.send_message(message);

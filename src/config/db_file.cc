@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,8 +19,6 @@
 
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/cpptoml.hh"
-#include "../thirdparty/loguru.hh"
-#include "cli_args.hh"
 #include "db_file.hh"
 
 static std::shared_ptr<cpptoml::table> config_file = nullptr;
@@ -43,8 +42,8 @@ void shiro::config::database::parse() {
         config_file = cpptoml::parse_file("database.toml");
     }
     catch (const cpptoml::parse_exception &ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Failed to parse database.toml file: %s.", ex.what());
+        CAPTURE_EXCEPTION(ex);
+        ABORT_F("Failed to parse database.toml file: {}.", ex.what());
     }
 
     address = config_file->get_qualified_as<std::string>("database.address").value_or("127.0.0.1");
@@ -58,14 +57,4 @@ void shiro::config::database::parse() {
     redis_password = config_file->get_qualified_as<std::string>("redis.password").value_or("");
 
     LOG_F(INFO, "Successfully parsed database.toml.");
-
-    cli::cli_app.add_option("--db-address", address, "Address of MySQL server to connect to");
-    cli::cli_app.add_option("--db-port", port, "Port of MySQL server to connect to");
-    cli::cli_app.add_option("--db-database", database, "Database in MySQL server to put data into");
-    cli::cli_app.add_option("--db-username", username, "Username used to authenticate with MySQL server");
-    cli::cli_app.add_option("--db-password", password, "Password used to authenticate with MySQL server");
-
-    cli::cli_app.add_option("--redis-address", redis_address, "Address of Redis server to connect to");
-    cli::cli_app.add_option("--redis-port", redis_port, "Port of Redis server to connect to");
-    cli::cli_app.add_option("--redis-password", redis_password, "Password used to authenticate with Redis server");
 }

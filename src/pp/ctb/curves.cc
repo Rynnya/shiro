@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -114,7 +114,7 @@ void shiro::pp::ctb::catmull::setup() {
     }
 
     point v1, v2, v3, v4;
-    for (int32_t x = 0; x < this->order - 1; x++) {
+    for (size_t x = 0; x < this->order - 1; x++) {
         float t = 0;
         while (t < this->step + 1) {
             v1 = x >= 1 ? this->curve_points[x - 1] : this->curve_points[x];
@@ -129,13 +129,13 @@ void shiro::pp::ctb::catmull::setup() {
 }
 
 shiro::pp::ctb::point shiro::pp::ctb::catmull::get_point(std::array<point, 4> points, float length) {
-    float x = _catmull({ points[0].x, points[1].x, points[2].x, points[3].x }, length);
-    float y = _catmull({ points[0].y, points[1].y, points[2].y, points[3].y }, length);
+    double x = _catmull({ points[0].x, points[1].x, points[2].x, points[3].x }, length);
+    double y = _catmull({ points[0].y, points[1].y, points[2].y, points[3].y }, length);
 
     return { x, y };
 }
 
-float shiro::pp::ctb::catmull::_catmull(std::array<float, 4> points, float length) {
+double shiro::pp::ctb::catmull::_catmull(std::array<double, 4> points, float length) {
     // Holy crap who made this?
     return 0.5 * (
         (2 * points[1]) +

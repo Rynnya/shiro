@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,34 +17,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Loguru settings
-#if defined(_DEBUG)
-    #define LOGURU_DEBUG_LOGGING 1
-    #define LOGURU_DEBUG_CHECKS 1
-#else
-    #undef LOGURU_DEBUG_LOGGING
-    #undef LOGURU_DEBUG_CHECKS
-#endif
-
-#include <ctime>
-#include <iomanip>
-#include <sstream>
-
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../shiro.hh"
 #include "logger.hh"
 
-void shiro::logging::init(int argc, char **argv) {
-    loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
-    loguru::g_flush_interval_ms = 100;
+void shiro::logging::init() {
+    naga::config config {};
 
-    std::stringstream stream;
-    stream << "logs/shiro ";
-    stream << std::put_time(std::localtime(&start_time), "%d-%m-%Y %H.%M.%S");
-    stream << ".log";
+    naga::reset_log_level(config, naga::log_level::info);
+    config.filepath = "logs/shiro {:%Y-%m-%d %H-%M-%S}.log";
 
-    loguru::add_file(stream.str().c_str(), loguru::FileMode::Append, loguru::Verbosity_MAX);
-    loguru::init(argc, argv);
+    static_cast<void>(naga::init(config));
 
     LOG_F(INFO, "Logging was successfully initialized.");
 }

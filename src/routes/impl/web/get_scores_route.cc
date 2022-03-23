@@ -22,7 +22,6 @@
 #include "../../../geoloc/country_ids.hh"
 #include "../../../logger/sentry_logger.hh"
 #include "../../../scores/score_helper.hh"
-#include "../../../thirdparty/loguru.hh"
 #include "../../../users/user_manager.hh"
 #include "../../../utils/mods.hh"
 #include "../../../utils/string_utils.hh"
@@ -60,7 +59,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received request for score listing from %s with incorrect password.", user->presence.username.c_str());
+        LOG_F(WARNING, "Received request for score listing from {} with incorrect password.", user->presence.username);
         return;
     }
 
@@ -74,7 +73,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     if (!parse_result) {
         LOG_F(ERROR, "Unable to convert sent values to beatmap metadata.");
-        logging::sentry::exception(std::invalid_argument("Sent values was not a numbers."), __FILE__, __LINE__);
+        CAPTURE_EXCEPTION(std::invalid_argument("Sent values was not a numbers."));
 
         response.code = 500;
         response.end();
@@ -91,9 +90,8 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
 
     int32_t mods_list = static_cast<int32_t>(utils::mods::none);
 
-    const tables::users users_table {};
-    sqlpp::mysql::connection db(db_connection->get_config());
-    bool is_relax = db(sqlpp::select(users_table.is_relax).from(users_table).where(users_table.id == user->user_id)).front().is_relax;
+    auto db = shiro::database::instance->pop();
+    bool is_relax = db(sqlpp::select(tables::users_table.is_relax).from(tables::users_table).where(tables::users_table.id == user->user_id)).front().is_relax;
 
     std::vector<scores::score> score_list;
 
@@ -117,8 +115,8 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
                 break;
             }
 
-            LOG_F(ERROR, "Unable to convert sent values (`%s`) to mods.", mods);
-            logging::sentry::exception(std::invalid_argument("Mods was not a number."), __FILE__, __LINE__);
+            LOG_F(ERROR, "Unable to convert sent values (`{}`) to mods.", mods);
+            CAPTURE_EXCEPTION(std::invalid_argument("Mods was not a number."));
 
             response.code = 500;
             response.end();

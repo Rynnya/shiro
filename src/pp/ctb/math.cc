@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,7 +18,7 @@
 
 #include "math.hh"
 
-shiro::pp::ctb::point::point(float x, float y)
+shiro::pp::ctb::point::point(double x, double y)
     : x(x)
     , y(y)
 {};
@@ -27,10 +27,10 @@ bool shiro::pp::ctb::point::operator==(const point& other) {
     return this->x == other.x && this->y == other.y;
 }
 
-shiro::pp::ctb::point shiro::pp::ctb::math::point_at_distance(std::deque<point> arr, float distance) {
-    float current_distance = 0;
-    float new_distance = 0;
-    int32_t i = 0;
+shiro::pp::ctb::point shiro::pp::ctb::math::point_at_distance(std::deque<point> arr, double distance) {
+    double current_distance = 0;
+    double new_distance = 0;
+    size_t i = 0;
 
     if (arr.size() < 2) {
         return { 0.0f, 0.0f };
@@ -72,7 +72,7 @@ shiro::pp::ctb::point shiro::pp::ctb::math::point_at_distance(std::deque<point> 
     return { (arr[i].x + cart.x), (arr[i].y + cart.y) };
 }
 
-shiro::pp::ctb::point shiro::pp::ctb::math::point_on_line(point p0, point p1, float length) {
+shiro::pp::ctb::point shiro::pp::ctb::math::point_on_line(point p0, point p1, double length) {
     float full_length = std::sqrt(std::pow(p1.x - p0.x, 2) + std::pow(p1.y - p0.y, 2));
     float n = full_length - length;
 
@@ -89,10 +89,10 @@ shiro::pp::ctb::point shiro::pp::ctb::math::point_on_line(point p0, point p1, fl
 float shiro::pp::ctb::math::distance_from_points(std::deque<point> arr) {
     float distance = 0;
 
-    for (int32_t i = 1; i < arr.size(); i++) {
-        float x_ = arr[i].x - arr[i - 1].x;
-        float y_ = arr[i].y - arr[i - 1].y;
-        distance += std::sqrt(x_ * x_ + y_ * y_);
+    for (size_t i = 1; i < arr.size(); i++) {
+        float x = arr[i].x - arr[i - 1].x;
+        float y = arr[i].y - arr[i - 1].y;
+        distance += std::sqrt(x * x + y * y);
     }
 
     return distance;

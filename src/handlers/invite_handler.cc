@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,14 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
-
 #include "../multiplayer/match_manager.hh"
+#include "../thirdparty/fmt/format.hh"
 #include "../users/user_manager.hh"
 #include "../users/user_punishments.hh"
 #include "../utils/bot_utils.hh"
 #include "../utils/curler.hh"
 #include "../utils/osu_client.hh"
+#include "../utils/string_utils.hh"
 #include "invite_handler.hh"
 
 void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<users::user> user) {
@@ -50,7 +51,7 @@ void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_wr
     }
 
     io::layouts::multiplayer_match match = *optional;
-    std::string url = "osump://" + std::to_string(match.match_id) + "/";
+    std::string url = fmt::format("osump://{}/", match.match_id);
     auto iterator = std::find(match.multi_slot_id.begin(), match.multi_slot_id.end(), user->user_id);
 
     // If the sending user is in the lobby themselves, we can send the password without a problem
@@ -66,7 +67,7 @@ void shiro::handler::invite::handle(shiro::io::osu_packet &in, shiro::io::osu_wr
     message.sender = user->presence.username;
     message.sender_id = user->user_id;
 
-    message.content = "Hey! Come and join my multiplayer room: [" + url + " " + match.game_name + "]";
+    message.content = fmt::format("Hey! Come and join my multiplayer room: [{} {}]", url, match.game_name);
     message.channel = user->presence.username;
 
     writer.send_message(message);

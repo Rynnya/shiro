@@ -30,7 +30,7 @@
 #include "../config/score_submission_file.hh"
 #include "../io/osu_buffer.hh"
 #include "../scores/score_helper.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../users/user_manager.hh"
 #include "../utils/crypto.hh"
 #include "../utils/osu_string.hh"
@@ -71,7 +71,8 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
     stream.close();
 
     // If the replay is bigger than 1 mib, compress it
-    // TODO: Implement a smarter compression method than zlib
+    // Implement a smarter compression method than zlib (Rynnya: There's no way to compress already compressed data!)
+    // TODO: Remove this code, as this makes total non-sense
     if (fs::file_size(filename) >= 1048576) {
         fs::remove(filename);
 
@@ -139,23 +140,23 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     // Convert raw replay into full osu! replay file
     // Reference: https://osu.ppy.sh/help/wiki/osu!_File_Formats/Osr_(file_format)
 
-    char hash_buffer[1024];
-
-    // poot are you?
-    std::snprintf(hash_buffer, sizeof(hash_buffer), "%ip%io%io%it%ia%sr%ie%sy%so%liu%s%i%s",
-        s.count_100 + s.count_300, s.count_50, s.count_gekis, s.count_katus, s.count_misses,
-        s.beatmap_md5.c_str(), s.max_combo, s.fc ? "True" : "False",
-        username.c_str(), s.total_score, s.rank.c_str(), s.mods, "True");
-
     std::string raw_replay = get_replay(s);
 
     if (raw_replay.empty()) {
         return "";
     }
 
+    // poot are you?
+    const std::string hash_string = fmt::format(
+        "{}p{}o{}o{}t{}a{}r{}e{}y{}o{}u{}{}{}",
+        s.count_100 + s.count_300, s.count_50, s.count_gekis, s.count_katus, s.count_misses,
+        s.beatmap_md5, s.max_combo, s.fc ? "True" : "False",
+        username, s.total_score, s.rank, s.mods, "True"
+    );
+
     std::string beatmap_md5 = utils::osu_string(s.beatmap_md5);
     std::string osu_username = utils::osu_string(username);
-    std::string hash = utils::osu_string(utils::crypto::md5::hash(hash_buffer));
+    std::string hash = utils::osu_string(utils::crypto::md5::hash(hash_string));
 
     io::buffer buffer;
 

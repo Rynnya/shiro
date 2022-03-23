@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -28,7 +28,7 @@ namespace shiro::pp::ctb {
     class timing_point {
     public:
         timing_point() = default;
-        timing_point(float time, float spm, float raw_s, float bpm, float raw_b) :
+        timing_point(double time, double spm, double raw_s, double bpm, double raw_b) :
             timestamp(time),
             spm(spm),
             raw_spm(raw_s),
@@ -36,32 +36,59 @@ namespace shiro::pp::ctb {
             raw_bpm(raw_b)
         {};
 
-        float timestamp = 0;
-        float spm = 1;
-        float raw_spm = -100;
-        float bpm = 100;
-        float raw_bpm = 600;
+        double timestamp = 0;
+        double spm = 1;
+        double raw_spm = -100;
+        double bpm = 100;
+        double raw_bpm = 600;
     };
 
     class slider_tick {
     public:
-        slider_tick(float x, float y, float time) :
+        slider_tick(double x, double y, double time) :
             x(x),
             y(y),
             time(time)
         {};
 
-        float x;
-        float y;
-        float time;
+        double x;
+        double y;
+        double time;
+    };
+
+    class slider_t {
+    public:
+        enum class type : uint8_t {
+            linear = 0,
+            bezier = 1,
+            catmull = 2,
+            perfect = 3
+        };
+
+        slider_t() = default;
+        constexpr slider_t(type slider) : value(slider) {};
+
+        constexpr operator type() const { return value; }
+        constexpr operator bool() = delete;
+
+        constexpr bool operator==(slider_t a) const { return value == a.value; }
+        constexpr bool operator==(type a) const { return value == a; }
+
+        constexpr bool operator!=(slider_t a) const { return value != a.value; }
+        constexpr bool operator!=(type a) const { return value != a; }
+
+        constexpr bool is_linear() const { return value == type::linear; }
+
+    private:
+        type value;
     };
 
     class fruit {
     public:
         fruit() = default;
-        fruit(float x, float y, float time, int32_t type,
-            std::string slider_type = "", std::deque<point> curve_points = {}, int32_t repeat = 1, float pixel_length = 0,
-            timing_point time_point = timing_point(), float slider_multiplier = 0.0f, float tick_distance = 1
+        fruit(double x, double y, double time, int32_t type,
+            slider_t slider_type = slider_t::type::linear, std::deque<point> curve_points = {}, int32_t repeat = 1, float pixel_length = 0,
+            timing_point time_point = timing_point(), double slider_multiplier = 0.0, float tick_distance = 1.0f
         ) :
             x(x),
             y(y),
@@ -77,63 +104,58 @@ namespace shiro::pp::ctb {
 
             if (2 & type) {
                 this->curve_points.push_front({ x, y });
-                this->duration = (int32_t(time_point.raw_bpm) * (pixel_length / (slider_multiplier * time_point.spm)) / 100) * repeat;
+                this->duration = (time_point.raw_bpm * (pixel_length / (slider_multiplier * time_point.spm)) / 100.0) * repeat;
 
                 this->calculate_slider();
             }
         };
-        ~fruit();
 
         int32_t get_combo();
         slider_tick to_tick() noexcept;
 
         // Notes
-        float x = 0;
-        float y = 0;
-        float time = 0;
+        double x = 0.0;
+        double y = 0.0;
+        double time = 0.0;
         int32_t type = 0;
 
         // Sliders
-        std::string slider_type = "";
-        std::deque<point> curve_points = {};
+        slider_t slider_type {};
+        std::deque<point> curve_points {};
         int32_t repeat = 1;
-        float pixel_length = 0;
+        double pixel_length = 0.0;
         timing_point time_point = timing_point();
-        float slider_multiplier = 0;
-        float tick_distance = 1;
-        float duration = 0;
+        double slider_multiplier = 0.0;
+        double tick_distance = 1.0;
+        double duration = 0.0;
 
         std::vector<slider_tick> ticks = {};
         std::vector<slider_tick> end_ticks = {};
 
     private:
         void calculate_slider();
-
-        // Curve
-        shiro::pp::ctb::abstract_curve* _curve = nullptr;
     };
 
     class difficulty_object {
     public:
         difficulty_object() :
             empty(true),
-            object(slider_tick(0, 0, 0)),
-            player_width(0)
+            object(slider_tick(0, 0, 0))
         {};
-        difficulty_object(slider_tick object, float player_width) :
+        difficulty_object(slider_tick object, double player_width) :
             empty(false),
             object(object),
             player_width(player_width)
         {};
 
         bool empty;
-        float strain = 1;
-        float offset = 0;
-        float last_movement = 0;
+        double strain = 1.0;
+        double offset = 0.0;
+        double last_movement = 0.0;
         slider_tick object;
-        int32_t error_margin = constants::ABSOLUTE_PLAYER_POSITIONING_ERROR;
-        float player_width;
-        float scaled_position = object.x * (constants::NORMALIZED_HITOBJECT_RADIUS / player_width);
+        double error_margin = constants::ABSOLUTE_PLAYER_POSITIONING_ERROR;
+        double player_width = 0.0;
+        double scaled_position = object.x * (constants::NORMALIZED_HITOBJECT_RADIUS / player_width);
         float hyperdash_distance = 0;
         bool hyperdash = false;
 
@@ -146,16 +168,16 @@ namespace shiro::pp::ctb {
     private:
         // Map based variables
         int32_t version = 0;
-        float star_rate = 0;
-        float cs = 0;
-        float ar = 0;
-        float od = 0;
-        float hp = 0;
-        float slider_multiplier = 0;
-        float slider_tick_rate = 0;
+        double star_rate = 0.0;
+        double cs = 0.0;
+        double ar = 0.0;
+        double od = 0.0;
+        double hp = 0.0;
+        double slider_multiplier = 0.0;
+        double slider_tick_rate = 0.0;
         int32_t max_combo = 0;
-        float time_rate = 1;
-        float player_width = 0;
+        double time_rate = 1.0;
+        double player_width = 0.0;
 
         // Score based variables
         uint32_t mods = 0;

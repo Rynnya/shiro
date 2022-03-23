@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -59,7 +59,7 @@ namespace shiro::pp::ctb {
         };
 
         std::deque<point> curve_points = {};
-        int32_t order = curve_points.size();
+        size_t order = curve_points.size();
         float step = 2.5 / constants::SLIDER_QUALITY;
         std::deque<point> points = {};
 
@@ -71,7 +71,7 @@ namespace shiro::pp::ctb {
             return { self.x + value * other.x, self.y + value * other.y };
         }
         point get_point(std::array<point, 4> points, float length);
-        float _catmull(std::array<float, 4> points, float length);
+        double _catmull(std::array<double, 4> points, float length);
     };
 
     class perfect : public abstract_curve {

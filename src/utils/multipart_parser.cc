@@ -25,6 +25,84 @@
 #include "multipart_parser.hh"
 #include "string_utils.hh"
 
+namespace callbacks {
+
+    struct multipart_struct {
+        shiro::utils::multipart_form_parts parts = {};
+        std::string header_name;
+        std::string header_value;
+    };
+
+    // forward declarations
+    int on_body_begin       (multipartparser* parser);
+    int on_part_begin       (multipartparser* parser);
+    int on_header_field     (multipartparser* parser, const char* data, size_t size);
+    int on_header_value     (multipartparser* parser, const char* data, size_t size);
+    int on_headers_complete (multipartparser* parser);
+    int on_data             (multipartparser* parser, const char* data, size_t size);
+    int on_part_end         (multipartparser* parser);
+    int on_body_end         (multipartparser* parser);
+
+    // additional functions
+    void on_header_done(multipartparser* parser);
+
+    // real implementation
+
+    int on_body_begin(multipartparser* parser) {
+        return 0;
+    }
+
+    int on_part_begin(multipartparser* parser) {
+        static_cast<multipart_struct*>(parser->data)->parts.emplace_back(shiro::utils::multipart_form_part {});
+        return 0;
+    }
+
+    int on_header_field(multipartparser* parser, const char* data, size_t size) {
+        auto ptr = static_cast<multipart_struct*>(parser->data);
+        if (!ptr->header_value.empty()) {
+            on_header_done(parser);
+        }
+
+        ptr->header_name.append(data, size);
+        return 0;
+    };
+
+
+    int on_header_value(multipartparser* parser, const char* data, size_t size) {
+        static_cast<multipart_struct*>(parser->data)->header_value.append(data, size);
+        return 0;
+    };
+
+    int on_headers_complete(multipartparser* parser) {
+        if (!static_cast<multipart_struct*>(parser->data)->header_value.empty()) {
+            on_header_done(parser);
+        }
+
+        return 0;
+    };
+
+    int on_data(multipartparser* parser, const char* data, size_t size) {
+        static_cast<multipart_struct*>(parser->data)->parts.back().body.append(data, size);
+        return 0;
+    };
+
+    int on_part_end(multipartparser* parser) {
+        return 0;
+    };
+
+    int on_body_end(multipartparser* parser) {
+        return 0;
+    };
+
+    void on_header_done(multipartparser* parser) {
+        auto ptr = static_cast<multipart_struct*>(parser->data);
+        ptr->parts.back().headers[ptr->header_name] = ptr->header_value;
+
+        ptr->header_name.clear();
+        ptr->header_value.clear();
+    };
+}
+
 shiro::utils::multipart_parser::multipart_parser(const std::string &body, const std::string &content_type)
     : body(body)
     , content_type(content_type) {
@@ -44,77 +122,26 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
 
     std::string boundary = this->content_type.substr(boundary_pos + 9);
 
-    bool body_begin_called = false;
-    bool body_end_called = false;
-
-    std::string header_name;
-    std::string header_value;
-
-    multipart_form_parts parts {};
-
-    const auto on_body_begin = [&](multipartparser *parser) -> int {
-        body_begin_called = true;
-        return 0;
-    };
-    const auto on_part_begin = [&](multipartparser *parser) -> int {
-        parts.emplace_back(multipart_form_part {});
-        return 0;
-    };
-    const auto on_header_done = [&]() -> int {
-        parts.back().headers[header_name] = header_value;
-
-        header_name.clear();
-        header_value.clear();
-
-        return 0;
-    };
-    const auto on_header_field = [&](multipartparser *parser, const char *data, size_t size) -> int {
-        if (!header_value.empty()) {
-            on_header_done();
-        }
-
-        header_name.append(data, size);
-        return 0;
-    };
-    const auto on_header_value = [&](multipartparser *parser, const char *data, size_t size) -> int {
-        header_value.append(data, size);
-        return 0;
-    };
-    const auto on_headers_complete = [&](multipartparser *parser) -> int {
-        if (!header_value.empty()) {
-            on_header_done();
-        }
-
-        return 0;
-    };
-    const auto on_data = [&](multipartparser *parser, const char *data, size_t size) -> int {
-        parts.back().body.append(data, size);
-        return 0;
-    };
-    const auto on_part_end = [](multipartparser *parser) -> int {
-        return 0;
-    };
-    const auto on_body_end = [&](multipartparser *parser) -> int {
-        body_end_called = true;
-        return 0;
-    };
-
     multipartparser parser {};
     multipartparser_callbacks callbacks {};
 
     multipartparser_callbacks_init(&callbacks);
 
-    callbacks.on_body_begin = on_body_begin;
-    callbacks.on_part_begin = on_part_begin;
-    callbacks.on_header_field = on_header_field;
-    callbacks.on_header_value = on_header_value;
-    callbacks.on_headers_complete = on_headers_complete;
-    callbacks.on_data = on_data;
-    callbacks.on_part_end = on_part_end;
-    callbacks.on_body_end = on_body_end;
+    callbacks.on_body_begin =       callbacks::on_body_begin;
+    callbacks.on_part_begin =       callbacks::on_part_begin;
+    callbacks.on_header_field =     callbacks::on_header_field;
+    callbacks.on_header_value =     callbacks::on_header_value;
+    callbacks.on_headers_complete = callbacks::on_headers_complete;
+    callbacks.on_data =             callbacks::on_data;
+    callbacks.on_part_end =         callbacks::on_part_end;
+    callbacks.on_body_end =         callbacks::on_body_end;
 
     multipartparser_init(&parser, boundary.c_str());
+    parser.data = static_cast<void*>(new callbacks::multipart_struct {});
+
     size_t result = multipartparser_execute(&parser, &callbacks, this->body.c_str(), this->body.size());
+    multipart_form_parts parts = multipart_form_parts { static_cast<callbacks::multipart_struct*>(parser.data)->parts };
+    delete parser.data;
 
     if (result != this->body.size()) {
         return {};

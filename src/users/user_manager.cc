@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #include "../database/tables/user_table.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/osu_client.hh"
 #include "user_manager.hh"
 
@@ -45,7 +45,7 @@ void shiro::users::manager::login_user(const std::shared_ptr<shiro::users::user>
         online_users.emplace_back(user);
     }
 
-    LOG_F(INFO, "User %s logged in successfully.", user->presence.username.c_str());
+    LOG_F(INFO, "User {} logged in successfully.", user->presence.username);
 
     if (user->client_type != +utils::clients::osu_client::aschente && !user->hidden) {
         redis_connection->get()->incr("shiro.online_users", nullptr).commit();
@@ -69,7 +69,7 @@ void shiro::users::manager::logout_user(const std::shared_ptr<shiro::users::user
         online_users.erase(iterator);
     }
 
-    LOG_F(INFO, "User %s logged out successfully.", user->presence.username.c_str());
+    LOG_F(INFO, "User {} logged out successfully.", user->presence.username);
 
     if (user->client_type != +utils::clients::osu_client::aschente && !user->hidden) {
         redis_connection->get()->decr("shiro.online_users", nullptr).commit();
@@ -175,10 +175,8 @@ std::string shiro::users::manager::get_username_by_id(int32_t id) {
         return user->presence.username;
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::users user_table {};
-
-    auto result = db(select(all_of(user_table)).from(user_table).where(user_table.id == id).limit(1u));
+    auto db = shiro::database::instance->pop();
+    auto result = db(select(all_of(tables::users_table)).from(tables::users_table).where(tables::users_table.id == id).limit(1u));
 
     if (result.empty()) {
         return "";
@@ -194,10 +192,8 @@ int32_t shiro::users::manager::get_id_by_username(const std::string &username) {
         return user->user_id;
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::users user_table {};
-
-    auto result = db(select(all_of(user_table)).from(user_table).where(user_table.username == username).limit(1u));
+    auto db = shiro::database::instance->pop();
+    auto result = db(select(all_of(tables::users_table)).from(tables::users_table).where(tables::users_table.username == username).limit(1u));
 
     if (result.empty()) {
         return -1;
@@ -216,7 +212,7 @@ void shiro::users::manager::update_preferences(int32_t id) {
         }
 
         user->preferences = std::move(shiro::users::user_preferences(id));
-        break;
+        return;
     }
 }
 

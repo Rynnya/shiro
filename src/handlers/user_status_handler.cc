@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -23,6 +24,10 @@ void shiro::handler::user_status::handle(shiro::io::osu_packet &in, shiro::io::o
     io::layouts::user_status status = in.unmarshal<io::layouts::user_status>();
     bool changed_mode = user->stats.play_mode != status.play_mode;
 
+    bool current_relax = user->stats.current_mods & static_cast<int32_t>(utils::mods::relax);
+    bool status_relax = status.current_mods & static_cast<int32_t>(utils::mods::relax);
+    bool changed_relax = current_relax != status_relax;
+
     user->status = status;
 
     user->stats.activity = status.activity;
@@ -32,7 +37,7 @@ void shiro::handler::user_status::handle(shiro::io::osu_packet &in, shiro::io::o
     user->stats.play_mode = status.play_mode;
     user->stats.current_mods = status.current_mods;
 
-    if (!changed_mode) {
+    if (!changed_mode && !changed_relax) {
         return;
     }
 

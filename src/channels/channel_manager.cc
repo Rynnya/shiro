@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -22,7 +23,7 @@
 #include "../database/tables/channel_table.hh"
 #include "../permissions/permissions.hh"
 #include "../permissions/role_manager.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../shiro.hh"
 #include "channel_manager.hh"
 
@@ -35,14 +36,13 @@ void shiro::channels::manager::init() {
         channels.clear();
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::channels channel_table {};
+    auto db = shiro::database::instance->pop();
 
     insert_if_not_exists("#announce", "", true, false, true, 0);
     insert_if_not_exists("#lobby", "", false, true, false, 0);
     insert_if_not_exists("#console", "", true, false, true, static_cast<uint64_t>(permissions::perms::channel_console));
 
-    auto result = db(select(all_of(channel_table)).from(channel_table).unconditionally());
+    auto result = db(select(all_of(tables::channels_table)).from(tables::channels_table).unconditionally());
 
     if (result.empty()) {
         return;
@@ -55,12 +55,10 @@ void shiro::channels::manager::init() {
         std::string name = row.name;
 
         if (name.at(0) != '#') {
-            LOG_F(WARNING, "Channel name of channel id %li doesn't start with #, fixing (%s -> %s).", row.id.value(), name.c_str(), ("#" + name).c_str());
+            LOG_F(WARNING, "Channel name of channel id {0} doesn't start with #, fixing ({1} -> #{1}).", row.id.value(), name);
             name.insert(0, "#");
 
-            db(update(channel_table).set(
-                channel_table.name = name
-            ).where(channel_table.id == row.id));
+            db(update(tables::channels_table).set(tables::channels_table.name = name).where(tables::channels_table.id == row.id));
         }
 
         io::layouts::channel channel(row.id, row.auto_join, row.hidden, name, row.description, 0, row.read_only, row.permission);
@@ -200,22 +198,21 @@ uint32_t shiro::channels::manager::get_channel_id(const std::string &channel_nam
 }
 
 void shiro::channels::manager::insert_if_not_exists(std::string name, std::string description, bool auto_join, bool hidden, bool read_only, uint64_t permission) {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::channels channel_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(channel_table)).from(channel_table).where(channel_table.name == name).limit(1u));
+    auto result = db(select(all_of(tables::channels_table)).from(tables::channels_table).where(tables::channels_table.name == name).limit(1u));
 
     if (!result.empty()) {
         return;
     }
 
-    db(insert_into(channel_table).set(
-        channel_table.name = name,
-        channel_table.description = std::move(description),
-        channel_table.auto_join = auto_join,
-        channel_table.hidden = hidden,
-        channel_table.read_only = read_only,
-        channel_table.permission = permission
+    db(insert_into(tables::channels_table).set(
+        tables::channels_table.name = name,
+        tables::channels_table.description = std::move(description),
+        tables::channels_table.auto_join = auto_join,
+        tables::channels_table.hidden = hidden,
+        tables::channels_table.read_only = read_only,
+        tables::channels_table.permission = permission
     ));
 }
 

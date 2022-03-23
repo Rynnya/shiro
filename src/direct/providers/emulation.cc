@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -18,8 +18,10 @@
  */
 
 #include "../../config/direct_file.hh"
+#include "../../logger/sentry_logger.hh"
 #include "../../thread/thread_pool.hh"
 #include "../../utils/curler.hh"
+#include "../../utils/string_utils.hh"
 #include "emulation.hh"
 
 void shiro::direct::emulation::search(crow::response& callback, std::unordered_map<std::string, std::string> parameters) {
@@ -33,7 +35,11 @@ void shiro::direct::emulation::search(crow::response& callback, std::unordered_m
         parameters.erase("h");
     }
 
-    std::string url = config::direct::base_url + (parameters.find("b") == parameters.end() ? "/web/osu-search-set.php?" : "/web/osu-search.php?");
+    std::string url = fmt::format(
+        "{}{}",
+        config::direct::base_url,
+        (parameters.find("b") == parameters.end() ? "/web/osu-search-set.php?" : "/web/osu-search.php?")
+    );
 
     for (const auto &[key, value] : parameters) {
         url.append(key).append("=").append(utils::curl::escape_url(value)).append("&");
@@ -49,6 +55,7 @@ void shiro::direct::emulation::search(crow::response& callback, std::unordered_m
             callback.code = 504;
             callback.end();
 
+            LOG_F(WARNING, "Emulation search returned invalid response, message: {}", output);
             return;
         }
 
@@ -61,7 +68,7 @@ void shiro::direct::emulation::search_np(crow::response& callback, std::unordere
 }
 
 void shiro::direct::emulation::download(crow::response& callback, int32_t beatmap_id, bool no_video) {
-    std::string url = config::direct::mirror_url + "/d/" + std::to_string(beatmap_id);
+    std::string url = fmt::format("{}/d/{}", config::direct::mirror_url, beatmap_id);
 
     if (no_video) {
         url.append("?novideo=yes");
@@ -74,6 +81,12 @@ void shiro::direct::emulation::download(crow::response& callback, int32_t beatma
             callback.code = 504;
             callback.end();
 
+            if (output.size() > 100) {
+                LOG_F(WARNING, "Emulation search returned invalid response with huge message, size: {}", output.size());
+                return;
+            }
+
+            LOG_F(WARNING, "Emulation search returned invalid response, message: {}", output);
             return;
         }
 

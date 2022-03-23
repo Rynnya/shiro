@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "redis.hh"
 #include "../users/user_manager.hh"
 #include "../utils/string_utils.hh"
@@ -26,7 +26,7 @@
 shiro::redis::redis(const std::string& address, uint32_t port, const std::string& password)
     : address(address)
     , port(port)
-    , password(password){
+    , password(password) {
     // Initialized in initializer list
 }
 
@@ -83,12 +83,23 @@ void shiro::redis::setup() {
     this->sub->commit();
 }
 
+template <class T>
 bool shiro::redis::is_connected() {
     return this->client && this->sub;
 }
 
+template <>
+bool shiro::redis::is_connected<cpp_redis::client>() {
+    return static_cast<bool>(this->client);
+}
+
+template <>
+bool shiro::redis::is_connected<cpp_redis::subscriber>() {
+    return static_cast<bool>(this->sub);
+}
+
 std::shared_ptr<cpp_redis::client> shiro::redis::get() {
-    if (!is_connected()) {
+    if (!is_connected<cpp_redis::client>()) {
         ABORT_F("Tried to acquire redis connection while not being connected.");
     }
 

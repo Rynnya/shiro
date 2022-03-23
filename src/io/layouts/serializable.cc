@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,15 +20,12 @@
 #include "serializable.hh"
 #include "../../utils/osu_string.hh"
 
-template <>
-shiro::io::serializable<std::string>::serializable(std::string data) : data(std::move(data)) {}
+shiro::io::serializable<std::string>::serializable(std::string data) noexcept : data(std::move(data)) {}
 
-template <>
-shiro::io::serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) : data(std::move(data)) {}
-
-template <>
 shiro::io::buffer shiro::io::serializable<std::string>::marshal() {
     buffer buf;
     buf.write<std::string>(utils::osu_string(data));
     return buf;
 }
+
+shiro::io::serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) noexcept : data(std::move(data)) {}

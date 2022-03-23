@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,8 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <iomanip>
 
@@ -26,7 +25,7 @@
 #include "../database/tables/beatmap_table.hh"
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/json.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../utils/curler.hh"
 #include "../utils/string_utils.hh"
 #include "../shiro.hh"
@@ -51,10 +50,9 @@ void shiro::beatmaps::beatmap::fetch(bool force_peppster) {
 }
 
 bool shiro::beatmaps::beatmap::fetch_db() {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_table{};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(beatmaps_table)).from(beatmaps_table).where(beatmaps_table.beatmap_md5 == this->beatmap_md5).limit(1u));
+    auto result = db(select(all_of(tables::beatmaps_table)).from(tables::beatmaps_table).where(tables::beatmaps_table.beatmap_md5 == this->beatmap_md5).limit(1u));
 
     if (result.empty()) {
         return false;
@@ -72,9 +70,7 @@ bool shiro::beatmaps::beatmap::fetch_db() {
     this->difficulty_name = row.difficulty_name;
     this->creator = row.creator;
 
-    char buffer[128];
-    std::snprintf(buffer, sizeof(buffer), "%s - %s [%s]", this->artist.c_str(), this->title.c_str(), this->difficulty_name.c_str());
-    this->song_name = buffer;
+    this->song_name = fmt::format("{} - {} [{}]", this->artist, this->title, this->difficulty_name);;
 
     this->cs = row.cs;
     this->ar = row.ar;
@@ -101,11 +97,11 @@ bool shiro::beatmaps::beatmap::fetch_db() {
 
 bool shiro::beatmaps::beatmap::fetch_api() {
     if (this->beatmapset_id == 0) {
-        std::string url = "https://old.ppy.sh/api/get_beatmaps?k=" + config::bancho::api_key + "&b=" + std::to_string(this->beatmap_id);
+        const std::string url = fmt::format("https://old.ppy.sh/api/get_beatmaps?k={}&b={}", config::bancho::api_key, this->beatmap_id);
         auto [success, output] = utils::curl::get(url);
 
         if (!success) {
-            LOG_F(ERROR, "Unable to connect to osu! api: %s.", output.c_str());
+            LOG_F(ERROR, "Unable to connect to osu! api: {}.", output);
 
             this->ranked_status = static_cast<int32_t>(status::unknown);
             return false;
@@ -117,7 +113,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
         }
         catch (const json::parse_error& ex) {
             LOG_F(ERROR, "Unable to parse json response from osu! api.");
-            logging::sentry::exception(ex, __FILE__, __LINE__);
+            CAPTURE_EXCEPTION(ex);
 
             this->ranked_status = static_cast<int32_t>(status::unknown);
             return false;
@@ -126,7 +122,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
         for (auto& part : json_result) {
             if (!utils::strings::evaluate(part["beatmapset_id"], this->beatmapset_id)) {
                 LOG_F(ERROR, "Unable to cast response of osu! API to valid data types: bad cast on beatmapset_id (string -> int32_t)");
-                logging::sentry::exception(std::invalid_argument("Invalid data type in beatmapset_id"), __FILE__, __LINE__);
+                CAPTURE_EXCEPTION(std::invalid_argument("Invalid data type in beatmapset_id"));
 
                 this->ranked_status = static_cast<int32_t>(status::unknown);
                 return false;
@@ -136,11 +132,11 @@ bool shiro::beatmaps::beatmap::fetch_api() {
         }
     }
 
-    std::string url = "https://old.ppy.sh/api/get_beatmaps?k=" + config::bancho::api_key + "&s=" + std::to_string(this->beatmapset_id);
+    const std::string url = fmt::format("https://old.ppy.sh/api/get_beatmaps?k={}&s={}", config::bancho::api_key, this->beatmapset_id);
     auto [success, output] = utils::curl::get(url);
 
     if (!success) {
-        LOG_F(ERROR, "Unable to connect to osu! api: %s.", output.c_str());
+        LOG_F(ERROR, "Unable to connect to osu! api: {}.", output);
 
         this->ranked_status = static_cast<int32_t>(status::unknown);
         return false;
@@ -155,7 +151,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
     }
     catch (const json::parse_error& ex) {
         LOG_F(ERROR, "Unable to parse json response from osu! api.");
-        logging::sentry::exception(ex, __FILE__, __LINE__);
+        CAPTURE_EXCEPTION(ex);
 
         this->ranked_status = static_cast<int32_t>(status::unknown);
         return false;
@@ -174,9 +170,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
         this->creator = part["creator"];
         this->beatmap_md5 = part["file_md5"];
 
-        char buffer[256];
-        std::snprintf(buffer, sizeof(buffer), "%s - %s [%s]", this->artist.c_str(), this->title.c_str(), this->difficulty_name.c_str());
-        this->song_name = buffer;
+        this->song_name = fmt::format("{} - {} [{}]", this->artist, this->title, this->difficulty_name);
 
         parse_result &= utils::strings::evaluate(part["beatmapset_id"], this->beatmapset_id);
         parse_result &= utils::strings::evaluate(part["beatmap_id"],    this->beatmap_id);
@@ -230,7 +224,7 @@ bool shiro::beatmaps::beatmap::fetch_api() {
 
         if (!parse_result) {
             LOG_F(ERROR, "Unable to cast response of Bancho API to valid data types.");
-            logging::sentry::exception(std::invalid_argument("Invalid data type in beatmapset_id"), __FILE__, __LINE__);
+            CAPTURE_EXCEPTION(std::invalid_argument("Invalid data type in beatmapset_id"));
 
             this->ranked_status = static_cast<int32_t>(status::unknown);
             return false;
@@ -271,10 +265,8 @@ bool shiro::beatmaps::beatmap::exist() {
         return false;
     }
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_table {};
-
-    auto result = db(select(all_of(beatmaps_table)).from(beatmaps_table).where(beatmaps_table.beatmapset_id == this->beatmapset_id));
+    auto db = shiro::database::instance->pop();
+    auto result = db(select(all_of(tables::beatmaps_table)).from(tables::beatmaps_table).where(tables::beatmaps_table.beatmapset_id == this->beatmapset_id));
 
     for (const auto& row : result) {
         if (row.beatmap_id.value() == this->beatmap_id) {
@@ -286,78 +278,71 @@ bool shiro::beatmaps::beatmap::exist() {
 }
 
 void shiro::beatmaps::beatmap::save() {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_table {};
+    auto db = shiro::database::instance->pop();
 
-    auto result = db(sqlpp::select(beatmaps_table.id).from(beatmaps_table).where(beatmaps_table.beatmap_md5 == this->beatmap_md5).limit(1u));
+    auto result = db(sqlpp::select(tables::beatmaps_table.id).from(tables::beatmaps_table).where(tables::beatmaps_table.beatmap_md5 == this->beatmap_md5).limit(1u));
     if (!result.empty()) {
         return;
     }
 
-    db(insert_into(beatmaps_table).set(
-        beatmaps_table.beatmap_id = this->beatmap_id,
-        beatmaps_table.beatmapset_id = this->beatmapset_id,
-        beatmaps_table.beatmap_md5 = this->beatmap_md5,
-        beatmaps_table.artist = this->artist,
-        beatmaps_table.title = this->title,
-        beatmaps_table.difficulty_name = this->difficulty_name,
-        beatmaps_table.creator = this->creator,
-        beatmaps_table.cs = this->cs,
-        beatmaps_table.ar = this->ar,
-        beatmaps_table.od = this->od,
-        beatmaps_table.hp = this->hp,
-        beatmaps_table.mode = this->play_mode,
-        beatmaps_table.difficulty_std = this->difficulty_std,
-        beatmaps_table.difficulty_taiko = this->difficulty_taiko,
-        beatmaps_table.difficulty_ctb = this->difficulty_ctb,
-        beatmaps_table.difficulty_mania = this->difficulty_mania,
-        beatmaps_table.max_combo = this->max_combo,
-        beatmaps_table.hit_length = this->hit_length,
-        beatmaps_table.bpm = this->bpm,
-        beatmaps_table.count_normal = this->count_normal,
-        beatmaps_table.count_slider = this->count_slider,
-        beatmaps_table.count_spinner = this->count_spinner,
-        beatmaps_table.ranked_status = this->ranked_status,
-        beatmaps_table.ranked_status_freezed = this->ranked_status_freezed,
-        beatmaps_table.latest_update = this->last_update,
-        beatmaps_table.play_count = this->play_count,
-        beatmaps_table.pass_count = this->pass_count
+    db(insert_into(tables::beatmaps_table).set(
+        tables::beatmaps_table.beatmap_id = this->beatmap_id,
+        tables::beatmaps_table.beatmapset_id = this->beatmapset_id,
+        tables::beatmaps_table.beatmap_md5 = this->beatmap_md5,
+        tables::beatmaps_table.artist = this->artist,
+        tables::beatmaps_table.title = this->title,
+        tables::beatmaps_table.difficulty_name = this->difficulty_name,
+        tables::beatmaps_table.creator = this->creator,
+        tables::beatmaps_table.cs = this->cs,
+        tables::beatmaps_table.ar = this->ar,
+        tables::beatmaps_table.od = this->od,
+        tables::beatmaps_table.hp = this->hp,
+        tables::beatmaps_table.mode = this->play_mode,
+        tables::beatmaps_table.difficulty_std = this->difficulty_std,
+        tables::beatmaps_table.difficulty_taiko = this->difficulty_taiko,
+        tables::beatmaps_table.difficulty_ctb = this->difficulty_ctb,
+        tables::beatmaps_table.difficulty_mania = this->difficulty_mania,
+        tables::beatmaps_table.max_combo = this->max_combo,
+        tables::beatmaps_table.hit_length = this->hit_length,
+        tables::beatmaps_table.bpm = this->bpm,
+        tables::beatmaps_table.count_normal = this->count_normal,
+        tables::beatmaps_table.count_slider = this->count_slider,
+        tables::beatmaps_table.count_spinner = this->count_spinner,
+        tables::beatmaps_table.ranked_status = this->ranked_status,
+        tables::beatmaps_table.ranked_status_freezed = this->ranked_status_freezed,
+        tables::beatmaps_table.latest_update = this->last_update,
+        tables::beatmaps_table.play_count = this->play_count,
+        tables::beatmaps_table.pass_count = this->pass_count
     ));
 }
 
 void shiro::beatmaps::beatmap::update_play_metadata() {
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::beatmaps beatmaps_table {};
+    auto db = shiro::database::instance->pop();
 
-    db(update(beatmaps_table).set(
-        beatmaps_table.play_count = this->play_count,
-        beatmaps_table.pass_count = this->pass_count
-    ).where(beatmaps_table.beatmap_md5 == this->beatmap_md5));
+    db(update(tables::beatmaps_table).set(
+        tables::beatmaps_table.play_count = this->play_count,
+        tables::beatmaps_table.pass_count = this->pass_count
+    ).where(tables::beatmaps_table.beatmap_md5 == this->beatmap_md5));
 }
 
 std::string shiro::beatmaps::beatmap::get_url() {
-    std::string url = config::ipc::beatmap_url + std::to_string(this->beatmap_id);
-    return url;
+    return fmt::format("{}{}", config::ipc::beatmap_url, this->beatmap_id);
 }
 
 std::string shiro::beatmaps::beatmap::build_header() {
-    std::stringstream result;
-
-    result << helper::fix_beatmap_status(this->ranked_status) << "|false|" << this->beatmap_id << "|" << this->beatmapset_id << "|" << this->pass_count << std::endl;
-    result << "0" << std::endl;
-    result << this->song_name << std::endl;
-    result << "10.0" << std::endl;
-
-    return result.str();
+    return fmt::format(
+        "{}|false|{}|{}|{}\n0\n{}\n10.0\n",
+        helper::fix_beatmap_status(this->ranked_status),
+        this->beatmap_id, this->beatmapset_id, this->pass_count,
+        this->song_name
+    );
 }
 
 std::string shiro::beatmaps::beatmap::build_header(const std::vector<scores::score>& scores) {
-    std::stringstream result;
-
-    result << helper::fix_beatmap_status(this->ranked_status) << "|false|" << this->beatmap_id << "|" << this->beatmapset_id << "|" << scores.size() << std::endl;
-    result << "0" << std::endl;
-    result << this->song_name << std::endl;
-    result << "10.0" << std::endl;
-
-    return result.str();
+    return fmt::format(
+        "{}|false|{}|{}|{}\n0\n{}\n10.0\n",
+        helper::fix_beatmap_status(this->ranked_status),
+        this->beatmap_id, this->beatmapset_id, scores.size(),
+        this->song_name
+    );
 }

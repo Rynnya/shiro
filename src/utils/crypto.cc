@@ -26,40 +26,28 @@
 
 #include "../thirdparty/cppcrypto/cbc.hh"
 #include "../thirdparty/cppcrypto/rijndael.hh"
+#include "../thirdparty/websocketpp/base64/base64.hh"
 #include "crypto.hh"
 #include "../native/process_info.hh"
 
-std::vector<unsigned char> shiro::utils::crypto::base64::decode(const char *base64) {
-    const size_t max_len = std::strlen(base64) / 4 * 3 + 1;
-
-    std::unique_ptr<BIO, bio_free_all> b64(BIO_new(BIO_f_base64()));
-    BIO_set_flags(b64.get(), BIO_FLAGS_BASE64_NO_NL);
-
-    BIO *source = BIO_new_mem_buf(base64, -1);
-    BIO_push(b64.get(), source);
-
-    std::vector<unsigned char> result(max_len);
-
-    const int length = BIO_read(b64.get(), result.data(), (int) max_len);
-    result.resize((unsigned long) length);
-
-    return result;
+std::string shiro::utils::crypto::base64::decode(const std::string& base64) {
+    return websocketpp::base64_decode(base64);
 }
 
-std::vector<unsigned char> shiro::utils::crypto::rijndael256::decode(std::vector<unsigned char> iv, std::string key, std::vector<unsigned char> cipher) {
+std::string shiro::utils::crypto::rijndael256::decode(const std::string& iv, const std::string& key, const std::string& cipher) {
     using namespace cppcrypto;
 
     std::unique_ptr<cbc> decryptor = std::make_unique<cbc>(rijndael256_256());
-    decryptor->init((unsigned char*) key.c_str(), key.size(), &iv[0], iv.size(), block_cipher::direction::decryption);
+    decryptor->init(reinterpret_cast<const unsigned char*>(key.data()), key.size(), reinterpret_cast<const unsigned char*>(&iv[0]), iv.size(), block_cipher::direction::decryption);
 
     std::vector<unsigned char> result;
-    decryptor->decrypt_update(&cipher[0], cipher.size(), result);
+    decryptor->decrypt_update(reinterpret_cast<const unsigned char*>(&cipher[0]), cipher.size(), result);
     decryptor->decrypt_final(result);
 
-    return result;
+    return std::string(reinterpret_cast<char*>(result.data()), result.size());
 }
 
-std::string shiro::utils::crypto::pbkdf2_hmac_sha512::hash(std::string input, std::string salt) {
+std::string shiro::utils::crypto::pbkdf2_hmac_sha512::hash(const std::string& input, const std::string& salt) {
     unsigned char result[64];
     char output[256];
 
@@ -85,7 +73,7 @@ std::string shiro::utils::crypto::md5::hash(const std::string &input) {
     return std::string(output);
 }
 
-std::string shiro::utils::crypto::lzma::decompress(std::string input) {
+std::string shiro::utils::crypto::lzma::decompress(const std::string& input) {
     lzma_stream stream = LZMA_STREAM_INIT;
 
     lzma_ret decoder = lzma_alone_decoder(&stream, UINT64_MAX);

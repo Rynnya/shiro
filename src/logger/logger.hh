@@ -21,7 +21,7 @@
 
 namespace shiro::logging {
 
-    void init(int argc, char **argv);
+    void init();
 
 }
 

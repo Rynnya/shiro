@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -23,6 +23,7 @@
 
 #include "../../beatmaps/beatmap.hh"
 #include "../../scores/score.hh"
+#include "../../utils/mods.hh"
 
 namespace shiro::pp::mania {
 
@@ -35,7 +36,7 @@ namespace shiro::pp::mania {
             end_t(0),
             individual_strain(0)
         {};
-        note(double key, int32_t start, int32_t end, double ind_strain) :
+        note(double key, size_t start, size_t end, double ind_strain) :
             contains_data(true),
             key(key),
             start_t(start),
@@ -44,8 +45,8 @@ namespace shiro::pp::mania {
         {};
 
         double key;
-        int32_t start_t;
-        int32_t end_t;
+        size_t start_t;
+        size_t end_t;
         double overall_strain = 1;
         double individual_strain;
         bool contains_data;
@@ -61,7 +62,7 @@ namespace shiro::pp::mania {
             return *this;
         };
 
-        operator bool() const noexcept {
+        explicit operator bool() const noexcept {
             return this->contains_data;
         };
     };
@@ -83,6 +84,7 @@ namespace shiro::pp::mania {
         mania_calculator(beatmaps::beatmap beatmap, scores::score score);
 
         float calculate();
+        constexpr void adjust_modifier(shiro::utils::mods mod, double& modifier, double multiplier);
     };
 
 }

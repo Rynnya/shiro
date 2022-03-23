@@ -24,7 +24,7 @@
 namespace shiro::io {
 
     [[maybe_unused]]
-    static const int cho_protocol = 19;
+    static constexpr int32_t cho_protocol = 19;
 
     enum class packet_id : uint16_t {
         in_send_user_status = 0,

@@ -6,11 +6,9 @@ and released into public domain.
 #include "rijndael.hh"
 #include "portability.hh"
 #include <memory.h>
-#include <xmmintrin.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
-#include "cpuinfo.hh"
 
 //#define CPPCRYPTO_DEBUG
 //#define NO_OPTIMIZED_VERSIONS
@@ -421,7 +419,7 @@ namespace cppcrypto {
     }
 
     rijndael128_128::rijndael128_128() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
+#if HAS_ANY_OPTIMIZATIONS
         if (cpu_info::aesni() && cpu_info::sse41()) {
             void *p = aligned_allocate(sizeof(detail::rijndael128_128_impl_aesni), 32);
             impl_   = new (p) detail::rijndael128_128_impl_aesni;
@@ -529,11 +527,9 @@ namespace cppcrypto {
     }
 
     rijndael128_192::rijndael128_192() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael128_192_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael128_192_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael128_192_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael128_192_impl_aesni;
 #endif
     }
 
@@ -645,11 +641,9 @@ namespace cppcrypto {
     }
 
     rijndael128_256::rijndael128_256() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael128_256_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael128_256_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael128_256_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael128_256_impl_aesni;
 #endif
     }
 
@@ -754,11 +748,9 @@ namespace cppcrypto {
     }
 
     rijndael128_224::rijndael128_224() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael128_224_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael128_224_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael128_224_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael128_224_impl_aesni;
 #endif
     }
 
@@ -858,11 +850,9 @@ namespace cppcrypto {
     }
 
     rijndael128_160::rijndael128_160() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael128_160_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael128_160_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael128_160_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael128_160_impl_aesni;
 #endif
     }
 
@@ -1140,11 +1130,9 @@ namespace cppcrypto {
     }
 
     rijndael256_256::rijndael256_256() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael256_256_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael256_256_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael256_256_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael256_256_impl_aesni;
 #endif
     }
 
@@ -1193,11 +1181,9 @@ namespace cppcrypto {
     }
 
     rijndael256_128::rijndael256_128() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael256_128_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael256_128_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael256_128_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael256_128_impl_aesni;
 #endif
     }
 
@@ -1256,11 +1242,9 @@ namespace cppcrypto {
     }
 
     rijndael256_224::rijndael256_224() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael256_224_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael256_224_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael256_224_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael256_224_impl_aesni;
 #endif
     }
 
@@ -1311,11 +1295,9 @@ namespace cppcrypto {
     }
 
     rijndael256_160::rijndael256_160() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael256_160_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael256_160_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael256_160_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael256_160_impl_aesni;
 #endif
     }
 
@@ -1367,11 +1349,9 @@ namespace cppcrypto {
     }
 
     rijndael256_192::rijndael256_192() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael256_192_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael256_192_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael256_192_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael256_192_impl_aesni;
 #endif
     }
 
@@ -1579,11 +1559,9 @@ namespace cppcrypto {
     }
 
     rijndael192_128::rijndael192_128() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael192_128_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael192_128_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael192_128_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael192_128_impl_aesni;
 #endif
     }
 
@@ -1685,11 +1663,9 @@ namespace cppcrypto {
     }
 
     rijndael192_160::rijndael192_160() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael192_160_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael192_160_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael192_160_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael192_160_impl_aesni;
 #endif
     }
 
@@ -1788,11 +1764,9 @@ namespace cppcrypto {
     }
 
     rijndael192_192::rijndael192_192() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael192_192_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael192_192_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael192_192_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael192_192_impl_aesni;
 #endif
     }
 
@@ -1897,11 +1871,9 @@ namespace cppcrypto {
     }
 
     rijndael192_224::rijndael192_224() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael192_224_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael192_224_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael192_224_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael192_224_impl_aesni;
 #endif
     }
 
@@ -2014,11 +1986,9 @@ namespace cppcrypto {
     }
 
     rijndael192_256::rijndael192_256() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael192_256_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael192_256_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael192_256_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael192_256_impl_aesni;
 #endif
     }
 
@@ -2214,11 +2184,9 @@ namespace cppcrypto {
     }
 
     rijndael160_128::rijndael160_128() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael160_128_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael160_128_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael160_128_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael160_128_impl_aesni;
 #endif
     }
 
@@ -2313,11 +2281,9 @@ namespace cppcrypto {
     }
 
     rijndael160_160::rijndael160_160() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael160_160_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael160_160_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael160_160_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael160_160_impl_aesni;
 #endif
     }
 
@@ -2418,11 +2384,9 @@ namespace cppcrypto {
     }
 
     rijndael160_192::rijndael160_192() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael160_192_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael160_192_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael160_192_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael160_192_impl_aesni;
 #endif
     }
 
@@ -2527,11 +2491,9 @@ namespace cppcrypto {
     }
 
     rijndael160_224::rijndael160_224() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael160_224_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael160_224_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael160_224_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael160_224_impl_aesni;
 #endif
     }
 
@@ -2644,11 +2606,9 @@ namespace cppcrypto {
     }
 
     rijndael160_256::rijndael160_256() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael160_256_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael160_256_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael160_256_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael160_256_impl_aesni;
 #endif
     }
 
@@ -3048,38 +3008,30 @@ namespace cppcrypto {
     }
 
     rijndael224_128::rijndael224_128() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael224_128_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael224_128_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael224_128_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael224_128_impl_aesni;
 #endif
     }
 
     rijndael224_160::rijndael224_160() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael224_160_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael224_160_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael224_160_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael224_160_impl_aesni;
 #endif
     }
 
     rijndael224_224::rijndael224_224() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael224_224_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael224_224_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael224_224_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael224_224_impl_aesni;
 #endif
     }
 
     rijndael224_192::rijndael224_192() {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael224_192_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael224_192_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael224_192_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael224_192_impl_aesni;
 #endif
     }
 
@@ -3138,11 +3090,9 @@ namespace cppcrypto {
     }
 
     rijndael224_256::rijndael224_256() : impl_(0) {
-#ifndef NO_OPTIMIZED_VERSIONS
-        if (cpu_info::aesni() && cpu_info::sse41() && cpu_info::avx2()) {
-            void *p = aligned_allocate(sizeof(detail::rijndael224_256_impl_aesni), 32);
-            impl_   = new (p) detail::rijndael224_256_impl_aesni;
-        }
+#if defined(_AES_NI_AVAILABLE) && defined(_SSE4_1_AVAILABLE) && defined(_AVX2_AVAILABLE)
+        void *p = aligned_allocate(sizeof(detail::rijndael224_256_impl_aesni), 32);
+        impl_   = new (p) detail::rijndael224_256_impl_aesni;
 #endif
     }
 

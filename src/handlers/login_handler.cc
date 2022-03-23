@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,8 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cinttypes>
-
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <cmath>
@@ -32,7 +31,7 @@
 #include "../io/osu_writer.hh"
 #include "../logger/sentry_logger.hh"
 #include "../thirdparty/digestpp.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../thirdparty/uuid.hh"
 #include "../users/user.hh"
 #include "../users/user_manager.hh"
@@ -57,7 +56,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received invalid login request from %s: Login body has wrong length (%" PRIi64 " != 4).", request.get_ip_address().c_str(), lines.size());
+        LOG_F(WARNING, "Received invalid login request from {}: Login body has wrong length ({} != 4).", request.get_ip_address(), lines.size());
         return;
     }
 
@@ -72,7 +71,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         response.code = 403;
         response.end();
 
-        LOG_F(WARNING, "Received invalid login request from %s: Additional info has wrong length.", request.get_ip_address().c_str());
+        LOG_F(WARNING, "Received invalid login request from {}: Additional info has wrong length.", request.get_ip_address());
         return;
     }
 
@@ -86,7 +85,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
         response.end(writer.serialize());
 
-        LOG_F(WARNING, "%s (%s) tried to login as non-existent user.", username.c_str(), request.get_ip_address().c_str());
+        LOG_F(WARNING, "{} ({}) tried to login as non-existent user.", username, request.get_ip_address());
         return;
     }
 
@@ -95,7 +94,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
         response.end(writer.serialize());
 
-        LOG_F(WARNING, "%s (%s) tried to login with wrong password.", username.c_str(), request.get_ip_address().c_str());
+        LOG_F(WARNING, "{} ({}) tried to login with wrong password.", username, request.get_ip_address());
         return;
     }
 
@@ -104,7 +103,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
         response.end(writer.serialize());
 
-        LOG_F(WARNING, "%s (%s) tried to login while being banned.", username.c_str(), request.get_ip_address().c_str());
+        LOG_F(WARNING, "{} ({}) tried to login while being banned.", username, request.get_ip_address());
         return;
     }
 
@@ -113,7 +112,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
 
         response.end(writer.serialize());
 
-        LOG_F(WARNING, "%s (%s) tried to login while awaiting email verification.", username.c_str(), request.get_ip_address().c_str());
+        LOG_F(WARNING, "{} ({}) tried to login while awaiting email verification.", username, request.get_ip_address());
         return;
     }
 
@@ -136,8 +135,8 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (!utils::strings::evaluate(parseable_version, build)) {
-        LOG_F(WARNING, "Unable to cast `%s` to int32_t.", version.c_str());
-        logging::sentry::exception(std::invalid_argument("Parseable version was invalid."), __FILE__, __LINE__);
+        LOG_F(WARNING, "Unable to cast `{}` to int32_t.", version);
+        CAPTURE_EXCEPTION(std::invalid_argument("Parseable version was invalid."));
 
         if (config::score_submission::restrict_mismatching_client_version) {
             writer.login_reply(static_cast<int32_t>(utils::login_responses::server_error));
@@ -152,12 +151,12 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     // The osu!stable client disallows certain actions for some very low user id's. In order to circumstance
     // this, disallow users with an user id of less than 10 (except if they're bots) to login.
     if (user->user_id < 10 && user->client_type != +utils::clients::osu_client::aschente) {
-        writer.announce("Your account has an invalid user id assigned (" + std::to_string(user->user_id) + " < 10).");
+        writer.announce(fmt::format("Your account has an invalid user id assigned ({} < 10).", user->user_id));
         writer.login_reply(static_cast<int32_t>(utils::login_responses::invalid_credentials));
 
         response.end(writer.serialize());
 
-        LOG_F(ERROR, "%s (%s) tried to login as user with id less than 10.", username.c_str(), request.get_ip_address().c_str());
+        LOG_F(ERROR, "{} ({}) tried to login as user with id less than 10.", username, request.get_ip_address());
         return;
     }
 
@@ -207,11 +206,14 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (!title_image.empty() || !title_url.empty()) {
-        writer.title_update(title_image + "|" + title_url);
+        writer.title_update(fmt::format("{}|{}", title_image, title_url));
     }
 
     if (request.raw_url.find("ppy.sh") != std::string::npos) {
-        utils::bot::respond("Seems like you still use old type of connection. Please, read about (-devserver)[" + config::ipc::frontend_url + "] on our site.", user, config::bot::name, true);
+        utils::bot::respond(fmt::format(
+            "Seems like you still use old type of connection. Please, read about (-devserver)[{}] on our site.",
+            config::ipc::frontend_url
+        ), user, config::bot::name, true);
     }
 
     writer.friend_list(user->friends);
@@ -237,13 +239,13 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
     }
 
     if (user->hidden) {
-        utils::bot::respond(
-                "(Your account has been restricted)[" + user->get_url() + "]. "
-                "Because of that, your profile has been hidden from the public. "
-                "If you believe this is a mistake, (support contact support)[" + config::ipc::frontend_url + "] "
-                "to have your account status reviewed.",
-                user, config::bot::name, true
-        );
+        utils::bot::respond(fmt::format(
+            "(Your account has been restricted)[{}]. "
+            "Because of that, your profile has been hidden from the public. "
+            "If you believe this is a mistake, (support contact support)[{}] "
+            "to have your account status reviewed.",
+            user->get_url(), config::ipc::frontend_url
+        ), user, config::bot::name, true);
     }
 
     users::manager::iterate([user, &writer, &global_writer](std::shared_ptr<users::user>& online_user) {

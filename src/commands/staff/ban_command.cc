@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,32 +17,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
-
 #include "../../permissions/permissions.hh"
 #include "../../permissions/role_manager.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
 #include "../../utils/bot_utils.hh"
+#include "../../utils/string_utils.hh"
 #include "ban_command.hh"
 
-bool shiro::commands::ban(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+using fmt::format;
+
+bool shiro::commands::ban(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (args.size() < 2) {
         utils::bot::respond("Usage: !ban <user> <reason>", user, channel, true);
         return false;
     }
 
     if (!roles::manager::has_permission(user, permissions::perms::cmd_ban)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_ban)) + ")", user, channel, true);
+        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_ban)), user, channel, true);
         return false;
     }
 
     int32_t target = users::manager::get_id_by_username(args.at(0));
     std::string target_username = args.at(0);
-    std::stringstream stream;
 
     if (target == -1) {
-        utils::bot::respond(target_username + " could not be found.", user, channel, true);
+        utils::bot::respond(format("{} could not be found.", target_username), user, channel, true);
         return false;
     }
 
@@ -52,15 +54,9 @@ bool shiro::commands::ban(std::deque<std::string> &args, std::shared_ptr<shiro::
 
     // Remove username
     args.pop_front();
-
-    for (const std::string &arg : args) {
-        stream << arg << " ";
-    }
-
-    std::string reason = stream.str();
-    reason.pop_back();
+    std::string reason = format("{}", fmt::join(args, " "));
 
     users::punishments::restrict(target, user->user_id, reason);
-    utils::bot::respond(target_username + " has been banned for " + reason + ".", user, channel, true);
+    utils::bot::respond(format("{} has been banned for '{}'.", target_username, reason), user, channel, true);
     return true;
 }

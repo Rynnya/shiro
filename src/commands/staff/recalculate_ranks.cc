@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,18 +17,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <boost/lexical_cast.hpp>
-
 #include "../../permissions/permissions.hh"
 #include "../../permissions/role_manager.hh"
 #include "../../pp/pp_recalculator.hh"
+#include "../../thirdparty/fmt/format.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/string_utils.hh"
 #include "recalculate_ranks.hh"
 
-bool shiro::commands::recalculate(std::deque<std::string> &args, std::shared_ptr<shiro::users::user> user, std::string channel) {
+using fmt::format;
+
+bool shiro::commands::recalculate(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
     if (!roles::manager::has_permission(user, permissions::perms::cmd_recalculate)) {
-        utils::bot::respond("Permission denied. (" + std::to_string(static_cast<uint64_t>(permissions::perms::cmd_recalculate)) + ")", user, channel, true);
+        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_recalculate)), user, channel, true);
         return false;
     }
 
@@ -37,7 +39,7 @@ bool shiro::commands::recalculate(std::deque<std::string> &args, std::shared_ptr
     if (args.size() >= 2) {
         uint8_t parsed_mode = 0;
         if (!utils::strings::evaluate(args.at(0), parsed_mode)) {
-            utils::bot::respond("Unable to parse provided game mode into integer.", std::move(user), std::move(channel), true);
+            utils::bot::respond("Unable to parse provided game mode into integer.", user, channel, true);
             return false;
         }
 
@@ -47,6 +49,6 @@ bool shiro::commands::recalculate(std::deque<std::string> &args, std::shared_ptr
 
     pp::recalculator::begin(mode, is_relax);
 
-    utils::bot::respond("Success! PP recalculating will begin now for all users.", std::move(user), std::move(channel));
+    utils::bot::respond("Success! PP recalculating will begin now for all users.", user, channel);
     return true;
 }

@@ -20,7 +20,6 @@
 
 #include "../config/bancho_file.hh"
 #include "../logger/route_logger.hh"
-#include "../thirdparty/loguru.hh"
 #include "impl/api/ci_trigger_route.hh"
 #include "impl/direct/download_route.hh"
 #include "impl/direct/maps_route.hh"
@@ -52,8 +51,8 @@ void shiro::routes::init() {
         server.run();
     }
     catch (const boost::system::system_error &ex) {
-        logging::sentry::exception(ex, __FILE__, __LINE__);
-        ABORT_F("Unable to start server: %s.", ex.what());
+        CAPTURE_EXCEPTION(ex);
+        ABORT_F("Unable to start server: {}.", ex.what());
     }
 }
 

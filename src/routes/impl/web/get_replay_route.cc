@@ -21,7 +21,6 @@
 #include "../../../replays/replay_manager.hh"
 #include "../../../scores/score.hh"
 #include "../../../scores/score_helper.hh"
-#include "../../../thirdparty/loguru.hh"
 #include "../../../users/user.hh"
 #include "../../../utils/string_utils.hh"
 #include "get_replay_route.hh"
@@ -57,8 +56,8 @@ void shiro::routes::web::get_replay::handle(const crow::request &request, crow::
     int32_t id = 0;
 
     if (!utils::strings::evaluate(score_id, id)) {
-        LOG_F(WARNING, "Unable to convert score id %s to int32_t.", score_id);
-        logging::sentry::exception(std::invalid_argument("Unable to cast score id to int32_t."), __FILE__, __LINE__);
+        LOG_F(WARNING, "Unable to convert score id {} to int32_t.", score_id);
+        CAPTURE_EXCEPTION(std::invalid_argument("Unable to cast score id to int32_t."));
 
         response.code = 500;
         response.end();
@@ -82,15 +81,14 @@ void shiro::routes::web::get_replay::handle(const crow::request &request, crow::
 
     io::buffer buffer(replays::get_replay(s));
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::scores score_table {};
+    auto db = shiro::database::instance->pop();
 
-    db(update(score_table).set(
-        score_table.times_watched += 1
-    ).where(score_table.id == s.id));
+    db(update(tables::scores_table).set(
+        tables::scores_table.times_watched += 1
+    ).where(tables::scores_table.id == s.id));
 
     response.set_header("Content-Type", "application/octet-stream");
-    response.set_header("Content-Disposition", "attachment; filename=" + std::to_string(s.id) + ".osr");
+    response.set_header("Content-Disposition", fmt::format("attachment; filename={}.osr", s.id));
     response.end(buffer.serialize());
 }
 
@@ -109,8 +107,8 @@ void shiro::routes::web::get_replay::handle_full(const crow::request& request, c
     int32_t id = 0;
 
     if (!utils::strings::evaluate(score_id, id)) {
-        LOG_F(WARNING, "Unable to convert score id %s to int32_t.", score_id);
-        logging::sentry::exception(std::invalid_argument("Unable to cast score id to int32_t."), __FILE__, __LINE__);
+        LOG_F(WARNING, "Unable to convert score id {} to int32_t.", score_id);
+        CAPTURE_EXCEPTION(std::invalid_argument("Unable to cast score id to int32_t."));
 
         response.code = 400;
         response.end("id must be integral");
@@ -128,6 +126,6 @@ void shiro::routes::web::get_replay::handle_full(const crow::request& request, c
     }
 
     response.set_header("Content-Type", "application/octet-stream");
-    response.set_header("Content-Disposition", "attachment; filename=" + std::to_string(s.id) + ".osr");
+    response.set_header("Content-Disposition", fmt::format("attachment; filename={}.osr", s.id));
     response.end(replay);
 }

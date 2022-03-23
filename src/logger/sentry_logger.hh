@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -23,7 +24,7 @@
 
 #include "../thirdparty/crow.hh"
 #include "../thirdparty/sentry/crow.hh"
-#include "../thirdparty/loguru.hh"
+#include "../thirdparty/naga.hh"
 #include "../thirdparty/taskscheduler.hh"
 
 namespace shiro::logging::sentry {
@@ -33,19 +34,22 @@ namespace shiro::logging::sentry {
 
     void init();
 
-    void callback(void *user_data, const loguru::Message &message);
+    void callback(std::any& user_data, const naga::log_message& message);
 
-    void fatal_callback(const loguru::Message& message);
+    void fatal_callback(const naga::log_message& message);
 
-    void exception(const std::exception &ex, const char* file, const unsigned int line);
+    void exception(const std::exception& ex, const char* file, const unsigned int line);
 
-    void exception(const std::exception_ptr &ptr, const char* file, const unsigned int line);
+    void exception(const std::exception_ptr& ptr, const char* file, const unsigned int line);
 
     void http_request_out(const std::string &url, const std::string &method = "GET", int32_t status_code = 200, const std::string &reason = "OK");
 
     void http_request_in(const ::crow::request &request);
 
-    std::string verbosity_to_sentry_level(const loguru::Verbosity &verbosity);
+    std::string verbosity_to_sentry_level(const naga::log_level& verbosity);
+
+    // Macro to discard __FILE__ and __LINE__ macroes
+    #define CAPTURE_EXCEPTION(EX) shiro::logging::sentry::exception(EX, __FILE__, __LINE__)
 
 }
 

@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -21,14 +22,12 @@
 
 void shiro::handler::friends::add::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
     int32_t target = in.data.read<int32_t>();
+    auto db = shiro::database::instance->pop();
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::relationships relationships_table {};
-
-    db(insert_into(relationships_table).set(
-        relationships_table.origin = user->user_id,
-        relationships_table.target = target,
-        relationships_table.blocked = false
+    db(insert_into(tables::relationships_table).set(
+        tables::relationships_table.origin = user->user_id,
+        tables::relationships_table.target = target,
+        tables::relationships_table.blocked = false
     ));
 
     user->friends.emplace_back(target);

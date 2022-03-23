@@ -1,6 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -21,13 +22,11 @@
 
 void shiro::handler::friends::remove::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
     int32_t target = in.data.read<int32_t>();
+    auto db = shiro::database::instance->pop();
 
-    sqlpp::mysql::connection db(db_connection->get_config());
-    const tables::relationships relationships_table {};
-
-    db(remove_from(relationships_table).where(
-        relationships_table.origin == user->user_id and
-        relationships_table.target == target
+    db(remove_from(tables::relationships_table).where(
+        tables::relationships_table.origin == user->user_id and
+        tables::relationships_table.target == target
     ));
 
     auto iterator = std::find(user->friends.begin(), user->friends.end(), target);

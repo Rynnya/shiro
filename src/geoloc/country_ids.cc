@@ -1,7 +1,7 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
  * Copyright (C) 2018-2020 Marc3842h, czapek
- * Copyright (C) 2021 Rynnya
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -19,7 +19,6 @@
 
 #include <algorithm>
 
-#include "../thirdparty/loguru.hh"
 #include "country_ids.hh"
 
 std::unordered_map<std::string, uint8_t> shiro::geoloc::country_ids = {
@@ -133,7 +132,7 @@ std::unordered_map<std::string, uint8_t> shiro::geoloc::country_ids = {
     { "IT", 108 },
     { "JM", 109 },
     { "JO", 110 },
-    { "JP", 111 },
+    { "JP", 111 }, // Is this what you looking for? :)
     { "KE", 112 },
     { "KG", 113 },
     { "KH", 114 },
@@ -281,7 +280,7 @@ uint8_t shiro::geoloc::get_country_id(const std::string &country_code) {
     auto iterator = country_ids.find(country_code);
 
     if (iterator == country_ids.end()) {
-        return 42;
+        return 111;
     }
 
     return iterator->second;
