@@ -163,8 +163,8 @@ void naga::adjust_log_level(config& cfg, log_level level) {
     cfg.logging_level |= static_cast<uint8_t>(level);
 }
 
-void naga::reset_log_level(config& cfg, log_level default) {
-    cfg.logging_level = static_cast<uint8_t>(default);
+void naga::reset_log_level(config& cfg, log_level level) {
+    cfg.logging_level = static_cast<uint8_t>(level);
 }
 
 void naga::abort_on_checks(config& cfg, bool state) {
@@ -263,7 +263,7 @@ void naga::detail::call_fatal_handler(const log_message& message) {
 #include <csignal>
 #include <cstdlib>
 
-namespace naga::win {
+namespace naga::system {
 
     void write_to(const char* data) {
         return static_cast<void>(fputs(data, stderr));
@@ -271,20 +271,20 @@ namespace naga::win {
 
     const char* get_signal_name(int signal_number) {
         switch (signal_number) {
-        case SIGABRT:
-            return "SIGABRT";
-        case SIGFPE:
-            return "SIGFPE";
-        case SIGILL:
-            return "SIGILL";
-        case SIGINT:
-            return "SIGINT";
-        case SIGSEGV:
-            return "SIGSEGV";
-        case SIGTERM:
-            return "SIGTERM";
-        default:
-            return "UNKNOWN";
+            case SIGABRT:
+                return "SIGABRT";
+            case SIGFPE:
+                return "SIGFPE";
+            case SIGILL:
+                return "SIGILL";
+            case SIGINT:
+                return "SIGINT";
+            case SIGSEGV:
+                return "SIGSEGV";
+            case SIGTERM:
+                return "SIGTERM";
+            default:
+                return "UNKNOWN";
         }
     }
 
@@ -306,25 +306,25 @@ bool naga::install_signal_handlers(naga::signal_config signals) {
     naga::configuration.signals = signals;
 
     if (signals.sigabrt) {
-        CHECK_NO_ASSERT_F(signal(SIGABRT, naga::win::signal_handler) != SIG_ERR, "Failed to install handler for SIGABRT");
+        CHECK_NO_ASSERT_F(signal(SIGABRT, naga::system::signal_handler) != SIG_ERR, "Failed to install handler for SIGABRT");
     }
 
     // SIGBUS don't exist on Windows
 
     if (signals.sigfpe) {
-        CHECK_NO_ASSERT_F(signal(SIGFPE, naga::win::signal_handler) != SIG_ERR, "Failed to install handler for SIGFPE");
+        CHECK_NO_ASSERT_F(signal(SIGFPE, naga::system::signal_handler) != SIG_ERR, "Failed to install handler for SIGFPE");
     }
     if (signals.sigill) {
-        CHECK_NO_ASSERT_F(signal(SIGILL, naga::win::signal_handler) != SIG_ERR, "Failed to install handler for SIGILL");
+        CHECK_NO_ASSERT_F(signal(SIGILL, naga::system::signal_handler) != SIG_ERR, "Failed to install handler for SIGILL");
     }
     if (signals.sigint) {
-        CHECK_NO_ASSERT_F(signal(SIGINT, naga::win::signal_handler) != SIG_ERR, "Failed to install handler for SIGINT");
+        CHECK_NO_ASSERT_F(signal(SIGINT, naga::system::signal_handler) != SIG_ERR, "Failed to install handler for SIGINT");
     }
     if (signals.sigsegv) {
-        CHECK_NO_ASSERT_F(signal(SIGSEGV, naga::win::signal_handler) != SIG_ERR, "Failed to install handler for SIGSEGV");
+        CHECK_NO_ASSERT_F(signal(SIGSEGV, naga::system::signal_handler) != SIG_ERR, "Failed to install handler for SIGSEGV");
     }
     if (signals.sigterm) {
-        CHECK_NO_ASSERT_F(signal(SIGTERM, naga::win::signal_handler) != SIG_ERR, "Failed to install handler for SIGTERM");
+        CHECK_NO_ASSERT_F(signal(SIGTERM, naga::system::signal_handler) != SIG_ERR, "Failed to install handler for SIGTERM");
     }
 
     return true;
@@ -341,30 +341,32 @@ void naga::detail::disable_abort_handler() {
 #include <csignal>
 #include <cstdlib>
 
-namespace naga::linux {
+#include <unistd.h>
+
+namespace naga::system {
 
     void write_to(const char* data) {
-        return static_cast<void>(write(STDERR_FILENO, data, strlen(data));
+        return static_cast<void>(::write(STDERR_FILENO, data, strlen(data)));
     }
 
     const char* get_signal_name(int signal_number) {
         switch (signal_number) {
-        case SIGABRT:
-            return "SIGABRT";
-        case SIGBUS:
-            return "SIGBUS";
-        case SIGFPE:
-            return "SIGFPE";
-        case SIGILL:
-            return "SIGILL";
-        case SIGINT:
-            return "SIGINT";
-        case SIGSEGV:
-            return "SIGSEGV";
-        case SIGTERM:
-            return "SIGTERM";
-        default:
-            return "UNKNOWN";
+            case SIGABRT:
+                return "SIGABRT";
+            case SIGBUS:
+                return "SIGBUS";
+            case SIGFPE:
+                return "SIGFPE";
+            case SIGILL:
+                return "SIGILL";
+            case SIGINT:
+                return "SIGINT";
+            case SIGSEGV:
+                return "SIGSEGV";
+            case SIGTERM:
+                return "SIGTERM";
+            default:
+                return "UNKNOWN";
         }
     }
 
@@ -400,7 +402,7 @@ bool naga::install_signal_handlers(naga::signal_config signals) {
     memset(&sig_action, 0, sizeof(sig_action));
     sigemptyset(&sig_action.sa_mask);
     sig_action.sa_flags |= SA_SIGINFO;
-    sig_action.sa_sigaction = &naga::linux::signal_handler;
+    sig_action.sa_sigaction = &naga::system::signal_handler;
 
     if (signals.sigabrt) {
         CHECK_NO_ASSERT_F(sigaction(SIGABRT, &sig_action, nullptr) != -1, "Failed to install handler for SIGABRT");
@@ -428,7 +430,7 @@ bool naga::install_signal_handlers(naga::signal_config signals) {
 }
 
 void naga::detail::disable_abort_handler() {
-    CHECK_NO_ASSERT_F(signal(SIGABRT, SIG_DFL) != -1, "Failed to disable handler for SIGABRT, this will cause a deadlock!");
+    CHECK_NO_ASSERT_F(signal(SIGABRT, SIG_DFL) != SIG_ERR, "Failed to disable handler for SIGABRT, this will cause a deadlock!");
 }
 
 #endif

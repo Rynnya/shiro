@@ -38,7 +38,7 @@ std::string shiro::config::bancho::title_url = "https://osu.yukime.ml";
 bool shiro::config::bancho::sentry_integration = true;
 std::string shiro::config::bancho::sentry_dsn = "";
 bool shiro::config::bancho::enable_breadcrumb = true;
-int32_t shiro::config::bancho::breadcrumb_limit = 100;
+size_t shiro::config::bancho::breadcrumb_limit = 100;
 
 void shiro::config::bancho::parse() {
     if (config_file != nullptr) {
@@ -69,7 +69,7 @@ void shiro::config::bancho::parse() {
     sentry_integration = config_file->get_qualified_as<bool>("integrations.sentry").value_or(true);
     sentry_dsn = config_file->get_qualified_as<std::string>("integrations.sentry_dsn").value_or("");
     enable_breadcrumb = config_file->get_qualified_as<bool>("integrations.breadcrumb").value_or(true);
-    breadcrumb_limit = config_file->get_qualified_as<int32_t>("integrations.breadcrumb_limit").value_or(100);
+    breadcrumb_limit = config_file->get_qualified_as<size_t>("integrations.breadcrumb_limit").value_or(100);
 
     LOG_F(INFO, "Successfully parsed bancho.toml.");
 }

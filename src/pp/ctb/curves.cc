@@ -42,15 +42,15 @@ void shiro::pp::ctb::bezier::setup() {
     }
 
     std::vector<point> sub_points = {};
-    for (int32_t i = 0; i < this->curve_points.size(); i++) {
+    for (size_t i = 0; i < this->curve_points.size(); i++) {
 
         if (i == this->curve_points.size() - 1) {
             sub_points.push_back(points[i]);
-            _bezier(sub_points);
+            bezier_(sub_points);
             sub_points.clear();
         }
         else if (sub_points.size() > 1 && this->curve_points[i] == sub_points[sub_points.size() - 1]) {
-            _bezier(sub_points);
+            bezier_(sub_points);
             sub_points.clear();
         }
 
@@ -58,7 +58,7 @@ void shiro::pp::ctb::bezier::setup() {
     }
 }
 
-void shiro::pp::ctb::bezier::_bezier(std::vector<point> points) {
+void shiro::pp::ctb::bezier::bezier_(std::vector<point> points) {
     int32_t order = points.size();
     float step = 0.25 / constants::SLIDER_QUALITY / order;
     float i = 0;
@@ -129,13 +129,13 @@ void shiro::pp::ctb::catmull::setup() {
 }
 
 shiro::pp::ctb::point shiro::pp::ctb::catmull::get_point(std::array<point, 4> points, float length) {
-    double x = _catmull({ points[0].x, points[1].x, points[2].x, points[3].x }, length);
-    double y = _catmull({ points[0].y, points[1].y, points[2].y, points[3].y }, length);
+    double x = catmull_({ points[0].x, points[1].x, points[2].x, points[3].x }, length);
+    double y = catmull_({ points[0].y, points[1].y, points[2].y, points[3].y }, length);
 
     return { x, y };
 }
 
-double shiro::pp::ctb::catmull::_catmull(std::array<double, 4> points, float length) {
+double shiro::pp::ctb::catmull::catmull_(std::array<double, 4> points, float length) {
     // Holy crap who made this?
     return 0.5 * (
         (2 * points[1]) +

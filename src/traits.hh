@@ -24,6 +24,13 @@
 
 namespace shiro::traits {
 
+    // GCC and Clang requires template<> before declaration, while MSVC doesn't
+#   ifdef _MSC_VER
+#       define SHIRO_TEMPLATE
+#   else
+#       define SHIRO_TEMPLATE template <>
+#   endif
+
     namespace detail {
 
         template <typename T>

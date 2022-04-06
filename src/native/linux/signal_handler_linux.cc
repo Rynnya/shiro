@@ -21,7 +21,7 @@
 #include <csignal>
 #include <cstdlib>
 
-#include "../../thirdparty/loguru.hh"
+#include "../../thirdparty/naga.hh"
 #include "../signal_handler.hh"
 
 void handle_signal(int signal) {

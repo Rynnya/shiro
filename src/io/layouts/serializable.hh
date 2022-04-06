@@ -71,10 +71,10 @@ namespace shiro::io {
         virtual int32_t get_size() = 0;
     };
 
-    serializable<std::string>::serializable(std::string data) noexcept;
-    shiro::io::buffer serializable<std::string>::marshal();
+    SHIRO_TEMPLATE serializable<std::string>::serializable(std::string data) noexcept;
+    SHIRO_TEMPLATE shiro::io::buffer serializable<std::string>::marshal();
 
-    serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) noexcept;
+    SHIRO_TEMPLATE serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) noexcept;
 }
 
 #endif //SHIRO_SERIALIZABLE_HH

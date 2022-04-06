@@ -20,12 +20,12 @@
 #include "serializable.hh"
 #include "../../utils/osu_string.hh"
 
-shiro::io::serializable<std::string>::serializable(std::string data) noexcept : data(std::move(data)) {}
+SHIRO_TEMPLATE shiro::io::serializable<std::string>::serializable(std::string data) noexcept : data(std::move(data)) {}
 
-shiro::io::buffer shiro::io::serializable<std::string>::marshal() {
+SHIRO_TEMPLATE shiro::io::buffer shiro::io::serializable<std::string>::marshal() {
     buffer buf;
     buf.write<std::string>(utils::osu_string(data));
     return buf;
 }
 
-shiro::io::serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) noexcept : data(std::move(data)) {}
+SHIRO_TEMPLATE shiro::io::serializable<std::vector<int32_t>>::serializable(std::vector<int32_t> data) noexcept : data(std::move(data)) {}

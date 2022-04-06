@@ -56,10 +56,12 @@ std::shared_ptr<shiro::redis> shiro::redis_connection = nullptr;
 tsc::TaskScheduler shiro::scheduler;
 std::time_t shiro::start_time = std::time(nullptr);
 std::string shiro::commit = "60a2885";
+char* shiro::executable_name = nullptr;
 
 int shiro::init(int argc, char **argv) {
     logging::init();
     sqlpp::mysql::global_library_init(argc, argv);
+    shiro::executable_name = argv[0];
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
 

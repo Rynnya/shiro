@@ -19,7 +19,7 @@
 #include "osu_reader.hh"
 
 shiro::io::osu_reader::osu_reader(std::string data) {
-    this->data = buffer(data);
+    this->data = shiro::io::buffer{ data };
 }
 
 std::vector<shiro::io::osu_packet> &shiro::io::osu_reader::parse() {

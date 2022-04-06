@@ -141,7 +141,7 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
 
     size_t result = multipartparser_execute(&parser, &callbacks, this->body.c_str(), this->body.size());
     multipart_form_parts parts = multipart_form_parts { static_cast<callbacks::multipart_struct*>(parser.data)->parts };
-    delete parser.data;
+    delete static_cast<callbacks::multipart_struct*>(parser.data);
 
     if (result != this->body.size()) {
         return {};

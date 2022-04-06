@@ -38,6 +38,8 @@ namespace shiro {
     extern std::time_t start_time;
     extern std::string commit;
 
+    extern char* executable_name;
+
     int init(int argc, char **argv);
 
     void destroy();

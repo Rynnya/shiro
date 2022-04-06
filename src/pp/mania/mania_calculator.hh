@@ -44,21 +44,21 @@ namespace shiro::pp::mania {
             individual_strain(ind_strain)
         {};
 
+        bool contains_data;
         double key;
         size_t start_t;
         size_t end_t;
-        double overall_strain = 1;
         double individual_strain;
-        bool contains_data;
-
+        double overall_strain = 1;
+        
         note& operator=(const note& other) noexcept = default;
 
         note& operator=(std::nullptr_t) noexcept {
+            contains_data = false;
             key = 0;
             start_t = 0;
             end_t = 0;
             individual_strain = 0;
-            contains_data = false;
             return *this;
         };
 

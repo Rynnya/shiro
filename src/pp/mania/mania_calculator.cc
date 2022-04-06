@@ -140,7 +140,7 @@ void shiro::pp::mania::mania_calculator::parse_note(std::string line, int32_t ke
             end_t = shiro::utils::strings::evaluate<size_t>(matches[3]);
         }
 
-        end_t = (end_t == -1 ? start_t : end_t);
+        end_t = (end_t == static_cast<size_t>(-1) ? start_t : end_t);
 
         this->notes.push_back({ key, start_t, end_t, 0 });
     }

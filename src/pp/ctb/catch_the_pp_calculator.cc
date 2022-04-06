@@ -173,7 +173,7 @@ void shiro::pp::ctb::ctb_calculator::calculate_strain_values() {
     difficulty_object current = this->difficulty_objects[0];
     difficulty_object next;
 
-    int32_t index = 1;
+    size_t index = 1;
     while (index++ < this->difficulty_objects.size()) {
         next = this->difficulty_objects[index];
         next.calculate_strain(current, this->time_rate);
@@ -334,7 +334,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
         std::deque<point> curve_points;
         boost::split(curve_split, split_object[5], boost::is_any_of("|"));
 
-        for (int32_t i = 0; i < curve_split.size(); i++) {
+        for (size_t i = 0; i < curve_split.size(); i++) {
             std::vector<std::string> vector_split;
             boost::split(vector_split, curve_split[i], boost::is_any_of(":"));
             curve_points.push_back({ evaluate<float>(vector_split[0]), evaluate<float>(vector_split[1]) });
@@ -368,7 +368,7 @@ void shiro::pp::ctb::ctb_calculator::parse_hit_object(std::string line) {
 }
 
 shiro::pp::ctb::timing_point shiro::pp::ctb::ctb_calculator::get_point_by_time_all(float time) {
-    for (int32_t i = 0; i < this->timing_points.size(); i++) {
+    for (size_t i = 0; i < this->timing_points.size(); i++) {
         if (this->timing_points[i].timestamp == time) {
             return this->timing_points[i];
         }

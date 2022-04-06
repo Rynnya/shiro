@@ -209,7 +209,7 @@ void nlohmann::crow::capture_exception(const std::exception& exception, const ch
     m_jobs.reserve(m_maximal_jobs);
 }
 
-void nlohmann::crow::add_breadcrumb(const std::string& message = "", const json& attributes) {
+void nlohmann::crow::add_breadcrumb(const std::string& message, const json& attributes) {
     if (!shiro::config::bancho::enable_breadcrumb) {
         return;
     }

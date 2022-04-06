@@ -84,32 +84,8 @@ namespace naga {
         bool abort_on_fatal = true;
     };
 
-    class log_message {
-    public:
-        template <typename... T>
-        log_message(const std::string& format_, log_level level_, const char* file_, unsigned int line_, T&&... args_)
-            : level(level_)
-            , file(naga::detail::get_filename(file_))
-            , line(line_) {
-            this->message = fmt::format(format_, std::forward<T>(args_)...);
-            fill();
-        }
-
-    public:
-        naga::log_level level;
-        const char* file;
-        unsigned int line;
-
-        std::string thread_hash = "0x0000000000000000";
-        std::string date = "01.01.1970 00:00:00";
-        int64_t seconds = 0;
-
-        // User defined message
-        std::string message = "";
-
-    private:
-        void fill();
-    };
+    // Forward declaration
+    class log_message;
 
     // Including <functional> will slow down compile time drastically
     typedef void (*fatal_handler_t)(const log_message&);
@@ -134,7 +110,7 @@ namespace naga {
     // Adds log level to current config
     void adjust_log_level(config& cfg, log_level level);
     // Resets log level in current config
-    void reset_log_level(config& cfg, log_level default = log_level::all);
+    void reset_log_level(config& cfg, log_level level = log_level::all);
 
     // Will CHECK_F aborts a program?
     void abort_on_checks(config& cfg, bool state = false);
@@ -160,7 +136,7 @@ namespace naga {
         const fmt::text_style error_color = fg(fmt::color::crimson);
 
         const fmt::detail::ansi_color_escape<char> bold = fmt::detail::ansi_color_escape<char>(fmt::emphasis::bold);
-        const fmt::detail::ansi_color_escape<char> fatal_color = fmt::detail::ansi_color_escape<char>(fmt::color::crimson, "");
+        const fmt::detail::ansi_color_escape<char> fatal_color = fmt::detail::ansi_color_escape<char>(fmt::color::crimson, "\x1b[38;2;");
 
         const char* get_filename(const char* path);
         void write(const fmt::text_style& style, const char* type, const naga::log_message& message);
@@ -205,26 +181,26 @@ namespace naga {
         };
 
         template <> template <typename... T>
-        static void detail::printer<print_types::INFO>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
+        void detail::printer<print_types::INFO>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
             naga::detail::write(naga::detail::info_color, "INFO", naga::log_message{ format, naga::log_level::info, file, line, std::forward<T>(args)... });
         }
 
         template <> template <typename... T>
-        static void detail::printer<print_types::WARNING>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
+        void detail::printer<print_types::WARNING>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
             naga::detail::write(naga::detail::warning_color, "WARNING", naga::log_message{ format, naga::log_level::info, file, line, std::forward<T>(args)... });
         }
 
         template <> template <typename... T>
-        static void detail::printer<print_types::ERROR>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
+        void detail::printer<print_types::ERROR>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
             naga::detail::write(naga::detail::error_color, "ERROR", naga::log_message{ format, naga::log_level::info, file, line, std::forward<T>(args)... });
         }
 
         template <> template <typename... T>
-        static void detail::printer<print_types::FATAL>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
+        void detail::printer<print_types::FATAL>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
             auto message = naga::log_message{ format, naga::log_level::info, file, line, std::forward<T>(args)... };
 
             naga::detail::call_fatal_handler(message);
-            naga::detail::write(naga::detail::fatal_color, "FATAL", message);
+            naga::detail::write(naga::detail::error_color, "FATAL", message);
 
             if (naga::configuration.abort_on_fatal) {
                 disable_abort_handler();
@@ -233,16 +209,43 @@ namespace naga {
         }
 
         template <> template <typename... T>
-        static void detail::printer<print_types::FILE_ONLY>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
+        void detail::printer<print_types::FILE_ONLY>::call(const std::string& format, const char* file, unsigned int line, T&&... args) {
             naga::detail::output_to_file(naga::log_message{ format, naga::log_level::all, file, line, std::forward<T>(args)... });
         }
     }
+
+    class log_message {
+    public:
+        template <typename... T>
+        log_message(const std::string& format_, log_level level_, const char* file_, unsigned int line_, T&&... args_)
+            : level(level_)
+            , file(naga::detail::get_filename(file_))
+            , line(line_) {
+            this->message = fmt::format(format_, std::forward<T>(args_)...);
+            fill();
+        }
+
+    public:
+        naga::log_level level;
+        const char* file;
+        unsigned int line;
+
+        std::string thread_hash = "0x0000000000000000";
+        std::string date = "01.01.1970 00:00:00";
+        int64_t seconds = 0;
+
+        // User defined message
+        std::string message = "";
+
+    private:
+        void fill();
+    };
 
     /* 
         Simply output formatted string into consoleand file if opened.
         Example: LOG_F(INFO, "Hello {}!", "World");
     */
-    #define LOG_F(TYPE, FORMAT, ...) naga::detail::printer<naga::detail::print_types:: ## TYPE>::call(FORMAT, __FILE__, __LINE__, ##__VA_ARGS__)
+    #define LOG_F(TYPE, FORMAT, ...) naga::detail::printer<naga::detail::print_types:: TYPE>::call(FORMAT, __FILE__, __LINE__, ##__VA_ARGS__)
 
     /*
         Checks result of expression, if fails - terminate a program if config.abort_on_checks is true.

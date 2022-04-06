@@ -48,7 +48,7 @@ namespace shiro::pp::ctb {
 
     private:
         void setup() override;
-        void _bezier(std::vector<point> points);
+        void bezier_(std::vector<point> points);
         float cpn(int32_t p, int32_t n);
     };
 
@@ -71,7 +71,7 @@ namespace shiro::pp::ctb {
             return { self.x + value * other.x, self.y + value * other.y };
         }
         point get_point(std::array<point, 4> points, float length);
-        double _catmull(std::array<double, 4> points, float length);
+        double catmull_(std::array<double, 4> points, float length);
     };
 
     class perfect : public abstract_curve {

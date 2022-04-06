@@ -101,9 +101,5 @@ void shiro::database::pool::push(shiro::database::connection::handle_t&& handle)
 }
 
 shiro::database::connection shiro::database::pool::create_new() {
-    if (config == nullptr) {
-        return nullptr;
-    }
-
     return shiro::database::connection{ config };
 }

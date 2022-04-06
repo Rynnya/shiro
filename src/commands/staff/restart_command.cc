@@ -47,7 +47,7 @@ bool shiro::commands::restart(std::deque<std::string>& args, const std::shared_p
         }
     #endif
 
-    char* execve_args[2] = { "", nullptr };
+    char* execve_args[2] = { shiro::executable_name, nullptr };
     execve(native::process_info::get_executable_location().c_str(), execve_args, nullptr);
 
     // execve does not return if it runs successful.

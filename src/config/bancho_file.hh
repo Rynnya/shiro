@@ -38,7 +38,7 @@ namespace shiro::config::bancho {
     extern bool sentry_integration;
     extern std::string sentry_dsn;
     extern bool enable_breadcrumb;
-    extern int32_t breadcrumb_limit;
+    extern size_t breadcrumb_limit;
 
     void parse();
 

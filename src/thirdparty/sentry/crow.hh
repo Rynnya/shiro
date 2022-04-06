@@ -137,7 +137,7 @@ namespace nlohmann {
          *
          * @since 0.0.1
          */
-        void add_breadcrumb(const std::string& message,
+        void add_breadcrumb(const std::string& message = "",
                             const json& attributes = nullptr);
 
         /*!
