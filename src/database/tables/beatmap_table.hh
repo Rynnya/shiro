@@ -49,7 +49,7 @@ namespace shiro::tables {
         object_struct(difficulty_mania, sqlpp::floating_point);
         object_struct(max_combo, sqlpp::integer);
         object_struct(hit_length, sqlpp::integer);
-        object_struct(bpm, sqlpp::integer);
+        object_struct(bpm, sqlpp::bigint);
         object_struct(count_normal, sqlpp::integer);
         object_struct(count_slider, sqlpp::integer);
         object_struct(count_spinner, sqlpp::integer);

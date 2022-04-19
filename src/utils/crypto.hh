@@ -44,7 +44,7 @@ namespace shiro::utils::crypto {
         std::string decompress(const std::string& input);
     }
 
-    uint32_t get_highest_bit(uint32_t bitwise);
+    int64_t get_highest_bit(int64_t bitwise);
 
     uint32_t make_seed();
 

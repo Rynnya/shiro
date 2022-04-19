@@ -56,13 +56,13 @@ bool shiro::users::user::init() {
     this->presence.user_id = this->user_id;
     this->stats.user_id = this->user_id;
     this->presence.username = row.username;
-    this->password = row.password_md5;
+    this->password = row.password_hash;
     this->salt = row.salt;
     this->roles = row.roles;
     this->presence.permissions = roles::manager::get_chat_color(this->roles);
     this->is_relax = row.is_relax;
 
-    auto relationship_result = db(select(all_of(tables::relationships_table))
+    auto relationship_result = db(select(tables::relationships_table.target)
         .from(tables::relationships_table)
         .where(tables::relationships_table.origin == this->user_id and tables::relationships_table.blocked == false));
 
@@ -469,13 +469,11 @@ void shiro::users::user::update_counts(const std::string& rank) {
 }
 
 std::string shiro::users::user::get_url() {
-    std::string url = config::ipc::frontend_url + "u/" + std::to_string(this->user_id);
-    return url;
+    return config::ipc::frontend_url + "u/" + std::to_string(this->user_id);
 }
 
 std::string shiro::users::user::get_avatar_url() {
-    std::string url = config::ipc::avatar_url + std::to_string(this->user_id);
-    return url;
+    return config::ipc::avatar_url + std::to_string(this->user_id);
 }
 
 void shiro::users::user::refresh_stats() {
@@ -506,6 +504,7 @@ void shiro::users::user::verify_address(const std::string& address) {
     }
 
     LOG_F(WARNING, "The IP address of user {} has been changed from {} to {}.", this->presence.username, ip_string, address);
+    // TODO: Add table where every IP change will be recorded, even better will be with HWID
     db(sqlpp::update(tables::users_table).set(tables::users_table.ip = address).where(tables::users_table.id == this->user_id));
 }
 

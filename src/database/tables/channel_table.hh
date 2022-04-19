@@ -36,7 +36,7 @@ namespace shiro::tables {
         object_struct(auto_join, sqlpp::boolean);
         object_struct(hidden, sqlpp::boolean);
         object_struct(read_only, sqlpp::boolean);
-        object_struct(permission, sqlpp::bigint_unsigned);
+        object_struct(permission, sqlpp::bigint);
     };
 
     database_table(channels,

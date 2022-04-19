@@ -162,9 +162,9 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.beatmap_md5 = score_metadata.at(0);
     score.hash = score_metadata.at(2);
 
-    /* This way faster than lexical_cast, but provides less information why this thing crashed... */
-    /* I run some tests and lexical_cast x100 takes around 9600 ns, when safe_* x100 takes around 3100 ns */
-    /* If you have any problems - please debug program to catch real exception (bad_lexical_cast don't give any information) */
+    /* This way faster than lexical_cast, but still doesn't provide enough information */
+    /* I run some tests and lexical_cast x100 takes around 9600 ns, when evaluate x100 takes around 3100 ns */
+    /* If you have any problems - please debug program to catch real reason (bad_lexical_cast don't give any information) */
 
     bool parse_result = true;
 
@@ -229,7 +229,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         score.count_gekis, score.count_katus, score.count_misses
     );
 
-    auto db_result = db(select(all_of(tables::scores_table)).from(tables::scores_table).where(tables::scores_table.hash == score.hash).limit(1u));
+    auto db_result = db(select(tables::scores_table.id).from(tables::scores_table).where(tables::scores_table.hash == score.hash).limit(1u));
 
     // Score has already been submitted
     if (!db_result.empty()) {

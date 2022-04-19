@@ -40,7 +40,7 @@ void shiro::channels::manager::init() {
 
     insert_if_not_exists("#announce", "", true, false, true, 0);
     insert_if_not_exists("#lobby", "", false, true, false, 0);
-    insert_if_not_exists("#console", "", true, false, true, static_cast<uint64_t>(permissions::perms::channel_console));
+    insert_if_not_exists("#console", "", true, false, true, static_cast<int64_t>(permissions::perms::channel_console));
 
     auto result = db(select(all_of(tables::channels_table)).from(tables::channels_table).unconditionally());
 
@@ -197,7 +197,7 @@ uint32_t shiro::channels::manager::get_channel_id(const std::string &channel_nam
     return 0;
 }
 
-void shiro::channels::manager::insert_if_not_exists(std::string name, std::string description, bool auto_join, bool hidden, bool read_only, uint64_t permission) {
+void shiro::channels::manager::insert_if_not_exists(std::string name, std::string description, bool auto_join, bool hidden, bool read_only, int64_t permission) {
     auto db = shiro::database::instance->pop();
 
     auto result = db(select(all_of(tables::channels_table)).from(tables::channels_table).where(tables::channels_table.name == name).limit(1u));

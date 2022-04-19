@@ -31,8 +31,7 @@ void shiro::roles::manager::init() {
     auto result = db(select(all_of(tables::roles_table)).from(tables::roles_table).unconditionally());
 
     for (const auto &row : result) {
-        permissions::role role{ static_cast<uint32_t>(row.id), row.name, row.permissions, static_cast<uint8_t>(row.color) };
-        roles.emplace_back(role);
+        roles.emplace_back(row.id, row.weight, row.name, row.permissions, row.color);
     }
 }
 
@@ -42,7 +41,7 @@ bool shiro::roles::manager::has_permission(std::shared_ptr<shiro::users::user> u
     }
 
     for (permissions::role role : roles) {
-        if ((user->roles & role.id) && (role.permissions & static_cast<uint64_t>(permissions))) {
+        if ((user->roles & role.weight) && (role.permissions & static_cast<int64_t>(permissions))) {
             return true;
         }
     }
@@ -50,7 +49,7 @@ bool shiro::roles::manager::has_permission(std::shared_ptr<shiro::users::user> u
     return false;
 }
 
-uint8_t shiro::roles::manager::get_chat_color(uint32_t roles) {
+uint8_t shiro::roles::manager::get_chat_color(int64_t roles) {
     if (roles == 0xDEADCAFE) {
         return static_cast<uint8_t>(utils::osu_permissions::friend_);
     }
@@ -61,14 +60,14 @@ uint8_t shiro::roles::manager::get_chat_color(uint32_t roles) {
         result |= static_cast<uint8_t>(utils::osu_permissions::supporter);
     }
 
-    uint32_t highest_role = utils::crypto::get_highest_bit(roles);
+    int64_t highest_role = utils::crypto::get_highest_bit(roles);
 
     if (highest_role == 0) {
         return result;
     }
 
     for (const permissions::role &role : manager::roles) {
-        if (role.id != highest_role) {
+        if (role.weight != highest_role) {
             continue;
         }
 

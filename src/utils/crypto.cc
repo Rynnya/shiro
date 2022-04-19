@@ -122,12 +122,12 @@ std::string shiro::utils::crypto::lzma::decompress(const std::string& input) {
     return output;
 }
 
-uint32_t shiro::utils::crypto::get_highest_bit(uint32_t bitwise) {
+int64_t shiro::utils::crypto::get_highest_bit(int64_t bitwise) {
     if (bitwise == 0) {
         return 0;
     }
 
-    uint32_t result = 1;
+    int64_t result = 1;
 
     while (bitwise >>= 1) {
         result <<= 1;

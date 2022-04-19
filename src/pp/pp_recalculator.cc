@@ -88,7 +88,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
                     break;
                 }
                 case utils::play_mode::mania: {
-                    continue;
+                    return;
                 }
             }
 

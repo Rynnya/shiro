@@ -30,14 +30,16 @@
 namespace shiro::tables {
 
     struct roles_objects {
-        object_struct(id, sqlpp::integer_unsigned);
+        object_struct(id, sqlpp::integer);
+        object_struct(weight, sqlpp::bigint);
         object_struct(name, sqlpp::varchar);
-        object_struct(permissions, sqlpp::bigint_unsigned);
-        object_struct(color, sqlpp::tinyint_unsigned);
+        object_struct(permissions, sqlpp::bigint);
+        object_struct(color, sqlpp::tinyint);
     };
 
     database_table(roles,
         roles_objects::id,
+        roles_objects::weight,
         roles_objects::name,
         roles_objects::permissions,
         roles_objects::color

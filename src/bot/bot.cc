@@ -71,7 +71,7 @@ void shiro::bot::init() {
     auto db = shiro::database::instance->pop();
 
     {
-        auto result = db(select(all_of(tables::users_table)).from(tables::users_table).where(tables::users_table.id == 1).limit(1u));
+        auto result = db(select(tables::users_table.id).from(tables::users_table).where(tables::users_table.id == 1).limit(1u));
 
         // Check if the bot user exists, if not insert it into the db
         if (result.empty()) {
@@ -79,7 +79,7 @@ void shiro::bot::init() {
                 tables::users_table.id = 1,
                 tables::users_table.username = config::bot::name,
                 tables::users_table.safe_username = utils::escaper::make_safe(config::bot::name),
-                tables::users_table.password_md5 = digestpp::sha256().absorb(config::database::password).hexdigest(),
+                tables::users_table.password_hash = digestpp::sha256().absorb(config::database::password).hexdigest(),
                 tables::users_table.salt = config::database::database,
                 tables::users_table.email = config::bot::name + "@shiro.host",
                 tables::users_table.ip = "127.0.0.1",
@@ -95,7 +95,7 @@ void shiro::bot::init() {
 
     // Creates user stats in Classic table
     {
-        auto result = db(select(all_of(tables::users_stats_table)).from(tables::users_stats_table).where(tables::users_stats_table.id == 1).limit(1u));
+        auto result = db(select(tables::users_stats_table.id).from(tables::users_stats_table).where(tables::users_stats_table.id == 1).limit(1u));
 
         if (result.empty()) {
             db(insert_into(tables::users_stats_table).set(tables::users_stats_table.id = 1));
@@ -104,7 +104,7 @@ void shiro::bot::init() {
 
     // Creates user stats in Relax table
     {
-        auto result = db(select(all_of(tables::users_relax_table)).from(tables::users_relax_table).where(tables::users_relax_table.id == 1).limit(1u));
+        auto result = db(select(tables::users_relax_table.id).from(tables::users_relax_table).where(tables::users_relax_table.id == 1).limit(1u));
 
         if (result.empty()) {
             db(insert_into(tables::users_relax_table).set(tables::users_relax_table.id = 1));

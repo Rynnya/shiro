@@ -34,14 +34,14 @@ namespace shiro::tables {
         object_struct(username, sqlpp::varchar);
         object_struct(safe_username, sqlpp::varchar);
         object_struct(country, sqlpp::varchar);
-        object_struct(password_md5, sqlpp::varchar);
+        object_struct(password_hash, sqlpp::varchar);
         object_struct(salt, sqlpp::varchar);
         object_struct(email, sqlpp::varchar);
         object_struct(ip, sqlpp::varchar);
-        object_struct(registration_date, sqlpp::integer);
-        object_struct(latest_activity, sqlpp::integer);
-        object_struct(followers, sqlpp::integer);
-        object_struct(roles, sqlpp::bigint_unsigned);
+        object_struct(registration_date, sqlpp::bigint);
+        object_struct(latest_activity, sqlpp::bigint);
+        object_struct(followers, sqlpp::bigint);
+        object_struct(roles, sqlpp::bigint);
         object_struct(userpage, sqlpp::text);
         object_struct(is_relax, sqlpp::boolean);
     };
@@ -114,8 +114,8 @@ namespace shiro::tables {
         object_struct(id, sqlpp::integer);
         object_struct(scoreboard_display_classic, sqlpp::boolean);
         object_struct(scoreboard_display_relax, sqlpp::boolean);
-        object_struct(auto_last_classic, sqlpp::integer);
-        object_struct(auto_last_relax, sqlpp::integer);
+        object_struct(auto_last_classic, sqlpp::tinyint);
+        object_struct(auto_last_relax, sqlpp::tinyint);
         object_struct(score_overwrite_std, sqlpp::boolean);
         object_struct(score_overwrite_taiko, sqlpp::boolean);
         object_struct(score_overwrite_ctb, sqlpp::boolean);
@@ -127,7 +127,7 @@ namespace shiro::tables {
         users_objects::username,
         users_objects::safe_username,
         users_objects::country,
-        users_objects::password_md5,
+        users_objects::password_hash,
         users_objects::salt,
         users_objects::email,
         users_objects::ip,

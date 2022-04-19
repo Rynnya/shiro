@@ -53,14 +53,14 @@ bool shiro::commands::silence(std::deque<std::string>& args, const std::shared_p
         return false;
     }
 
-    std::optional<uint32_t> parsed_time = utils::time::parse_time_string(args.at(1));
+    std::optional<int32_t> parsed_time = utils::time::parse_time_string(args.at(1));
 
     if (!parsed_time.has_value()) {
         utils::bot::respond("Unable to convert duration into valid unsigned integer.", user, channel, true);
         return false;
     }
 
-    uint32_t time = parsed_time.value();
+    int32_t time = parsed_time.value();
 
     // Remove username and duration
     args.pop_front();

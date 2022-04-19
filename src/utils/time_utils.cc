@@ -46,7 +46,7 @@ int64_t shiro::utils::time::get_current_time_ticks() {
     return ticks_since_epoch;
 }
 
-std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string &input) {
+std::optional<int32_t> shiro::utils::time::parse_time_string(const std::string &input) {
     if (input.empty()) {
         return std::nullopt;
     }
@@ -57,7 +57,7 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
 
     std::string raw_unit = "s";
     std::string raw_time = input;
-    uint32_t time = 0;
+    int32_t time = 0;
 
     // Only parse the time suffix if we actually have one
     for (char last_char = input[size - ++it]; std::isalpha(last_char);) {
@@ -72,7 +72,7 @@ std::optional<uint32_t> shiro::utils::time::parse_time_string(const std::string 
         raw_time = input.substr(0, size - it);
     }
 
-    if (!strings::evaluate<uint32_t>(raw_time, time)) {
+    if (!strings::evaluate<int32_t>(raw_time, time)) {
         return std::nullopt;
     }
 

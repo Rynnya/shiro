@@ -23,7 +23,7 @@
 
 namespace shiro::permissions {
 
-    enum class perms : uint64_t {
+    enum class perms : int64_t {
         // General permissions (<32)
 
         // Default channel permissions

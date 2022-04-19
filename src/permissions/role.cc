@@ -20,8 +20,9 @@
 
 #include "role.hh"
 
-shiro::permissions::role::role(uint32_t id, std::string name, uint64_t permissions, uint8_t color)
+shiro::permissions::role::role(int32_t id, int64_t weight, std::string name, int64_t permissions, int32_t color)
     : id(id)
+    , weight(weight)
     , name(std::move(name))
     , permissions(permissions)
     , color(color) {

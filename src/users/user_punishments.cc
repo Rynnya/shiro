@@ -48,7 +48,7 @@ void shiro::users::punishments::init() {
             }
 
             utils::punishment_type type = static_cast<utils::punishment_type>(row.type.value());
-            int32_t timestamp = row.time;
+            int64_t timestamp = row.time;
             int32_t duration = row.duration;
 
             if (seconds.count() >= (timestamp + duration)) {
@@ -56,7 +56,7 @@ void shiro::users::punishments::init() {
 
                 switch (type) {
                     case utils::punishment_type::silence: {
-                        LOG_F(INFO, "User {} has been unsilenced automatically.", static_cast<int64_t>(row.id));
+                        LOG_F(INFO, "User {} has been unsilenced automatically.", static_cast<int32_t>(row.id));
                         break;
                     }
                     case utils::punishment_type::restrict: {
@@ -71,11 +71,11 @@ void shiro::users::punishments::init() {
                             user->queue.enqueue(writer);
                         }
 
-                        LOG_F(INFO, "User {} has been unrestricted automatically.", static_cast<int64_t>(row.id));
+                        LOG_F(INFO, "User {} has been unrestricted automatically.", static_cast<int32_t>(row.id));
                         break;
                     }
                     case utils::punishment_type::ban: {
-                        LOG_F(INFO, "User {} has been unbanned automatically.", static_cast<int64_t>(row.id));
+                        LOG_F(INFO, "User {} has been unbanned automatically.", static_cast<int32_t>(row.id));
                         break;
                     }
                     default: {
@@ -121,7 +121,7 @@ void shiro::users::punishments::kick(int32_t user_id, int32_t origin, const std:
     user->queue.enqueue(writer);
 }
 
-void shiro::users::punishments::silence(int32_t user_id, int32_t origin, uint32_t duration, const std::string &reason) {
+void shiro::users::punishments::silence(int32_t user_id, int32_t origin, int32_t duration, const std::string &reason) {
     if (is_silenced(user_id)) {
         return;
     }
@@ -266,7 +266,7 @@ void shiro::users::punishments::ban(int32_t user_id, int32_t origin, const std::
 bool shiro::users::punishments::is_silenced(int32_t user_id) {
     auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+    auto result = db(select(tables::punishments_table.id).from(tables::punishments_table).where(
         tables::punishments_table.user_id == user_id and
         tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
         tables::punishments_table.active == true
@@ -278,7 +278,7 @@ bool shiro::users::punishments::is_silenced(int32_t user_id) {
 bool shiro::users::punishments::is_restricted(int32_t user_id) {
     auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+    auto result = db(select(tables::punishments_table.id).from(tables::punishments_table).where(
         tables::punishments_table.user_id == user_id and
         tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict) and
         tables::punishments_table.active == true
@@ -290,7 +290,7 @@ bool shiro::users::punishments::is_restricted(int32_t user_id) {
 bool shiro::users::punishments::is_banned(int32_t user_id) {
     auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+    auto result = db(select(tables::punishments_table.id).from(tables::punishments_table).where(
         tables::punishments_table.user_id == user_id and
         tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) and
         tables::punishments_table.active == true
@@ -316,7 +316,7 @@ bool shiro::users::punishments::can_chat(int32_t user_id) {
 bool shiro::users::punishments::has_scores(int32_t user_id) {
     auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+    auto result = db(select(tables::punishments_table.id).from(tables::punishments_table).where(
         tables::punishments_table.user_id == user_id and
         (tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::ban) or
         tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::restrict)) and
@@ -333,7 +333,7 @@ std::tuple<int32_t, uint32_t> shiro::users::punishments::get_silence_time(int32_
 
     auto db = shiro::database::instance->pop();
 
-    auto result = db(select(all_of(tables::punishments_table)).from(tables::punishments_table).where(
+    auto result = db(select(tables::punishments_table.time, tables::punishments_table.duration).from(tables::punishments_table).where(
         tables::punishments_table.user_id == user_id and
         tables::punishments_table.type == static_cast<uint16_t>(utils::punishment_type::silence) and
         tables::punishments_table.active == true

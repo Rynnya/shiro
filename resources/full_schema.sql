@@ -1,8 +1,8 @@
--- MariaDB dump 10.19  Distrib 10.5.9-MariaDB, for Win64 (AMD64)
+-- MariaDB dump 10.19  Distrib 10.5.15-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: himitsu
+-- Host: localhost    Database: yukime
 -- ------------------------------------------------------
--- Server version	8.0.22
+-- Server version	10.5.15-MariaDB-0+deb11u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,382 +16,335 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `2fa`
+-- Current Database: `yukime`
 --
 
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `yukime` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+USE `yukime`;
+
+-- TODO: Implement 2fa system
 DROP TABLE IF EXISTS `2fa`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `2fa` (
-  `userid` int NOT NULL,
-  `ip` int NOT NULL,
-  PRIMARY KEY (`userid`)
+  `user_id` int(11) NOT NULL,
+  `ip` varchar(39) NOT NULL,
+  PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `2fa_totp`
---
 
 DROP TABLE IF EXISTS `2fa_totp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `2fa_totp` (
-  `enabled` tinyint NOT NULL DEFAULT '0',
-  `userid` int NOT NULL,
-  PRIMARY KEY (`userid`)
+  `enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `achievements`
---
-
+-- TODO: Implement achievements
 DROP TABLE IF EXISTS `achievements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `achievements` (
-  `id` int NOT NULL,
+  `id` int(11) NOT NULL,
   `name` mediumtext NOT NULL,
   `description` mediumtext NOT NULL,
   `icon` mediumtext NOT NULL,
-  `version` int NOT NULL DEFAULT '0',
+  `version` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `anticheat_reports`
---
-
+-- TODO: Implement anti-cheat system, i'm mean, FULL ANTICHEAT SYSTEM, not something that we have rn
 DROP TABLE IF EXISTS `anticheat_reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `anticheat_reports` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `anticheat_id` int NOT NULL,
-  `score_id` int NOT NULL,
-  `severity` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `anticheat_id` int(11) NOT NULL,
+  `score_id` int(11) NOT NULL,
+  `severity` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `bancho_messages`
---
-
+-- Question: Is we really will log every single user message?
+-- I'm don't like the idea of logging messages, especially private
 DROP TABLE IF EXISTS `bancho_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bancho_messages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `msg_from_userid` int NOT NULL,
-  `msg_from_username` varchar(30) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `msg_from_user_id` int(11) NOT NULL,
+  `msg_from_username` varchar(32) NOT NULL,
   `msg_to` varchar(32) NOT NULL,
   `msg` varchar(127) NOT NULL,
-  `time` int NOT NULL,
+  `time` bigint(21) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `bancho_private_messages`
---
-
+-- Question: Look previous table
 DROP TABLE IF EXISTS `bancho_private_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bancho_private_messages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `msg_from_userid` int NOT NULL,
-  `msg_from_username` varchar(30) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `msg_from_user_id` int(11) NOT NULL,
+  `msg_from_username` varchar(32) NOT NULL,
   `msg_to` varchar(32) NOT NULL,
   `msg` varchar(127) NOT NULL,
-  `time` int NOT NULL,
+  `time` bigint(21) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `bancho_settings`
---
-
+-- Question: Currently most of parameters can be adjusted by using config files
+-- I'm don't think that i'm will change something in this struct
+-- So in future i'm should implement config reloading, so i'm can delete this table
 DROP TABLE IF EXISTS `bancho_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bancho_settings` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) NOT NULL,
-  `value_int` int NOT NULL DEFAULT '0',
+  `value_int` int(11) NOT NULL DEFAULT 0,
   `value_string` varchar(512) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `bancho_tokens`
---
-
+-- Question: Is this ever used anywhere?
+-- I'm mean, bancho tokens are still valid only until user logout or leave a game
+-- I'm might need to check this on official server, and if osu! saves old tokens - then I'm should implement this part too
 DROP TABLE IF EXISTS `bancho_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bancho_tokens` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `token` varchar(16) NOT NULL,
-  `osu_id` int NOT NULL,
-  `latest_message_id` int NOT NULL,
-  `latest_private_message_id` int NOT NULL,
-  `latest_packet_time` int NOT NULL,
-  `latest_heavy_packet_time` int NOT NULL,
+  `osu_id` int(11) NOT NULL,
+  `latest_message_id` int(11) NOT NULL,
+  `latest_private_message_id` int(11) NOT NULL,
+  `latest_packet_time` int(11) NOT NULL,
+  `latest_heavy_packet_time` int(11) NOT NULL,
   `joined_channels` varchar(512) NOT NULL,
-  `game_mode` tinyint NOT NULL,
-  `action` int NOT NULL,
+  `game_mode` tinyint(4) NOT NULL,
+  `action` int(11) NOT NULL,
   `action_text` varchar(128) NOT NULL,
-  `kicked` tinyint NOT NULL,
+  `kicked` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `beatmaps`
---
 
 DROP TABLE IF EXISTS `beatmaps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `beatmaps` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `beatmap_id` int NOT NULL DEFAULT '0',
-  `beatmapset_id` int NOT NULL DEFAULT '0',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `beatmap_id` int(11) NOT NULL DEFAULT 0,
+  `beatmapset_id` int(11) NOT NULL DEFAULT 0,
   `beatmap_md5` varchar(32) NOT NULL DEFAULT '',
   `artist` text NOT NULL,
   `title` text NOT NULL,
-  `difficulty_name` longtext NOT NULL,
+  `difficulty_name` text NOT NULL,
   `creator` text NOT NULL,
   `cs` float DEFAULT NULL,
-  `ar` float NOT NULL DEFAULT '0',
-  `od` float NOT NULL DEFAULT '0',
+  `ar` float NOT NULL DEFAULT 0,
+  `od` float NOT NULL DEFAULT 0,
   `hp` float DEFAULT NULL,
-  `mode` int NOT NULL DEFAULT '0',
-  `rating` int NOT NULL DEFAULT '10',
-  `difficulty_std` float NOT NULL DEFAULT '0',
-  `difficulty_taiko` float NOT NULL DEFAULT '0',
-  `difficulty_ctb` float NOT NULL DEFAULT '0',
-  `difficulty_mania` float NOT NULL DEFAULT '0',
-  `max_combo` int NOT NULL DEFAULT '0',
-  `hit_length` int NOT NULL DEFAULT '0',
-  `bpm` bigint NOT NULL DEFAULT '0',
-  `count_normal` int NOT NULL DEFAULT '0',
-  `count_slider` int NOT NULL DEFAULT '0',
-  `count_spinner` int NOT NULL DEFAULT '0',
-  `play_count` int NOT NULL DEFAULT '0',
-  `pass_count` int NOT NULL DEFAULT '0',
-  `ranked_status` tinyint NOT NULL DEFAULT '0',
-  `latest_update` int NOT NULL DEFAULT '0',
-  `ranked_status_freezed` tinyint NOT NULL DEFAULT '0',
-  `creating_date` bigint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `id` (`id`),
-  KEY `id_2` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=134 DEFAULT CHARSET=utf8;
+  `mode` int(11) NOT NULL DEFAULT 0,
+  `rating` int(11) NOT NULL DEFAULT 10,
+  `difficulty_std` float NOT NULL DEFAULT 0,
+  `difficulty_taiko` float NOT NULL DEFAULT 0,
+  `difficulty_ctb` float NOT NULL DEFAULT 0,
+  `difficulty_mania` float NOT NULL DEFAULT 0,
+  `max_combo` int(11) NOT NULL DEFAULT 0,
+  `hit_length` int(11) NOT NULL DEFAULT 0,
+  `bpm` bigint(21) NOT NULL DEFAULT 0,
+  `count_normal` int(11) NOT NULL DEFAULT 0,
+  `count_slider` int(11) NOT NULL DEFAULT 0,
+  `count_spinner` int(11) NOT NULL DEFAULT 0,
+  `play_count` int(11) NOT NULL DEFAULT 0,
+  `pass_count` int(11) NOT NULL DEFAULT 0,
+  `ranked_status` tinyint(4) NOT NULL DEFAULT 0,
+  `latest_update` bigint(21) NOT NULL DEFAULT 0,
+  `ranked_status_freezed` tinyint(4) NOT NULL DEFAULT 0,
+  `creating_date` bigint(21) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9051 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `beatmaps_names`
---
 
 DROP TABLE IF EXISTS `beatmaps_names`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `beatmaps_names` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `beatmap_md5` varchar(32) NOT NULL DEFAULT '',
-  `beatmap_name` varchar(256) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
+  `id` int(11)  NOT NULL,
+  `name` text NOT NULL,
+  UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `beatmaps_rating`
---
-
+-- TODO: Implement beatmap rating system
 DROP TABLE IF EXISTS `beatmaps_rating`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `beatmaps_rating` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
+  `id` int(11)  NOT NULL AUTO_INCREMENT,
+  `user_id` int(11)  NOT NULL,
   `beatmap_md5` varchar(32) NOT NULL,
-  `rating` int NOT NULL,
+  `rating` int(11)  NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `channels`
---
 
 DROP TABLE IF EXISTS `channels`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channels` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) NOT NULL,
-  `description` varchar(64) NOT NULL,
+  `id` int(11)  NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `auto_join` tinyint(1) NOT NULL,
   `hidden` tinyint(1) NOT NULL,
   `read_only` tinyint(1) NOT NULL,
-  `permission` bigint unsigned NOT NULL,
+  `permission` bigint(21) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `clans`
---
+LOCK TABLES `channels` WRITE;
+/*!40000 ALTER TABLE `channels` DISABLE KEYS */;
+INSERT INTO `channels` VALUES (4,'#announce','',1,0,1,0),(5,'#lobby','',0,1,0,0),(6,'#console','',1,0,1,2147483648);
+/*!40000 ALTER TABLE `channels` ENABLE KEYS */;
+UNLOCK TABLES;
 
+-- TODO: Implement clans
 DROP TABLE IF EXISTS `clans`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `clans` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11)  NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `description` text NOT NULL,
   `icon` text NOT NULL,
   `tag` varchar(6) NOT NULL,
-  `mlimit` int NOT NULL DEFAULT '16',
+  `mlimit` int(11) NOT NULL DEFAULT 16,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `clans_invites`
---
 
 DROP TABLE IF EXISTS `clans_invites`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `clans_invites` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `clan` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `clan` int(11)  NOT NULL,
   `invite` varchar(8) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `comments`
---
-
+-- Question: Where this was used?
+-- Might be some old ripple code database, but need to check
 DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comments` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `beatmap_id` int NOT NULL DEFAULT '0',
-  `beatmapset_id` int NOT NULL DEFAULT '0',
-  `score_id` int NOT NULL DEFAULT '0',
-  `mode` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `beatmap_id` int(11) NOT NULL DEFAULT 0,
+  `beatmapset_id` int(11) NOT NULL DEFAULT 0,
+  `score_id` int(11) NOT NULL DEFAULT 0,
+  `mode` int(11) NOT NULL,
   `comment` varchar(128) NOT NULL,
-  `time` int NOT NULL,
+  `time` int(11) NOT NULL,
   `who` varchar(11) NOT NULL,
   `special_format` varchar(2556) DEFAULT 'FFFFFF',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `docs`
---
-
+-- Question: I'm don't think that this is ever needed
+-- Currently new doc's system will depends on templates and folders, so I'm might remove this in future
 DROP TABLE IF EXISTS `docs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `docs` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `doc_name` varchar(255) NOT NULL DEFAULT 'New Documentation File',
   `doc_contents` longtext NOT NULL,
-  `public` tinyint unsigned NOT NULL DEFAULT '0',
+  `public` tinyint(1) NOT NULL DEFAULT 0,
   `old_name` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `hw_user`
---
-
+-- Question: Must recheck if we ever save user hardware data for anticheat
 DROP TABLE IF EXISTS `hw_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `hw_user` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `userid` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
   `mac` varchar(32) NOT NULL,
   `unique_id` varchar(32) NOT NULL,
   `disk_id` varchar(32) NOT NULL,
-  `occurencies` int NOT NULL DEFAULT '0',
-  `activated` tinyint NOT NULL DEFAULT '0',
+  `occurencies` int(11) NOT NULL DEFAULT 0,
+  `activated` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `userid` (`userid`)
+  UNIQUE KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `identity_tokens`
---
-
+-- Question: What is this for?
 DROP TABLE IF EXISTS `identity_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `identity_tokens` (
-  `userid` int NOT NULL,
+  `user_id` int(11) NOT NULL,
   `token` varchar(64) NOT NULL,
-  UNIQUE KEY `userid` (`userid`)
+  UNIQUE KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `ip_user`
---
-
+-- Question: Add timestamps and catch every single ip change?
+-- This might be useful to recover hacked users from ban, but we also must verify hardware then
+-- I'm think this will be very useful for admin panel
 DROP TABLE IF EXISTS `ip_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ip_user` (
-  `userid` int NOT NULL,
-  `ip` mediumtext NOT NULL,
-  `occurencies` int NOT NULL,
-  PRIMARY KEY (`userid`),
-  UNIQUE KEY `userid` (`userid`)
+  `user_id` int(11) NOT NULL,
+  `ip` varchar(39) NOT NULL,
+  `occurencies` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `irc_tokens`
---
-
+-- TODO: Implement IRC system
 DROP TABLE IF EXISTS `irc_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `irc_tokens` (
-  `userid` int NOT NULL DEFAULT '0',
+  `user_id` int(11) NOT NULL DEFAULT 0,
   `token` varchar(32) NOT NULL DEFAULT '',
-  UNIQUE KEY `userid` (`userid`)
+  UNIQUE KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `main_menu_icons`
---
-
+-- Question: Find something to use it and fill up
 DROP TABLE IF EXISTS `main_menu_icons`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `main_menu_icons` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `is_current` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `is_current` int(11) NOT NULL,
   `file_id` varchar(128) NOT NULL,
   `name` varchar(256) NOT NULL,
   `url` text NOT NULL,
@@ -399,30 +352,24 @@ CREATE TABLE `main_menu_icons` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `osin_access`
---
-
+-- Question: What is this?
 DROP TABLE IF EXISTS `osin_access`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `osin_access` (
-  `scope` int NOT NULL DEFAULT '0',
-  `created_at` int NOT NULL DEFAULT '0',
-  `client` int NOT NULL DEFAULT '0',
-  `extra` int NOT NULL DEFAULT '0'
+  `scope` int(11) NOT NULL DEFAULT 0,
+  `created_at` int(11) NOT NULL DEFAULT 0,
+  `client` int(11) NOT NULL DEFAULT 0,
+  `extra` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `osin_client`
---
-
+-- Question: Look previous table
 DROP TABLE IF EXISTS `osin_client`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `osin_client` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `secret` varchar(64) NOT NULL DEFAULT '',
   `extra` varchar(127) NOT NULL DEFAULT '',
   `redirect_uri` varchar(127) NOT NULL DEFAULT '',
@@ -430,503 +377,401 @@ CREATE TABLE `osin_client` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `osin_client_user`
---
-
+-- Question: Look previous table
 DROP TABLE IF EXISTS `osin_client_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `osin_client_user` (
-  `client_id` int NOT NULL DEFAULT '0',
-  `user` int NOT NULL DEFAULT '0'
+  `client_id` int(11) NOT NULL DEFAULT 0,
+  `user` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `password_recovery`
---
-
+-- TODO: Implement password recovery system
 DROP TABLE IF EXISTS `password_recovery`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `password_recovery` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `k` varchar(80) NOT NULL,
-  `u` varchar(30) NOT NULL,
-  `t` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `secret_key` varchar(80) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `time` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `privileges_groups`
---
-
-DROP TABLE IF EXISTS `privileges_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `privileges_groups` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) NOT NULL,
-  `privileges` int NOT NULL,
-  `color` varchar(32) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `profile_backgrounds`
---
-
-DROP TABLE IF EXISTS `profile_backgrounds`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `profile_backgrounds` (
-  `uid` int NOT NULL,
-  `time` int NOT NULL,
-  `type` int NOT NULL,
-  `value` mediumtext NOT NULL,
-  PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `punishments`
---
 
 DROP TABLE IF EXISTS `punishments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `punishments` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `origin_id` int NOT NULL,
-  `type` tinyint unsigned NOT NULL,
-  `time` int NOT NULL,
-  `duration` int DEFAULT NULL,
-  `active` tinyint(1) NOT NULL,
-  `reason` varchar(128) DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `origin_id` int(11) NOT NULL,
+  `type` tinyint(3) NOT NULL,
+  `time` bigint(21) NOT NULL,
+  `duration` int(11) DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `reason` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `rank_requests`
---
-
+-- TODO: Implement ranking requests
 DROP TABLE IF EXISTS `rank_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `rank_requests` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `userid` int NOT NULL,
-  `bid` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `beatmap_id` int(11) NOT NULL,
   `type` varchar(8) NOT NULL,
-  `time` int NOT NULL,
-  `blacklisted` tinyint NOT NULL,
+  `time` int(11) NOT NULL,
+  `blacklisted` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `bid` (`bid`)
+  UNIQUE KEY `beatmap_id` (`beatmap_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `ranking_logs`
---
-
+-- TODO: Implement better admin ranking system, might be through admin panel?
 DROP TABLE IF EXISTS `ranking_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ranking_logs` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `map_id` int DEFAULT NULL,
-  `modified_by` int DEFAULT NULL,
-  `ranked` tinyint DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `map_id` int(11) DEFAULT NULL,
+  `modified_by` int(11) DEFAULT NULL,
+  `ranked` tinyint(4) DEFAULT NULL,
   `map_type` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `relationships`
---
-
 DROP TABLE IF EXISTS `relationships`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `relationships` (
-  `origin` int NOT NULL,
-  `target` int NOT NULL,
+  `origin` int(11) NOT NULL,
+  `target` int(11) NOT NULL,
   `blocked` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `reports`
---
-
+-- TODO: Handle reports
 DROP TABLE IF EXISTS `reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `reports` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `from_uid` int NOT NULL,
-  `to_uid` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `from_uid` int(11) NOT NULL,
+  `to_uid` int(11) NOT NULL,
   `reason` text NOT NULL,
   `chatlog` text NOT NULL,
-  `time` int NOT NULL,
-  `assigned` int NOT NULL DEFAULT '0',
+  `time` int(11) NOT NULL,
+  `assigned` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `roles`
---
-
+-- TODO: Implement better ID system for roles
 DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `roles` (
-  `id` int unsigned NOT NULL,
-  `name` varchar(32) NOT NULL,
-  `permissions` bigint unsigned NOT NULL,
-  `color` tinyint unsigned NOT NULL,
+  `id` int(11) NOT NULL,
+  `weight` bigint(21) NOT NULL,
+  `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `permissions` bigint(21) NOT NULL,
+  `color` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `scores`
---
+-- Will leave this here, might be useful for somebody
+-- You must specify `roles` in `users` as 4 to get permissions
+LOCK TABLES `roles` WRITE;
+/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES (1,4,'dev',1099511627776,3);
+/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
+UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `scores`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `scores` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `hash` varchar(35) NOT NULL,
   `beatmap_md5` varchar(35) NOT NULL DEFAULT '',
-  `user_id` int NOT NULL,
+  `user_id` int(11) NOT NULL,
   `ranking` varchar(2) NOT NULL,
-  `score` bigint NOT NULL DEFAULT '0',
-  `max_combo` int NOT NULL DEFAULT '0',
-  `full_combo` tinyint NOT NULL DEFAULT '0',
-  `mods` int NOT NULL DEFAULT '0',
-  `count_300` int NOT NULL,
-  `count_100` int NOT NULL,
-  `count_50` int NOT NULL,
-  `count_katus` int NOT NULL,
-  `count_gekis` int NOT NULL,
-  `count_misses` int NOT NULL,
-  `time` bigint NOT NULL,
-  `play_mode` tinyint NOT NULL DEFAULT '0',
-  `completed` tinyint NOT NULL DEFAULT '3',
-  `accuracy` float NOT NULL DEFAULT '0',
-  `pp` double NOT NULL DEFAULT '0',
-  `play_time` int NOT NULL DEFAULT '0',
-  `is_relax` tinyint NOT NULL DEFAULT '0',
-  `times_watched` int NOT NULL DEFAULT '0',
+  `score` bigint(21) NOT NULL DEFAULT 0,
+  `max_combo` int(11) NOT NULL DEFAULT 0,
+  `full_combo` tinyint(1) NOT NULL DEFAULT 0,
+  `mods` bigint(21) NOT NULL DEFAULT 0,
+  `count_300` int(11) NOT NULL,
+  `count_100` int(11) NOT NULL,
+  `count_50` int(11) NOT NULL,
+  `count_katus` int(11) NOT NULL,
+  `count_gekis` int(11) NOT NULL,
+  `count_misses` int(11) NOT NULL,
+  `time` bigint(21) NOT NULL,
+  `play_mode` tinyint(4) NOT NULL DEFAULT 0,
+  `completed` tinyint(4) NOT NULL DEFAULT 3,
+  `accuracy` float NOT NULL DEFAULT 0,
+  `pp` double NOT NULL DEFAULT 0,
+  `play_time` int(11) NOT NULL DEFAULT 0,
+  `is_relax` tinyint(1) NOT NULL DEFAULT 0,
+  `times_watched` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `scores_first`
---
 
 DROP TABLE IF EXISTS `scores_first`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `scores_first` (
-  `score_id` int NOT NULL,
-  `beatmap_md5` varchar(35) NOT NULL,
-  `user_id` int NOT NULL,
-  `play_mode` int NOT NULL,
-  `is_relax` tinyint NOT NULL DEFAULT '0',
-  UNIQUE KEY `scoreid_UNIQUE` (`score_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `score_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `beatmap_md5` varchar(35) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `play_mode` tinyint(2) NOT NULL,
+  `is_relax` tinyint(1) NOT NULL DEFAULT 0,
+  UNIQUE KEY `score_id` (`score_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `system_settings`
---
-
-DROP TABLE IF EXISTS `system_settings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `system_settings` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) NOT NULL,
-  `value_int` int NOT NULL DEFAULT '0',
-  `value_string` varchar(512) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `tokens`
---
 
 DROP TABLE IF EXISTS `tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tokens` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user` varchar(31) NOT NULL,
-  `privileges` int NOT NULL,
-  `token` varchar(127) NOT NULL,
-  `private` tinyint DEFAULT '0',
-  `last_updated` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `user_badges`
---
-
-DROP TABLE IF EXISTS `user_badges`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_badges` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user` int NOT NULL,
-  `badge` mediumtext NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `user_clans`
---
-
-DROP TABLE IF EXISTS `user_clans`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_clans` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user` int NOT NULL,
-  `clan` int NOT NULL,
-  `perms` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `permissions` bigint(21) NOT NULL,
+  `token` varchar(129) NOT NULL,
+  `private` tinyint(1) DEFAULT 0,
+  `last_updated` bigint(21) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `users`
---
+-- Question/TODO: I'm might need to talk to my frontend
+DROP TABLE IF EXISTS `user_badges`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_badges` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `badge` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+-- TODO: Implement clan system
+DROP TABLE IF EXISTS `user_clans`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_clans` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `clan_id` int(11) NOT NULL,
+  `permissions` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
-  `safe_username` varchar(30) NOT NULL,
+  `safe_username` varchar(32) NOT NULL,
   `country` varchar(2) NOT NULL DEFAULT 'XX',
-  `password_md5` varchar(128) NOT NULL,
+  `password_hash` varchar(129) NOT NULL,
   `salt` varchar(64) NOT NULL,
-  `email` varchar(254) NOT NULL,
+  `email` varchar(256) NOT NULL,
   `ip` varchar(39) NOT NULL,
-  `registration_date` int NOT NULL,
-  `latest_activity` int NOT NULL DEFAULT '0',
-  `followers` int NOT NULL DEFAULT '0',
-  `roles` int unsigned NOT NULL DEFAULT '0',
-  `userpage` longtext,
-  `background` longtext,
-  `status` mediumtext,
-  `notes` mediumtext,
-  `last_session` varchar(1024) NOT NULL DEFAULT 'check',
-  `is_public` tinyint NOT NULL DEFAULT '1',
-  `is_relax` tinyint NOT NULL DEFAULT '0',
-  `favourite_mode` tinyint NOT NULL DEFAULT '0',
-  `favourite_relax` tinyint NOT NULL DEFAULT '0',
-  `play_style` smallint NOT NULL DEFAULT '0',
+  `registration_date` bigint(21) NOT NULL,
+  `latest_activity` bigint(21) NOT NULL DEFAULT 0,
+  `followers` bigint(21) NOT NULL DEFAULT 0,
+  `roles` bigint(21) NOT NULL DEFAULT 0,
+  `userpage` text DEFAULT NULL,
+  `background` text DEFAULT NULL,
+  `status` text DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `last_session` text NOT NULL,
+  `is_public` tinyint(1) NOT NULL DEFAULT 1,
+  `is_relax` tinyint(1) NOT NULL DEFAULT 0,
+  `favourite_mode` tinyint(2) NOT NULL DEFAULT 0,
+  `favourite_relax` tinyint(1) NOT NULL DEFAULT 0,
+  `play_style` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1017 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `users_beatmap_playcount`
---
-
+-- TODO: Implement
 DROP TABLE IF EXISTS `users_beatmap_playcount`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users_beatmap_playcount` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `beatmap_id` int DEFAULT NULL,
-  `game_mode` int DEFAULT NULL,
-  `playcount` int DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `beatmap_id` int(11) DEFAULT NULL,
+  `game_mode` int(11) DEFAULT NULL,
+  `play_count` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `playcount_index` (`user_id`,`beatmap_id`)
+  UNIQUE KEY `play_count_index` (`user_id`,`beatmap_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `users_preferences`
---
 
 DROP TABLE IF EXISTS `users_preferences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users_preferences` (
-  `id` int NOT NULL,
-  `scoreboard_display_classic` tinyint DEFAULT '0',
-  `scoreboard_display_relax` tinyint DEFAULT '0',
-  `auto_last_classic` tinyint DEFAULT '0',
-  `auto_last_relax` tinyint DEFAULT '0',
-  `score_overwrite_std` tinyint DEFAULT '0',
-  `score_overwrite_taiko` tinyint DEFAULT '0',
-  `score_overwrite_ctb` tinyint DEFAULT '0',
-  `score_overwrite_mania` tinyint DEFAULT '0',
+  `id` int(11) NOT NULL,
+  `scoreboard_display_classic` tinyint(1) DEFAULT 0,
+  `scoreboard_display_relax` tinyint(1) DEFAULT 0,
+  `auto_last_classic` tinyint(2) DEFAULT 0,
+  `auto_last_relax` tinyint(2) DEFAULT 0,
+  `score_overwrite_std` tinyint(1) DEFAULT 0,
+  `score_overwrite_taiko` tinyint(1) DEFAULT 0,
+  `score_overwrite_ctb` tinyint(1) DEFAULT 0,
+  `score_overwrite_mania` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `users_stats`
---
 
 DROP TABLE IF EXISTS `users_stats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users_stats` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `rank_std` int NOT NULL DEFAULT '0',
-  `rank_taiko` int NOT NULL DEFAULT '0',
-  `rank_ctb` int NOT NULL DEFAULT '0',
-  `rank_mania` int NOT NULL DEFAULT '0',
-  `ranked_score_std` bigint NOT NULL DEFAULT '0',
-  `ranked_score_taiko` bigint NOT NULL DEFAULT '0',
-  `ranked_score_ctb` bigint NOT NULL DEFAULT '0',
-  `ranked_score_mania` bigint NOT NULL DEFAULT '0',
-  `total_score_std` bigint NOT NULL DEFAULT '0',
-  `total_score_taiko` bigint NOT NULL DEFAULT '0',
-  `total_score_ctb` bigint NOT NULL DEFAULT '0',
-  `total_score_mania` bigint NOT NULL DEFAULT '0',
-  `play_count_std` int NOT NULL DEFAULT '0',
-  `play_count_taiko` int NOT NULL DEFAULT '0',
-  `play_count_ctb` int NOT NULL DEFAULT '0',
-  `play_count_mania` int NOT NULL DEFAULT '0',
-  `replays_watched_std` int unsigned NOT NULL DEFAULT '0',
-  `replays_watched_taiko` int NOT NULL DEFAULT '0',
-  `replays_watched_ctb` int NOT NULL DEFAULT '0',
-  `replays_watched_mania` int unsigned NOT NULL DEFAULT '0',
-  `total_hits_std` int NOT NULL DEFAULT '0',
-  `total_hits_taiko` int NOT NULL DEFAULT '0',
-  `total_hits_ctb` int NOT NULL DEFAULT '0',
-  `total_hits_mania` int NOT NULL DEFAULT '0',
-  `max_combo_std` int NOT NULL DEFAULT '0',
-  `max_combo_taiko` int NOT NULL DEFAULT '0',
-  `max_combo_ctb` int NOT NULL DEFAULT '0',
-  `max_combo_mania` int NOT NULL DEFAULT '0',
-  `play_time_std` int NOT NULL DEFAULT '0',
-  `play_time_taiko` int NOT NULL DEFAULT '0',
-  `play_time_ctb` int NOT NULL DEFAULT '0',
-  `play_time_mania` int NOT NULL DEFAULT '0',
-  `avg_accuracy_std` float NOT NULL DEFAULT '0',
-  `avg_accuracy_taiko` float NOT NULL DEFAULT '0',
-  `avg_accuracy_ctb` float NOT NULL DEFAULT '0',
-  `avg_accuracy_mania` float NOT NULL DEFAULT '0',
-  `pp_std` int NOT NULL DEFAULT '0',
-  `pp_taiko` int NOT NULL DEFAULT '0',
-  `pp_ctb` int NOT NULL DEFAULT '0',
-  `pp_mania` int NOT NULL DEFAULT '0',
-  `count_A_std` int NOT NULL DEFAULT '0',
-  `count_S_std` int NOT NULL DEFAULT '0',
-  `count_X_std` int NOT NULL DEFAULT '0',
-  `count_SH_std` int NOT NULL DEFAULT '0',
-  `count_XH_std` int NOT NULL DEFAULT '0',
-  `count_A_taiko` int NOT NULL DEFAULT '0',
-  `count_S_taiko` int NOT NULL DEFAULT '0',
-  `count_X_taiko` int NOT NULL DEFAULT '0',
-  `count_SH_taiko` int NOT NULL DEFAULT '0',
-  `count_XH_taiko` int NOT NULL DEFAULT '0',
-  `count_A_ctb` int NOT NULL DEFAULT '0',
-  `count_S_ctb` int NOT NULL DEFAULT '0',
-  `count_X_ctb` int NOT NULL DEFAULT '0',
-  `count_SH_ctb` int NOT NULL DEFAULT '0',
-  `count_XH_ctb` int NOT NULL DEFAULT '0',
-  `count_A_mania` int NOT NULL DEFAULT '0',
-  `count_S_mania` int NOT NULL DEFAULT '0',
-  `count_X_mania` int NOT NULL DEFAULT '0',
-  `count_SH_mania` int NOT NULL DEFAULT '0',
-  `count_XH_mania` int NOT NULL DEFAULT '0',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rank_std` int(11) NOT NULL DEFAULT 0,
+  `rank_taiko` int(11) NOT NULL DEFAULT 0,
+  `rank_ctb` int(11) NOT NULL DEFAULT 0,
+  `rank_mania` int(11) NOT NULL DEFAULT 0,
+  `ranked_score_std` bigint(21) NOT NULL DEFAULT 0,
+  `ranked_score_taiko` bigint(21) NOT NULL DEFAULT 0,
+  `ranked_score_ctb` bigint(21) NOT NULL DEFAULT 0,
+  `ranked_score_mania` bigint(21) NOT NULL DEFAULT 0,
+  `total_score_std` bigint(21) NOT NULL DEFAULT 0,
+  `total_score_taiko` bigint(21) NOT NULL DEFAULT 0,
+  `total_score_ctb` bigint(21) NOT NULL DEFAULT 0,
+  `total_score_mania` bigint(21) NOT NULL DEFAULT 0,
+  `play_count_std` int(11) NOT NULL DEFAULT 0,
+  `play_count_taiko` int(11) NOT NULL DEFAULT 0,
+  `play_count_ctb` int(11) NOT NULL DEFAULT 0,
+  `play_count_mania` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_std` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_taiko` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_ctb` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_mania` int(11) NOT NULL DEFAULT 0,
+  `total_hits_std` int(11) NOT NULL DEFAULT 0,
+  `total_hits_taiko` int(11) NOT NULL DEFAULT 0,
+  `total_hits_ctb` int(11) NOT NULL DEFAULT 0,
+  `total_hits_mania` int(11) NOT NULL DEFAULT 0,
+  `max_combo_std` int(11) NOT NULL DEFAULT 0,
+  `max_combo_taiko` int(11) NOT NULL DEFAULT 0,
+  `max_combo_ctb` int(11) NOT NULL DEFAULT 0,
+  `max_combo_mania` int(11) NOT NULL DEFAULT 0,
+  `play_time_std` int(11) NOT NULL DEFAULT 0,
+  `play_time_taiko` int(11) NOT NULL DEFAULT 0,
+  `play_time_ctb` int(11) NOT NULL DEFAULT 0,
+  `play_time_mania` int(11) NOT NULL DEFAULT 0,
+  `avg_accuracy_std` float NOT NULL DEFAULT 0,
+  `avg_accuracy_taiko` float NOT NULL DEFAULT 0,
+  `avg_accuracy_ctb` float NOT NULL DEFAULT 0,
+  `avg_accuracy_mania` float NOT NULL DEFAULT 0,
+  `pp_std` int(11) NOT NULL DEFAULT 0,
+  `pp_taiko` int(11) NOT NULL DEFAULT 0,
+  `pp_ctb` int(11) NOT NULL DEFAULT 0,
+  `pp_mania` int(11) NOT NULL DEFAULT 0,
+  `count_A_std` int(11) NOT NULL DEFAULT 0,
+  `count_S_std` int(11) NOT NULL DEFAULT 0,
+  `count_X_std` int(11) NOT NULL DEFAULT 0,
+  `count_SH_std` int(11) NOT NULL DEFAULT 0,
+  `count_XH_std` int(11) NOT NULL DEFAULT 0,
+  `count_A_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_S_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_X_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_SH_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_XH_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_A_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_S_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_X_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_SH_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_XH_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_A_mania` int(11) NOT NULL DEFAULT 0,
+  `count_S_mania` int(11) NOT NULL DEFAULT 0,
+  `count_X_mania` int(11) NOT NULL DEFAULT 0,
+  `count_SH_mania` int(11) NOT NULL DEFAULT 0,
+  `count_XH_mania` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1017 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1026 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `users_stats_relax`
---
 
 DROP TABLE IF EXISTS `users_stats_relax`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users_stats_relax` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `rank_std` int NOT NULL DEFAULT '0',
-  `rank_taiko` int NOT NULL DEFAULT '0',
-  `rank_ctb` int NOT NULL DEFAULT '0',
-  `rank_mania` int NOT NULL DEFAULT '0',
-  `ranked_score_std` bigint DEFAULT '0',
-  `ranked_score_taiko` bigint DEFAULT '0',
-  `ranked_score_ctb` bigint DEFAULT '0',
-  `ranked_score_mania` bigint DEFAULT '0',
-  `total_score_std` bigint DEFAULT '0',
-  `total_score_taiko` bigint DEFAULT '0',
-  `total_score_ctb` bigint DEFAULT '0',
-  `total_score_mania` bigint DEFAULT '0',
-  `play_count_std` int NOT NULL DEFAULT '0',
-  `play_count_taiko` int NOT NULL DEFAULT '0',
-  `play_count_ctb` int NOT NULL DEFAULT '0',
-  `play_count_mania` int NOT NULL DEFAULT '0',
-  `replays_watched_std` int unsigned NOT NULL DEFAULT '0',
-  `replays_watched_taiko` int NOT NULL DEFAULT '0',
-  `replays_watched_ctb` int NOT NULL DEFAULT '0',
-  `replays_watched_mania` int unsigned NOT NULL DEFAULT '0',
-  `total_hits_std` int NOT NULL DEFAULT '0',
-  `total_hits_taiko` int NOT NULL DEFAULT '0',
-  `total_hits_ctb` int NOT NULL DEFAULT '0',
-  `total_hits_mania` int NOT NULL DEFAULT '0',
-  `max_combo_std` int NOT NULL DEFAULT '0',
-  `max_combo_taiko` int NOT NULL DEFAULT '0',
-  `max_combo_ctb` int NOT NULL DEFAULT '0',
-  `max_combo_mania` int NOT NULL DEFAULT '0',
-  `play_time_std` int NOT NULL DEFAULT '0',
-  `play_time_taiko` int NOT NULL DEFAULT '0',
-  `play_time_ctb` int NOT NULL DEFAULT '0',
-  `play_time_mania` int NOT NULL DEFAULT '0',
-  `avg_accuracy_std` float NOT NULL DEFAULT '0',
-  `avg_accuracy_taiko` float NOT NULL DEFAULT '0',
-  `avg_accuracy_ctb` float NOT NULL DEFAULT '0',
-  `avg_accuracy_mania` float NOT NULL DEFAULT '0',
-  `pp_std` int NOT NULL DEFAULT '0',
-  `pp_taiko` int NOT NULL DEFAULT '0',
-  `pp_ctb` int NOT NULL DEFAULT '0',
-  `pp_mania` int NOT NULL DEFAULT '0',
-  `count_A_std` int NOT NULL DEFAULT '0',
-  `count_S_std` int NOT NULL DEFAULT '0',
-  `count_X_std` int NOT NULL DEFAULT '0',
-  `count_SH_std` int NOT NULL DEFAULT '0',
-  `count_XH_std` int NOT NULL DEFAULT '0',
-  `count_A_taiko` int NOT NULL DEFAULT '0',
-  `count_S_taiko` int NOT NULL DEFAULT '0',
-  `count_X_taiko` int NOT NULL DEFAULT '0',
-  `count_SH_taiko` int NOT NULL DEFAULT '0',
-  `count_XH_taiko` int NOT NULL DEFAULT '0',
-  `count_A_ctb` int NOT NULL DEFAULT '0',
-  `count_S_ctb` int NOT NULL DEFAULT '0',
-  `count_X_ctb` int NOT NULL DEFAULT '0',
-  `count_SH_ctb` int NOT NULL DEFAULT '0',
-  `count_XH_ctb` int NOT NULL DEFAULT '0',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rank_std` int(11) NOT NULL DEFAULT 0,
+  `rank_taiko` int(11) NOT NULL DEFAULT 0,
+  `rank_ctb` int(11) NOT NULL DEFAULT 0,
+  `rank_mania` int(11) NOT NULL DEFAULT 0,
+  `ranked_score_std` bigint(21) DEFAULT 0,
+  `ranked_score_taiko` bigint(21) DEFAULT 0,
+  `ranked_score_ctb` bigint(21) DEFAULT 0,
+  `ranked_score_mania` bigint(21) DEFAULT 0,
+  `total_score_std` bigint(21) DEFAULT 0,
+  `total_score_taiko` bigint(21) DEFAULT 0,
+  `total_score_ctb` bigint(21) DEFAULT 0,
+  `total_score_mania` bigint(21) DEFAULT 0,
+  `play_count_std` int(11) NOT NULL DEFAULT 0,
+  `play_count_taiko` int(11) NOT NULL DEFAULT 0,
+  `play_count_ctb` int(11) NOT NULL DEFAULT 0,
+  `play_count_mania` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_std` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_taiko` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_ctb` int(11) NOT NULL DEFAULT 0,
+  `replays_watched_mania` int(11) NOT NULL DEFAULT 0,
+  `total_hits_std` int(11) NOT NULL DEFAULT 0,
+  `total_hits_taiko` int(11) NOT NULL DEFAULT 0,
+  `total_hits_ctb` int(11) NOT NULL DEFAULT 0,
+  `total_hits_mania` int(11) NOT NULL DEFAULT 0,
+  `max_combo_std` int(11) NOT NULL DEFAULT 0,
+  `max_combo_taiko` int(11) NOT NULL DEFAULT 0,
+  `max_combo_ctb` int(11) NOT NULL DEFAULT 0,
+  `max_combo_mania` int(11) NOT NULL DEFAULT 0,
+  `play_time_std` int(11) NOT NULL DEFAULT 0,
+  `play_time_taiko` int(11) NOT NULL DEFAULT 0,
+  `play_time_ctb` int(11) NOT NULL DEFAULT 0,
+  `play_time_mania` int(11) NOT NULL DEFAULT 0,
+  `avg_accuracy_std` float NOT NULL DEFAULT 0,
+  `avg_accuracy_taiko` float NOT NULL DEFAULT 0,
+  `avg_accuracy_ctb` float NOT NULL DEFAULT 0,
+  `avg_accuracy_mania` float NOT NULL DEFAULT 0,
+  `pp_std` int(11) NOT NULL DEFAULT 0,
+  `pp_taiko` int(11) NOT NULL DEFAULT 0,
+  `pp_ctb` int(11) NOT NULL DEFAULT 0,
+  `pp_mania` int(11) NOT NULL DEFAULT 0,
+  `count_A_std` int(11) NOT NULL DEFAULT 0,
+  `count_S_std` int(11) NOT NULL DEFAULT 0,
+  `count_X_std` int(11) NOT NULL DEFAULT 0,
+  `count_SH_std` int(11) NOT NULL DEFAULT 0,
+  `count_XH_std` int(11) NOT NULL DEFAULT 0,
+  `count_A_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_S_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_X_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_SH_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_XH_taiko` int(11) NOT NULL DEFAULT 0,
+  `count_A_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_S_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_X_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_SH_ctb` int(11) NOT NULL DEFAULT 0,
+  `count_XH_ctb` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1017 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -937,4 +782,4 @@ CREATE TABLE `users_stats_relax` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-05-24 23:55:02
+-- Dump completed on 2022-04-18 13:04:40

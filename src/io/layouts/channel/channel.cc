@@ -22,11 +22,11 @@
 #include "../../../utils/osu_string.hh"
 #include "channel.hh"
 
-// Theres a reason to use 'thread_local' -> https://stackoverflow.com/a/62133688
+// There's a reason to use 'thread_local' -> https://stackoverflow.com/a/62133688
 static thread_local std::hash<uint32_t> number_hash {};
 static thread_local std::hash<std::string> string_hash {};
 
-shiro::io::layouts::channel::channel(uint32_t id, bool auto_join, bool hidden, std::string name, std::string description, int32_t user_count, bool read_only, uint64_t permission)
+shiro::io::layouts::channel::channel(uint32_t id, bool auto_join, bool hidden, std::string name, std::string description, int32_t user_count, bool read_only, int64_t permission)
         : id(id)
         , auto_join(auto_join)
         , hidden(hidden)

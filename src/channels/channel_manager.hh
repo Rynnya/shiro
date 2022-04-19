@@ -48,7 +48,7 @@ namespace shiro::channels::manager {
 
     uint32_t get_channel_id(const std::string &channel_name);
 
-    void insert_if_not_exists(std::string name, std::string description, bool auto_join, bool hidden, bool read_only, uint64_t permission);
+    void insert_if_not_exists(std::string name, std::string description, bool auto_join, bool hidden, bool read_only, int64_t permission);
 
     bool has_permissions(std::shared_ptr<users::user> user, uint64_t perms);
 

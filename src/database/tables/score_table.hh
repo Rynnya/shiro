@@ -38,14 +38,14 @@ namespace shiro::tables {
         object_struct(score, sqlpp::bigint);
         object_struct(max_combo, sqlpp::integer);
         object_struct(full_combo, sqlpp::boolean);
-        object_struct(mods, sqlpp::integer);
+        object_struct(mods, sqlpp::bigint);
         object_struct(count_300, sqlpp::integer);
         object_struct(count_100, sqlpp::integer);
         object_struct(count_50, sqlpp::integer);
         object_struct(count_katus, sqlpp::integer);
         object_struct(count_gekis, sqlpp::integer);
         object_struct(count_misses, sqlpp::integer);
-        object_struct(time, sqlpp::integer);
+        object_struct(time, sqlpp::bigint);
         object_struct(play_mode, sqlpp::tinyint);
         object_struct(completed, sqlpp::boolean);
         object_struct(accuracy, sqlpp::floating_point);
@@ -59,7 +59,7 @@ namespace shiro::tables {
         object_struct(score_id, sqlpp::integer);
         object_struct(user_id, sqlpp::integer);
         object_struct(beatmap_md5, sqlpp::varchar);
-        object_struct(play_mode, sqlpp::integer);
+        object_struct(play_mode, sqlpp::tinyint);
         object_struct(is_relax, sqlpp::boolean);
     };
 

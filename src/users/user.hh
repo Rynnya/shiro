@@ -55,7 +55,7 @@ namespace shiro::users {
         std::string salt = "";
         std::string country = "XX";
 
-        uint32_t roles = 0;
+        int64_t roles = 0;
         std::vector<int32_t> friends {};
 
         // Session info

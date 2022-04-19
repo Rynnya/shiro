@@ -46,7 +46,7 @@ namespace shiro::scores {
         float pp = 0.0f;
 
         float accuracy = 0.0f;
-        int32_t mods = 0;
+        int64_t mods = 0;
 
         bool fc = false;
         bool passed = false;
@@ -60,7 +60,7 @@ namespace shiro::scores {
         int32_t count_misses = 0;
 
         uint8_t play_mode = static_cast<uint8_t>(utils::play_mode::standard);
-        int32_t time = 0;
+        int64_t time = 0;
         int32_t play_time = 0;
 
         std::string to_string(std::vector<score> &scores, bool is_relax);

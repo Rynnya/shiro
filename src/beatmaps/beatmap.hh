@@ -56,7 +56,7 @@ namespace shiro::beatmaps {
 
         int32_t max_combo = 0;
         int32_t hit_length = 0;
-        int32_t bpm = 0;
+        int64_t bpm = 0;
 
         int32_t count_normal = 0;
         int32_t count_slider = 0;

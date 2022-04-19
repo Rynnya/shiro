@@ -31,7 +31,7 @@ namespace shiro::io::layouts {
 
         std::string beatmap_checksum = "";
 
-        uint32_t current_mods = 0;
+        int64_t current_mods = 0;
         uint8_t play_mode = 0;
 
         int32_t beatmap_id = 0;

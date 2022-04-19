@@ -26,12 +26,13 @@ namespace shiro::permissions {
 
     class role {
     public:
-        uint32_t id = 0;
+        int32_t id = 0;
+        int64_t weight = 0;
         std::string name = "";
-        uint64_t permissions = 0;
-        uint8_t color = 0;
+        int64_t permissions = 0;
+        int32_t color = 0;
 
-        role(uint32_t id, std::string name, uint64_t permissions, uint8_t color);
+        role(int32_t id, int64_t weight, std::string name, int64_t permissions, int32_t color);
 
     };
 

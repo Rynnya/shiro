@@ -34,7 +34,7 @@ namespace shiro::roles::manager {
 
     bool has_permission(std::shared_ptr<users::user> user, permissions::perms permissions);
 
-    uint8_t get_chat_color(uint32_t roles);
+    uint8_t get_chat_color(int64_t roles);
 
 }
 

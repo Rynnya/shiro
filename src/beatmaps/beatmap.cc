@@ -266,10 +266,10 @@ bool shiro::beatmaps::beatmap::exist() {
     }
 
     auto db = shiro::database::instance->pop();
-    auto result = db(select(all_of(tables::beatmaps_table)).from(tables::beatmaps_table).where(tables::beatmaps_table.beatmapset_id == this->beatmapset_id));
+    auto result = db(select(tables::beatmaps_table.beatmap_id).from(tables::beatmaps_table).where(tables::beatmaps_table.beatmapset_id == this->beatmapset_id));
 
     for (const auto& row : result) {
-        if (row.beatmap_id.value() == this->beatmap_id) {
+        if (static_cast<int32_t>(row.beatmap_id) == this->beatmap_id) {
             return true;
         }
     }

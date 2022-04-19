@@ -176,7 +176,7 @@ std::string shiro::users::manager::get_username_by_id(int32_t id) {
     }
 
     auto db = shiro::database::instance->pop();
-    auto result = db(select(all_of(tables::users_table)).from(tables::users_table).where(tables::users_table.id == id).limit(1u));
+    auto result = db(select(tables::users_table.username).from(tables::users_table).where(tables::users_table.id == id).limit(1u));
 
     if (result.empty()) {
         return "";
@@ -193,7 +193,7 @@ int32_t shiro::users::manager::get_id_by_username(const std::string &username) {
     }
 
     auto db = shiro::database::instance->pop();
-    auto result = db(select(all_of(tables::users_table)).from(tables::users_table).where(tables::users_table.username == username).limit(1u));
+    auto result = db(select(tables::users_table.id).from(tables::users_table).where(tables::users_table.username == username).limit(1u));
 
     if (result.empty()) {
         return -1;

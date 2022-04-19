@@ -16,24 +16,12 @@ vcpkg install --triplet x64-windows "boost" "curl" "cryptopp" "zlib" "liblzma" "
 pushd "%~dp0"
     pushd external
         git clone "https://github.com/HowardHinnant/date"
-
         git clone "https://github.com/rbock/sqlpp11.git"
-        cd "sqlpp11"
-
-        git checkout da5cf192e951c8d276d45a9960503a3d5d02e440 .
-        git apply ../sqlpp11.patch
-
-        cd ..
-        git clone "https://github.com/rbock/sqlpp11-connector-mysql.git"
-        cd "sqlpp11-connector-mysql"
-
-        git checkout 9ab936a217708a30998686d9b4061cbb0ffa547d .
-        git apply ../sqlpp11-connector-mysql.patch
 
         mkdir build
         cd build
 
-        cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake-DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_INCLUDE_DIR=%VCPKG_ROOT%\installed\x64-windows\include\ ..
+        cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_INCLUDE_DIR=%VCPKG_ROOT%\installed\x64-windows\include\ ..
         cmake --build . --config Release --target sqlpp-mysql
         cmake --build . --config Debug --target sqlpp-mysql
     popd
