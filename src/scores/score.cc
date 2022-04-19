@@ -30,10 +30,10 @@ std::string shiro::scores::score::to_string(std::vector<score> &scores, bool is_
     }
 
     return fmt::format(
-        "{}|{}|{}|" \
-        "{}|{}|{}|{}" \
-        "{}|{}|{}" \
-        "{}|{}|{}" \
+        "{}|{}|{}|"
+        "{}|{}|{}|{}|"
+        "{}|{}|{}|"
+        "{}|{}|{}|"
         "{}|{}|{}\n",
         this->id, username, (is_relax && this->pp > 0 ? static_cast<int64_t>(this->pp) : this->total_score),
         this->max_combo, this->count_50, this->count_100, this->count_300,
