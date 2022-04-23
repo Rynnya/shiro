@@ -93,8 +93,7 @@ void shiro::routes::route(shiro::io::packet_id packet_id, shiro::io::osu_packet 
             break;
         }
         case io::packet_id::in_error_report: {
-            // Shiro don't support this, because osu! client sends cfg file with this request
-            // This also sends crash log, but its fully obfustated, so useless
+            // Errors contains obfuscated information, so this path is useless
             break;
         }
         case io::packet_id::in_cant_spectate: {

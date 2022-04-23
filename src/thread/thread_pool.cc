@@ -22,7 +22,7 @@
     #define SHIRO_WORKERS_AMOUNT (std::max)(std::thread::hardware_concurrency(), 8U)
 #endif
 
-shiro::thread::pool shiro::thread::curl_operations = shiro::thread::pool(SHIRO_WORKERS_AMOUNT);
+shiro::thread::pool shiro::thread::event_loop = shiro::thread::pool(SHIRO_WORKERS_AMOUNT);
 
 shiro::thread::pool::pool(uint32_t threads) {
     for (uint32_t i = 0; i < threads; i++) {

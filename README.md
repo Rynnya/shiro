@@ -10,15 +10,16 @@ It outperforms Ripple, Gigamons and even Bancho itself.
 In terms of implementation accuracy, Shiro's implementation is
 more accurate than both of Ripple and Gigamons.
 <!-- TODO: Adding tests will make these words more weighty -->
-<!-- Also this server cannot be faster than Bancho when using Bancho's API, ironic -->
+<!-- TODO: Also this server cannot be faster than Bancho when using Bancho's API, ironic -->
 
 Shiro also does not separate
 Bancho and the Score Submission server.
 
-# Current state
-Currently WIP, previous owner left many non-tested features (like direct and replays before)<br>
-Some features not implementated at all (screenshots, osu!lazer)<br>
-Performance also should be more scalable, because shiro already uses ASIO
+# Future of project
+With upcoming osu!lazer I'm will trying to recreate as many things as possible for me and my schedule<br>
+Screenshot server might appear later, but definitely not now<br>
+Performance already on very high level, next step in this direction is using Redis, like Ripple does<br>
+Also might be good option to fully rewrite shiro to new framework, like drogon, which will support many underlying functions for us
 
 ## Features
 

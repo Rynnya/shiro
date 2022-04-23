@@ -76,7 +76,6 @@ void shiro::direct::beatconnect::search(crow::response& callback, std::unordered
     std::stringstream out;
     out << json_result["max_page"].get<int32_t>() << std::endl;
 
-    // TODO: Replace with fmt
     for (auto &map_json : json_result["beatmaps"]) {
         std::string beatmap_id = std::to_string(map_json["id"].get<int32_t>());
         std::string last_updated = "-";
@@ -206,7 +205,6 @@ void shiro::direct::beatconnect::search_np(crow::response& callback, std::unorde
         return;
     }
 
-    // TODO: Replace with fmt
     std::stringstream out;
 
     std::string beatmap_id = std::to_string(json_result["id"].get<int32_t>());
@@ -275,7 +273,7 @@ void shiro::direct::beatconnect::download(crow::response& callback, int32_t beat
         url += "?novideo=1";
     }
 
-    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
+    shiro::thread::event_loop.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
 
         if (!success) {

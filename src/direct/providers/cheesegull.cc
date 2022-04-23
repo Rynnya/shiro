@@ -74,7 +74,6 @@ void shiro::direct::cheesegull::search(crow::response& callback, std::unordered_
         return;
     }
 
-    // TODO: Replace with fmt
     std::stringstream out;
     out << 1000 << std::endl;
 
@@ -203,7 +202,6 @@ void shiro::direct::cheesegull::search_np(crow::response& callback, std::unorder
         return;
     }
 
-    // TODO: Replace with fmt
     std::stringstream out;
 
     std::string beatmap_id = std::to_string(json_result["SetID"].get<int32_t>());
@@ -240,7 +238,7 @@ void shiro::direct::cheesegull::download(crow::response& callback, int32_t beatm
         url += "?n=1";
     }
 
-    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
+    shiro::thread::event_loop.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
 
         if (!success) {

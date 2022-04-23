@@ -403,7 +403,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                 utils::play_mode_to_string(static_cast<utils::play_mode>(score.play_mode))
             ), user, "#announce", false);
 
-            shiro::thread::curl_operations.push_and_forgot(shiro::channels::discord_webhook::send_top1_message, user, beatmap, score);
+            shiro::thread::event_loop.push_and_forgot(shiro::channels::discord_webhook::send_top1_message, user, beatmap, score);
             
             auto exist = db(sqlpp::select(tables::scores_first_table.beatmap_md5)
                 .from(tables::scores_first_table)

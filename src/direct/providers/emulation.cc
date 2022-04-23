@@ -48,7 +48,7 @@ void shiro::direct::emulation::search(crow::response& callback, std::unordered_m
     // Remove the last char (which will be a & or ?)
     url.pop_back();
 
-    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
+    shiro::thread::event_loop.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
 
         if (!success) {
@@ -74,7 +74,7 @@ void shiro::direct::emulation::download(crow::response& callback, int32_t beatma
         url.append("?novideo=yes");
     }
 
-    shiro::thread::curl_operations.push_and_forgot([&callback, url]() -> void {
+    shiro::thread::event_loop.push_and_forgot([&callback, url]() -> void {
         auto [success, output] = utils::curl::get_direct(url);
 
         if (!success) {

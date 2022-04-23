@@ -21,15 +21,11 @@
 
 #include <cstdint>
 #include <deque>
-#include <functional> // TODO: Maybe we can remove this and replace with old C style functions?
+#include <functional>
 #include <future>
 #include <vector>
 
 namespace shiro::thread {
-
-    class pool;
-
-    extern pool curl_operations;
 
     class pool {
     public:
@@ -74,6 +70,8 @@ namespace shiro::thread {
         std::vector<std::thread> workers;
         std::deque<std::function<void()>> tasks;
     };
+
+    extern pool event_loop;
 }
 
 #endif

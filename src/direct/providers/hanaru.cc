@@ -95,7 +95,6 @@ void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<
 
     auto result = db(statement);
 
-    // TODO: Replace with fmt
     std::stringstream out;
     out << 1 << std::endl;
 
@@ -107,73 +106,7 @@ void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<
     for (const auto& map : result) {
         if (previous_id == map.beatmapset_id) {
             difficulties << map.difficulty_name.value() << " (";
-            switch (map.mode) {
-            case 0:
-                default: {
-                    difficulties << map.difficulty_std.value();
-                    break;
-                }
-                case 1: {
-                    difficulties << map.difficulty_taiko.value();
-                    break;
-                }
-                case 2: {
-                    difficulties << map.difficulty_ctb.value();
-                    break;
-                }
-                case 3: {
-                    difficulties << map.difficulty_mania.value();
-                    break;
-                }
-            }
 
-            difficulties << "★~" << map.bpm.value() << "♫~";
-            difficulties << "AR" << map.ar.value() << "~";
-            difficulties << "OD" << map.od.value() << "~";
-            difficulties << "CS" << map.cs.value() << "~";
-            difficulties << "HP" << map.hp.value() << "~";
-
-            int32_t total_length = map.hit_length;
-            int32_t minutes = total_length / 60;
-            int32_t seconds = total_length % 60;
-
-            difficulties << minutes << "m";
-            difficulties << seconds << "s)" << "@";
-            difficulties << map.mode.value() << ",";
-        }
-        else {
-            if (requires_end) {
-                std::string diffs = difficulties.str();
-                diffs.pop_back();
-                out << diffs;
-                out << "|\n";
-            }
-
-            requires_end = true;
-            previous_id = map.beatmapset_id;
-
-            std::string beatmap_id = std::to_string(map.beatmap_id);
-            int64_t latest_update = map.latest_update;
-            std::tm time = *std::gmtime(&latest_update);
-
-            out << beatmap_id << ".osz" << "|"; // Filename
-            out << map.artist.value() << "|"; // Artist
-            out << map.title.value() << "|"; // Song
-            out << map.creator.value() << "|"; // Mapper
-            out << 1 << "|"; // ?
-            out << 0.0 << "|"; // Average Rating
-            out << std::put_time(&time, "%Y-%m-%dT%H:%M:%SZ") << "|"; // Last updated
-            out << beatmap_id << "|"; // Beatmap id
-            out << beatmap_id << "|"; // Beatmap id?
-            out << 0 << "|"; // ?
-            out << 0 << "|"; // ?
-            out << 0 << "|"; // ?
-            out << "|"; // Start of difficulties
-
-            difficulties = std::stringstream();
-            difficulties << std::setprecision(2);
-
-            difficulties << map.difficulty_name.value() << " (";
             switch (map.mode) {
                 case 0:
                 default: {
@@ -207,7 +140,75 @@ void shiro::direct::hanaru::search(crow::response& callback, std::unordered_map<
             difficulties << minutes << "m";
             difficulties << seconds << "s)" << "@";
             difficulties << map.mode.value() << ",";
+
+            continue;
         }
+
+        if (requires_end) {
+            std::string diffs = difficulties.str();
+            diffs.pop_back();
+            out << diffs;
+            out << "|\n";
+        }
+
+        requires_end = true;
+        previous_id = map.beatmapset_id;
+
+        std::string beatmap_id = std::to_string(map.beatmap_id);
+        int64_t latest_update = map.latest_update;
+        std::tm time = *std::gmtime(&latest_update);
+
+        out << beatmap_id << ".osz" << "|"; // Filename
+        out << map.artist.value() << "|"; // Artist
+        out << map.title.value() << "|"; // Song
+        out << map.creator.value() << "|"; // Mapper
+        out << 1 << "|"; // ?
+        out << 0.0 << "|"; // Average Rating
+        out << std::put_time(&time, "%Y-%m-%dT%H:%M:%SZ") << "|"; // Last updated
+        out << beatmap_id << "|"; // Beatmap id
+        out << beatmap_id << "|"; // Beatmap id?
+        out << 0 << "|"; // ?
+        out << 0 << "|"; // ?
+        out << 0 << "|"; // ?
+        out << "|"; // Start of difficulties
+
+        difficulties = std::stringstream();
+        difficulties << std::setprecision(2);
+
+        difficulties << map.difficulty_name.value() << " (";
+        switch (map.mode) {
+            case 0:
+            default: {
+                difficulties << map.difficulty_std.value();
+                break;
+            }
+            case 1: {
+                difficulties << map.difficulty_taiko.value();
+                break;
+            }
+            case 2: {
+                difficulties << map.difficulty_ctb.value();
+                break;
+            }
+            case 3: {
+                difficulties << map.difficulty_mania.value();
+                break;
+            }
+        }
+
+        difficulties << "★~" << map.bpm.value() << "♫~";
+        difficulties << "AR" << map.ar.value() << "~";
+        difficulties << "OD" << map.od.value() << "~";
+        difficulties << "CS" << map.cs.value() << "~";
+        difficulties << "HP" << map.hp.value() << "~";
+
+        int32_t total_length = map.hit_length;
+        int32_t minutes = total_length / 60;
+        int32_t seconds = total_length % 60;
+
+        difficulties << minutes << "m";
+        difficulties << seconds << "s)" << "@";
+        difficulties << map.mode.value() << ",";
     }
 
     callback.end(out.str());
@@ -222,11 +223,11 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         return;
     }
 
-    std::string url = fmt::format(
-        "{}/b/{}",
-        (config::direct::hanaru_url.find("localhost") != std::string::npos ? "127.0.0.1:" + std::to_string(config::direct::port): config::direct::hanaru_url),
-        beatmap_id->second
-    );
+    static const std::string url_handle_ = config::direct::hanaru_url.find("localhost") != std::string::npos 
+        ? "127.0.0.1:" + std::to_string(config::direct::port) 
+        : config::direct::hanaru_url;
+
+    std::string url = fmt::format("{}/b/{}", url_handle_, beatmap_id->second);
     auto [success, output] = shiro::utils::curl::get_direct(url);
 
     if (!success) {
@@ -242,7 +243,7 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         json_result = nlohmann::json::parse(output);
     }
     catch (const json::parse_error& ex) {
-        LOG_F(ERROR, "Unable to parse json response from Hanaru: {}.");
+        LOG_F(ERROR, "Unable to parse json response from Hanaru: {}.", ex.what());
         CAPTURE_EXCEPTION(ex);
 
         callback.code = 504;
@@ -251,7 +252,6 @@ void shiro::direct::hanaru::search_np(crow::response& callback, std::unordered_m
         return;
     }
 
-    // TODO: Replace with fmt
     std::stringstream out;
 
     std::string beatmapset_id = std::to_string(json_result["beatmapset_id"].get<int32_t>());

@@ -59,7 +59,7 @@ void shiro::channels::discord_webhook::send_message(const std::string& message) 
     nlohmann::json msg = create_basis();
     msg["content"] = message;
 
-    return shiro::thread::curl_operations.push_and_forgot(shiro::utils::curl::post_message, shiro::config::discord_webhook::url, msg);
+    return shiro::thread::event_loop.push_and_forgot(shiro::utils::curl::post_message, shiro::config::discord_webhook::url, msg);
 }
 
 void shiro::channels::discord_webhook::send_message(const nlohmann::json& message) {
@@ -67,7 +67,7 @@ void shiro::channels::discord_webhook::send_message(const nlohmann::json& messag
         return;
     }
 
-    return shiro::thread::curl_operations.push_and_forgot(shiro::utils::curl::post_message, shiro::config::discord_webhook::url, message);
+    return shiro::thread::event_loop.push_and_forgot(shiro::utils::curl::post_message, shiro::config::discord_webhook::url, message);
 }
 
 nlohmann::json shiro::channels::discord_webhook::create_basis() {

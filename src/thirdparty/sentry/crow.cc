@@ -466,7 +466,7 @@ void nlohmann::crow::enqueue_post(bool send_independently) {
     }
 
     // add the new job
-    m_jobs.push_back(shiro::thread::curl_operations.push([this]() {
+    m_jobs.push_back(shiro::thread::event_loop.push([this]() {
         this->wait_rate_limit(m_rate_limit_timer);
         curl_wrapper::response response = post(m_payload);
 
