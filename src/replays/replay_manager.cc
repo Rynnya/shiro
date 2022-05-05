@@ -18,10 +18,6 @@
 
 #include "../utils/filesystem.hh"
 
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/filter/zlib.hpp>
-#include <boost/iostreams/filter/lzma.hpp> // Segfaults: https://stackoverflow.com/questions/50071513/c-boost-and-lzma-decompression
-#include <boost/iostreams/copy.hpp>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -69,32 +65,6 @@ void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::
     std::ofstream stream(filename, std::ofstream::trunc | std::ofstream::binary);
     stream << replay;
     stream.close();
-
-    // If the replay is bigger than 1 mib, compress it
-    // Implement a smarter compression method than zlib (Rynnya: There's no way to compress already compressed data!)
-    // TODO: Remove this code, as this makes total non-sense
-    if (fs::file_size(filename) >= 1048576) {
-        fs::remove(filename);
-
-        filename = dir / std::string(std::to_string(s.id) + ".osr.zz");
-
-        std::stringstream original;
-        std::stringstream compressed;
-
-        original << replay;
-
-        boost::iostreams::filtering_streambuf<boost::iostreams::input> output;
-        output.push(boost::iostreams::zlib_compressor());
-        output.push(original);
-
-        boost::iostreams::copy(output, compressed);
-
-        stream = std::ofstream(filename, std::ostream::trunc | std::ostream::binary);
-        stream << compressed.str();
-        stream.close();
-
-        LOG_F(WARNING, "Uncompressed replay was >1mb, saved replay with zlib compression.");
-    }
 }
 
 std::string shiro::replays::get_replay(const shiro::scores::score &s) {
@@ -102,34 +72,12 @@ std::string shiro::replays::get_replay(const shiro::scores::score &s) {
         return "";
     }
 
-    fs::path filename = dir / std::string(std::to_string(s.id) + ".osr.zz");
+    fs::path filename = dir / (std::to_string(s.id) + ".osr");
     std::stringstream result;
-    uint32_t size = 0;
+    std::ifstream stream = std::ifstream(filename, std::ifstream::binary);
 
-    if (fs::exists(filename)) {
-        std::ifstream stream = std::ifstream(filename, std::ifstream::binary);
-
-        std::stringstream original;
-        std::stringstream decompressed;
-
-        original << stream.rdbuf();
-
-        stream.close();
-
-        boost::iostreams::filtering_streambuf<boost::iostreams::input> output;
-        output.push(boost::iostreams::zlib_decompressor());
-        output.push(original);
-
-        boost::iostreams::copy(output, result);
-
-    } else {
-        filename = dir / std::string(std::to_string(s.id) + ".osr");
-        std::ifstream stream = std::ifstream(filename, std::ifstream::binary);
-
-        result << stream.rdbuf();
-
-        stream.close();
-    }
+    result << stream.rdbuf();
+    stream.close();
 
     return result.str();
 }
@@ -180,7 +128,7 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
     buffer.write<int32_t>(s.mods);
 
     buffer.write<uint8_t>(0);
-    buffer.write<int64_t>(utils::time::get_current_time_ticks());
+    buffer.write<int64_t>(utils::time::get_ticks_from_time(s.time));
 
     buffer.write<int32_t>(raw_replay.size());
     buffer.write<std::string>(raw_replay);
@@ -192,9 +140,5 @@ std::string shiro::replays::get_full_replay(const shiro::scores::score &s) {
 }
 
 bool shiro::replays::has_replay(const shiro::scores::score &s) {
-    if (fs::exists(dir / std::string(std::to_string(s.id) + ".osr"))) {
-        return true;
-    }
-
-    return fs::exists(dir / std::string(std::to_string(s.id) + ".osr.zz"));
+    return fs::exists(dir / (std::to_string(s.id) + ".osr"));
 }

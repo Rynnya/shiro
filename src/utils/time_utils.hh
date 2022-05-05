@@ -42,6 +42,7 @@ namespace shiro::utils::time {
     extern std::unordered_map<std::string, uint32_t> duration_mapping;
 
     int64_t get_current_time_ticks();
+    int64_t get_ticks_from_time(int64_t time);
 
     template <typename T = std::chrono::seconds>
     inline T current_time() {

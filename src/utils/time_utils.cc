@@ -38,9 +38,17 @@ std::unordered_map<std::string, uint32_t> shiro::utils::time::duration_mapping =
 
 int64_t shiro::utils::time::get_current_time_ticks() {
     using ticks = std::chrono::duration<int64_t, std::ratio_multiply<std::ratio<100>, std::nano>>;
+    std::chrono::seconds;
 
     std::chrono::time_point now = std::chrono::system_clock::now();
     int64_t ticks_since_epoch = std::chrono::duration_cast<ticks>(now.time_since_epoch()).count();
+    ticks_since_epoch += unix_epoch_ticks;
+
+    return ticks_since_epoch;
+}
+
+int64_t shiro::utils::time::get_ticks_from_time(int64_t time) {
+    int64_t ticks_since_epoch = time * 10000000;
     ticks_since_epoch += unix_epoch_ticks;
 
     return ticks_since_epoch;
