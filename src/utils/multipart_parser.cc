@@ -107,8 +107,8 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
         return 0;
     };
 
-    multipartparser parser { 0 };
-    multipartparser_callbacks callbacks { 0 };
+    multipartparser parser {};
+    multipartparser_callbacks callbacks { 0, 0, 0, 0, 0, 0, 0, 0 };
 
     callbacks.on_body_begin = on_body_begin;
     callbacks.on_part_begin = on_part_begin;
