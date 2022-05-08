@@ -21,7 +21,7 @@
 #include "../config/ipc_file.hh"
 #include "../database/tables/relationship_table.hh"
 #include "../database/tables/user_table.hh"
-#include "../permissions/role_manager.hh"
+#include "../permissions/permissions.hh"
 #include "../thirdparty/naga.hh"
 #include "../utils/crypto.hh"
 #include "../utils/play_mode.hh"
@@ -58,8 +58,8 @@ bool shiro::users::user::init() {
     this->presence.username = row.username;
     this->password = row.password_hash;
     this->salt = row.salt;
-    this->roles = row.roles;
-    this->presence.permissions = roles::manager::get_chat_color(this->roles);
+    this->permissions = row.permissions;
+    this->presence.permissions = shiro::permissions::get_chat_color(this->permissions);
     this->is_relax = row.is_relax;
 
     auto relationship_result = db(select(tables::relationships_table.target)

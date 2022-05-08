@@ -18,7 +18,7 @@
  */
 
 #include "../../config/bot_file.hh"
-#include "../../permissions/role_manager.hh"
+#include "../../permissions/permissions.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
@@ -35,8 +35,8 @@ bool shiro::commands::clear(std::deque<std::string>& args, const std::shared_ptr
         return false;
     }
 
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_clear)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_clear)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::clear_cmd)) {
+        utils::bot::respond("Permission denied. (Global clear permission required)", user, channel, true);
         return false;
     }
 

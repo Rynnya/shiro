@@ -22,7 +22,6 @@
 
 #include "../database/tables/channel_table.hh"
 #include "../permissions/permissions.hh"
-#include "../permissions/role_manager.hh"
 #include "../thirdparty/naga.hh"
 #include "../shiro.hh"
 #include "channel_manager.hh"
@@ -40,7 +39,7 @@ void shiro::channels::manager::init() {
 
     insert_if_not_exists("#announce", "", true, false, true, 0);
     insert_if_not_exists("#lobby", "", false, true, false, 0);
-    insert_if_not_exists("#console", "", true, false, true, static_cast<int64_t>(permissions::perms::channel_console));
+    insert_if_not_exists("#console", "", true, false, true, static_cast<int64_t>(permissions::perms::console_chat));
 
     auto result = db(select(all_of(tables::channels_table)).from(tables::channels_table).unconditionally());
 
@@ -216,7 +215,7 @@ void shiro::channels::manager::insert_if_not_exists(std::string name, std::strin
     ));
 }
 
-bool shiro::channels::manager::has_permissions(std::shared_ptr<shiro::users::user> user, uint64_t perms) {
+bool shiro::channels::manager::has_permissions(std::shared_ptr<shiro::users::user> user, int64_t perms) {
     if (user == nullptr) {
         return false;
     }
@@ -225,7 +224,7 @@ bool shiro::channels::manager::has_permissions(std::shared_ptr<shiro::users::use
         return true;
     }
 
-    return roles::manager::has_permission(user, static_cast<permissions::perms>(perms));
+    return (user->permissions & perms) == perms; // This will also satisfy a array of permissions if required
 }
 
 bool shiro::channels::manager::is_read_only(uint32_t channel_id) {

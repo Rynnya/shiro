@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../permissions/role_manager.hh"
+#include "../../permissions/permissions.hh"
 #include "../../users/user_manager.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../utils/bot_utils.hh"
@@ -33,8 +33,8 @@ bool shiro::commands::clients(std::deque<std::string>& args, const std::shared_p
         return false;
     }
 
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_clients)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_clients)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::info_users)) {
+        utils::bot::respond("Permission denied. (Client info permission required)", user, channel, true);
         return false;
     }
 

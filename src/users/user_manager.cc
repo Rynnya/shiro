@@ -216,6 +216,14 @@ void shiro::users::manager::update_preferences(int32_t id) {
     }
 }
 
+bool shiro::users::manager::has_permissions(const std::shared_ptr<user>& user, shiro::permissions::perms required) {
+    return user && (user->permissions & required) == static_cast<int64_t>(required);
+}
+
+bool shiro::users::manager::has_permissions(const std::shared_ptr<user>& user, int64_t required) {
+    return user && (user->permissions & required) == required;
+}
+
 void shiro::users::manager::iterate(const std::function<void(std::shared_ptr<shiro::users::user>&)> &callback, bool skip_bot) {
     // Disallow other threads from writing (but not from reading)
     std::shared_lock<std::shared_timed_mutex> lock(mutex);

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../permissions/role_manager.hh"
+#include "../../permissions/permissions.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
@@ -32,8 +32,8 @@ bool shiro::commands::rtx(std::deque<std::string>& args, const std::shared_ptr<s
         return false;
     }
 
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_rtx)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_rtx)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::rtx_cmd)) {
+        utils::bot::respond("Permission denied. (RTX permission required)", user, channel, true);
         return false;
     }
 

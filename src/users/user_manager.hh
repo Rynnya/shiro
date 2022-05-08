@@ -24,6 +24,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "../permissions/permissions.hh"
 #include "user.hh"
 
 namespace shiro::users::manager {
@@ -54,6 +55,11 @@ namespace shiro::users::manager {
     int32_t get_id_by_username(const std::string &username);
 
     void update_preferences(int32_t id);
+
+    // Use this function to satisfy a single permission
+    bool has_permissions(const std::shared_ptr<user>& user, shiro::permissions::perms required);
+    // Use this function to satisfy an array of permissions
+    bool has_permissions(const std::shared_ptr<user>& user, int64_t required);
 
     // Helper methods to quickly iterate over all online users
     void iterate(const std::function<void(std::shared_ptr<user>&)> &callback, bool skip_bot = false);

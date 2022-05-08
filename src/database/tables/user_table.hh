@@ -41,7 +41,7 @@ namespace shiro::tables {
         object_struct(registration_date, sqlpp::bigint);
         object_struct(latest_activity, sqlpp::bigint);
         object_struct(followers, sqlpp::bigint);
-        object_struct(roles, sqlpp::bigint);
+        object_struct(permissions, sqlpp::bigint);
         object_struct(userpage, sqlpp::text);
         object_struct(is_relax, sqlpp::boolean);
     };
@@ -134,7 +134,7 @@ namespace shiro::tables {
         users_objects::registration_date,
         users_objects::latest_activity,
         users_objects::followers,
-        users_objects::roles,
+        users_objects::permissions,
         users_objects::userpage,
         users_objects::is_relax
     );

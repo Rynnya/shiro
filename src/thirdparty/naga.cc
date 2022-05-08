@@ -29,7 +29,6 @@
 #include "fmt/chrono.hh"
 #include "fmt/ostream.hh"
 
-#include <functional>
 #include <fstream>
 #include <thread>
 #include <unordered_map>

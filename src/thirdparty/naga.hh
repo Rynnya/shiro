@@ -29,6 +29,7 @@
 
 #include <any>
 #include <cstdint>
+#include <functional>
 #include <string>
 
 #include "fmt/format.hh"
@@ -87,9 +88,8 @@ namespace naga {
     // Forward declaration
     class log_message;
 
-    // Including <functional> will slow down compile time drastically
-    typedef void (*fatal_handler_t)(const log_message&);
-    typedef void (*log_handler_t)(std::any&, const log_message&);
+    typedef std::function<void(const log_message&)> fatal_handler_t;
+    typedef std::function<void(std::any&, const log_message&)> log_handler_t;
 
     extern config configuration;
 

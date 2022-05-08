@@ -17,21 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../permissions/role_manager.hh"
+#include "../../users/user_manager.hh"
 #include "../../utils/bot_utils.hh"
 #include "help_command.hh"
 
 const std::unordered_map<shiro::permissions::perms, std::string> shiro::commands::staff_commands = {
-    { shiro::permissions::perms::cmd_announce,      "!announce - Sends a announcement to everyone or a specific user"   },
-    { shiro::permissions::perms::cmd_ban,           "!ban - Bans a player"                                              },
-    { shiro::permissions::perms::cmd_clear,         "!clear - Clears the chat for everyone or a specific user"          },
-    { shiro::permissions::perms::cmd_clients,       "!clients - Lists game versions of connected players"               },
-    { shiro::permissions::perms::cmd_kick,          "!kick - Kicks a player from the server"                            },
-    { shiro::permissions::perms::cmd_recalculate,   "!recalculate - Starts pp recalculation service"                    },
-    { shiro::permissions::perms::cmd_restart,       "!restart - Restarts the server"                                    },
-    { shiro::permissions::perms::cmd_restrict,      "!restrict - Restricts a player"                                    },
-    { shiro::permissions::perms::cmd_rtx,           "!rtx - Send a rtx to a specific user"                              },
-    { shiro::permissions::perms::cmd_silence,       "!silence - Mutes a player"                                         },
+    { shiro::permissions::perms::announce_cmd,      "!announce - Sends a announcement to everyone or a specific user"   },
+    { shiro::permissions::perms::ban_users,         "!ban - Bans a player"                                              },
+    { shiro::permissions::perms::clear_cmd,         "!clear - Clears the chat for everyone or a specific user"          },
+    { shiro::permissions::perms::info_users,        "!clients - Lists game versions of connected players"               },
+    { shiro::permissions::perms::kick_users,        "!kick - Kicks a player from the server"                            },
+    { shiro::permissions::perms::recalculate_cmd,   "!recalculate - Starts pp recalculation service"                    },
+    { shiro::permissions::perms::restart_cmd,       "!restart - Restarts the server"                                    },
+    { shiro::permissions::perms::restrict_users,    "!restrict - Restricts a player"                                    },
+    { shiro::permissions::perms::rtx_cmd,           "!rtx - Send a rtx to a specific user"                              },
+    { shiro::permissions::perms::silence_users,     "!silence - Mutes a player"                                         },
 };
 
 bool shiro::commands::help(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
@@ -43,7 +43,7 @@ bool shiro::commands::help(std::deque<std::string>& args, const std::shared_ptr<
     utils::bot::respond("!roll - Rolls a random number", user, channel, true);
 
     for (auto [permission, response] : staff_commands) {
-        if (shiro::roles::manager::has_permission(user, permission)) {
+        if (shiro::users::manager::has_permissions(user, permission)) {
             utils::bot::respond(response, user, channel, true);
         }
     }

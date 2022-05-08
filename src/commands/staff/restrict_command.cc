@@ -18,7 +18,6 @@
  */
 
 #include "../../permissions/permissions.hh"
-#include "../../permissions/role_manager.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
@@ -34,8 +33,8 @@ bool shiro::commands::restrict(std::deque<std::string>& args, const std::shared_
         return false;
     }
 
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_restrict)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_restrict)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::restrict_users)) {
+        utils::bot::respond("Permission denied. (Restrict users permission required)", user, channel, true);
         return false;
     }
 

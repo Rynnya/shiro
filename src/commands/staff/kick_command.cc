@@ -18,7 +18,6 @@
  */
 
 #include "../../permissions/permissions.hh"
-#include "../../permissions/role_manager.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
@@ -34,8 +33,8 @@ bool shiro::commands::kick(std::deque<std::string>& args, const std::shared_ptr<
         return false;
     }
 
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_kick)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_kick)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::kick_users)) {
+        utils::bot::respond("Permission denied. (Kick users permission required)", user, channel, true);
         return false;
     }
 

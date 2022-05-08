@@ -107,7 +107,7 @@ void shiro::handler::login::handle(const crow::request &request, crow::response 
         return;
     }
 
-    if (user->roles == 0xF00DDEAD) {
+    if (user->permissions == 0) { // Read permissions (which is 1) available to everyone who registered successfully
         writer.login_reply(static_cast<int32_t>(utils::login_responses::verification_required));
 
         response.end(writer.serialize());

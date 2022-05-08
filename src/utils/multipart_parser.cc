@@ -125,8 +125,6 @@ shiro::utils::multipart_form_parts shiro::utils::multipart_parser::parse() {
     multipartparser parser {};
     multipartparser_callbacks callbacks {};
 
-    multipartparser_callbacks_init(&callbacks);
-
     callbacks.on_body_begin =       callbacks::on_body_begin;
     callbacks.on_part_begin =       callbacks::on_part_begin;
     callbacks.on_header_field =     callbacks::on_header_field;

@@ -42,7 +42,6 @@
 #include "native/process_info.hh"
 #include "native/signal_handler.hh"
 #include "native/system_statistics.hh"
-#include "permissions/role_manager.hh"
 #include "replays/replay_manager.hh"
 #include "routes/routes.hh"
 #include "users/user_activity.hh"
@@ -110,8 +109,6 @@ int shiro::init(int argc, char **argv) {
         }
     });
     scheduler_updater.detach(); // The root of all suffering is attachment
-
-    roles::manager::init();
 
     bot::init();
     bot::init_commands();

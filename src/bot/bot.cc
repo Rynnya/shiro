@@ -86,7 +86,7 @@ void shiro::bot::init() {
                 tables::users_table.registration_date = 0,
                 tables::users_table.latest_activity = 0,
                 tables::users_table.followers = 0,
-                tables::users_table.roles = 0xDEADCAFE, // Special role for robots
+                tables::users_table.permissions = 0xDEADCAFE, // Special role for robots
                 tables::users_table.userpage = "beep boop",
                 tables::users_table.country = "JP"
             ));

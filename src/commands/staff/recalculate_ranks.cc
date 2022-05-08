@@ -18,8 +18,8 @@
  */
 
 #include "../../permissions/permissions.hh"
-#include "../../permissions/role_manager.hh"
 #include "../../pp/pp_recalculator.hh"
+#include "../../users/user_manager.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/string_utils.hh"
@@ -28,8 +28,8 @@
 using fmt::format;
 
 bool shiro::commands::recalculate(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_recalculate)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_recalculate)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::recalculate_cmd)) {
+        utils::bot::respond("Permission denied. (Recalculate permission required)", user, channel, true);
         return false;
     }
 

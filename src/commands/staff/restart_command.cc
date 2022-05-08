@@ -25,15 +25,16 @@
 #include <cstring>
 
 #include "../../native/process_info.hh"
-#include "../../permissions/role_manager.hh"
+#include "../../permissions/permissions.hh"
+#include "../../users/user_manager.hh"
 #include "../../thirdparty/naga.hh"
 #include "../../utils/bot_utils.hh"
 #include "../../utils/string_utils.hh"
 #include "restart_command.hh"
 
 bool shiro::commands::restart(std::deque<std::string>& args, const std::shared_ptr<shiro::users::user>& user, const std::string& channel) {
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_restart)) {
-        utils::bot::respond(fmt::format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_restart)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::restart_cmd)) {
+        utils::bot::respond("Permission denied. (Restart permission required)", user, channel, true);
         return false;
     }
 

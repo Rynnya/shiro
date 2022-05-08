@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../permissions/role_manager.hh"
+#include "../../permissions/permissions.hh"
 #include "../../thirdparty/fmt/format.hh"
 #include "../../users/user_manager.hh"
 #include "../../users/user_punishments.hh"
@@ -34,8 +34,8 @@ bool shiro::commands::silence(std::deque<std::string>& args, const std::shared_p
         return false;
     }
 
-    if (!roles::manager::has_permission(user, permissions::perms::cmd_silence)) {
-        utils::bot::respond(format("Permission denied. ({})", static_cast<uint64_t>(permissions::perms::cmd_silence)), user, channel, true);
+    if (!shiro::users::manager::has_permissions(user, permissions::perms::silence_users)) {
+        utils::bot::respond("Permission denied. (Silence users permission required)", user, channel, true);
         return false;
     }
 

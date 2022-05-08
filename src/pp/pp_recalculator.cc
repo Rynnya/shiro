@@ -60,7 +60,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
     if (is_relax) {
         auto result = db(select(
             tables::users_table.id,
-            tables::users_table.roles,
+            tables::users_table.permissions,
             tables::users_relax_table.play_count_std,
             tables::users_relax_table.play_count_taiko,
             tables::users_relax_table.play_count_ctb
@@ -68,7 +68,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 
         for (const auto& row : result) {
             // Bots usually don't have scores, so let's skip them
-            if (row.roles.value() == 0xDEADCAFE) {
+            if (row.permissions.value() == 0xDEADCAFE) {
                 continue;
             }
 
@@ -103,7 +103,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
     else {
         auto result = db(select(
             tables::users_table.id,
-            tables::users_table.roles,
+            tables::users_table.permissions,
             tables::users_stats_table.play_count_std,
             tables::users_stats_table.play_count_taiko,
             tables::users_stats_table.play_count_ctb,
@@ -112,7 +112,7 @@ void shiro::pp::recalculator::begin(shiro::utils::play_mode mode, bool is_relax,
 
         for (const auto& row : result) {
             // Bots usually don't have scores, so let's skip them
-            if (row.roles.value() == 0xDEADCAFE) {
+            if (row.permissions.value() == 0xDEADCAFE) {
                 continue;
             }
 

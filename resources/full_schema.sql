@@ -472,28 +472,6 @@ CREATE TABLE `reports` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
--- TODO: Implement better ID system for roles
-DROP TABLE IF EXISTS `roles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `roles` (
-  `id` int(11) NOT NULL,
-  `weight` bigint(21) NOT NULL,
-  `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `permissions` bigint(21) NOT NULL,
-  `color` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
--- Will leave this here, might be useful for somebody
--- You must specify `roles` in `users` as 4 to get permissions
-LOCK TABLES `roles` WRITE;
-/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,4,'dev',1099511627776,3);
-/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
-UNLOCK TABLES;
-
 DROP TABLE IF EXISTS `scores`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -592,7 +570,7 @@ CREATE TABLE `users` (
   `registration_date` bigint(21) NOT NULL,
   `latest_activity` bigint(21) NOT NULL DEFAULT 0,
   `followers` bigint(21) NOT NULL DEFAULT 0,
-  `roles` bigint(21) NOT NULL DEFAULT 0,
+  `permissions` bigint(21) NOT NULL DEFAULT 0,
   `userpage` text DEFAULT NULL,
   `background` text DEFAULT NULL,
   `status` text DEFAULT NULL,
