@@ -8,11 +8,13 @@
 #pragma GCC system_header
 #endif
 
+#include <functional>
+
 typedef struct multipartparser multipartparser;
 typedef struct multipartparser_callbacks multipartparser_callbacks;
 
-typedef int (*multipart_cb)(multipartparser*);
-typedef int (*multipart_data_cb)(multipartparser*, const char*, size_t);
+typedef std::function<int(multipartparser*)> multipart_cb;
+typedef std::function<int(multipartparser*, const char*, size_t)> multipart_data_cb;
 
 #ifdef __cplusplus
 extern "C" {

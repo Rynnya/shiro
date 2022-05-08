@@ -380,7 +380,9 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         }
     }
 
-    replays::save_replay(score, beatmap, fields.at("replay-bin").body);
+    // Lambda required to move replay into function, otherwise this will cause a lot of problems
+    // Also we need copy a score and beatmap so we don't get UB when they gone
+    shiro::thread::event_loop.push_and_forgot([&fields, score, beatmap]() { replays::save_replay(score, beatmap, std::move(fields.at("replay-bin").body)); });
 
     if (!score.passed || !scores::helper::is_ranked(score, beatmap)) {
         // We need save stats to keep play_time, counts and total_hits, also fixes 'sending statistics...' bug
@@ -390,6 +392,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         return;
     }
 
+    // TODO: Can we somehow optimize this?
     scores::score top_score = scores::helper::fetch_top_score_user(beatmap.beatmap_md5, user, score.is_relax);
     std::vector<scores::score> first_scores = scores::helper::fetch_all_scores(beatmap.beatmap_md5, score.is_relax, 5);
     int32_t scoreboard_position = scores::helper::get_scoreboard_position(top_score, first_scores);

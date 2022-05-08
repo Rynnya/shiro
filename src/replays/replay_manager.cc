@@ -42,7 +42,7 @@ void shiro::replays::init() {
     }
 }
 
-void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::beatmap &beatmap, std::string replay) {
+void shiro::replays::save_replay(const shiro::scores::score &s, const beatmaps::beatmap &beatmap, std::string&& replay) {
     if (!s.passed && !config::score_submission::save_failed_scores) {
         return;
     }
