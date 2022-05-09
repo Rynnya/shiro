@@ -245,7 +245,7 @@ void shiro::direct::cheesegull::download(crow::response& callback, int32_t beatm
             callback.code = 504;
             callback.end();
 
-            LOG_F(WARNING, "Beatconnect search returned invalid response, message: {}", output);
+            LOG_F(WARNING, "Beatconnect download returned invalid response, message: {}", output);
             return;
         }
 

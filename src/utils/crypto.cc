@@ -26,12 +26,30 @@
 
 #include "../thirdparty/cppcrypto/cbc.hh"
 #include "../thirdparty/cppcrypto/rijndael.hh"
-#include "../thirdparty/websocketpp/base64/base64.hh"
-#include "crypto.hh"
 #include "../native/process_info.hh"
+#include "crypto.hh"
+
+struct bio_free_all {
+    void operator()(BIO* p) {
+        BIO_free_all(p);
+    }
+};
 
 std::string shiro::utils::crypto::base64::decode(const std::string& base64) {
-    return websocketpp::base64_decode(base64);
+    const size_t max_len = base64.size() / 4 * 3 + 1;
+
+    std::unique_ptr<BIO, bio_free_all> b64(BIO_new(BIO_f_base64()));
+    BIO_set_flags(b64.get(), BIO_FLAGS_BASE64_NO_NL);
+
+    BIO* source = BIO_new_mem_buf(base64.c_str(), -1);
+    BIO_push(b64.get(), source);
+
+    std::vector<unsigned char> result(max_len);
+
+    const int length = BIO_read(b64.get(), result.data(), (int)max_len);
+    result.resize((unsigned long)length);
+
+    return std::string(result.begin(), result.end());
 }
 
 std::string shiro::utils::crypto::rijndael256::decode(const std::string& iv, const std::string& key, const std::string& cipher) {

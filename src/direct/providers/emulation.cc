@@ -82,11 +82,11 @@ void shiro::direct::emulation::download(crow::response& callback, int32_t beatma
             callback.end();
 
             if (output.size() > 100) {
-                LOG_F(WARNING, "Emulation search returned invalid response with huge message, size: {}", output.size());
+                LOG_F(WARNING, "Emulation download returned invalid response with huge message, size: {}, first 100 chars: {}", output.size(), output.substr(0, 100));
                 return;
             }
 
-            LOG_F(WARNING, "Emulation search returned invalid response, message: {}", output);
+            LOG_F(WARNING, "Emulation download returned invalid response, message: {}", output);
             return;
         }
 
