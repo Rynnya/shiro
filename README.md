@@ -18,8 +18,22 @@ Bancho and the Score Submission server.
 # Future of project
 With upcoming osu!lazer I'm will trying to recreate as many things as possible for me and my schedule<br>
 Screenshot server might appear later, but definitely not now<br>
-Performance already on very high level, next step in this direction is using Redis, like Ripple does<br>
-Also might be good option to fully rewrite shiro to new framework, like drogon, which will support many underlying functions for us
+Current list of features that I'm want to implement:
+```
+reports ingame
+achievements
+beatmap rating system
+2fa system
+clan system (something like it's made on gatari?)
+irc
+anticheat (at least hwid and ip logger, also might be circleguard)
+redis communication
+```
+And current list of features that I'm want to recreate:
+```
+multiplayer -> from single pool to single pool and pointer to handle for every user
+thread pool -> find more ways to use it
+```
 
 ## Features
 
