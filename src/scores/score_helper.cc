@@ -852,131 +852,131 @@ bool shiro::scores::helper::is_ranked(const shiro::scores::score &score, const s
         }
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::none)) {
+    if (mods & utils::mods::none) {
         ranked &= config::score_submission::nomod_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::no_fail)) {
+    if (mods & utils::mods::no_fail) {
         ranked &= config::score_submission::no_fail_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::easy)) {
+    if (mods & utils::mods::easy) {
         ranked &= config::score_submission::easy_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::touch_device)) {
+    if (mods & utils::mods::touch_device) {
         ranked &= config::score_submission::touch_device_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::hidden)) {
+    if (mods & utils::mods::hidden) {
         ranked &= config::score_submission::hidden_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::hard_rock)) {
+    if (mods & utils::mods::hard_rock) {
         ranked &= config::score_submission::hard_rock_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::sudden_death)) {
+    if (mods & utils::mods::sudden_death) {
         ranked &= config::score_submission::sudden_death_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::double_time)) {
+    if (mods & utils::mods::double_time) {
         ranked &= config::score_submission::double_time_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::relax)) {
+    if (mods & utils::mods::relax) {
         ranked &= config::score_submission::relax_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::half_time)) {
+    if (mods & utils::mods::half_time) {
         ranked &= config::score_submission::half_time_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::nightcore)) {
+    if (mods & utils::mods::nightcore) {
         ranked &= config::score_submission::nightcore_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::flashlight)) {
+    if (mods & utils::mods::flashlight) {
         ranked &= config::score_submission::flashlight_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::auto_play)) {
+    if (mods & utils::mods::auto_play) {
         ranked &= config::score_submission::auto_play_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::spun_out)) {
+    if (mods & utils::mods::spun_out) {
         ranked &= config::score_submission::spun_out_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::auto_pilot)) {
+    if (mods & utils::mods::auto_pilot) {
         ranked &= config::score_submission::auto_pilot_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::perfect)) {
+    if (mods & utils::mods::perfect) {
         ranked &= config::score_submission::perfect_ranked;
     }
 
     // Special mods
 
-    if (mods & static_cast<int32_t>(utils::mods::fade_in)) {
+    if (mods & utils::mods::fade_in) {
         ranked &= config::score_submission::fade_in_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::random)) {
+    if (mods & utils::mods::random) {
         ranked &= config::score_submission::random_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::cinema)) {
+    if (mods & utils::mods::cinema) {
         ranked &= config::score_submission::cinema_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::target)) {
+    if (mods & utils::mods::target) {
         ranked &= config::score_submission::target_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::score_v2)) {
+    if (mods & utils::mods::score_v2) {
         ranked &= config::score_submission::score_v2_ranked;
     }
 
     // Keys
 
-    if (mods & static_cast<int32_t>(utils::mods::key_1)) {
+    if (mods & utils::mods::key_1) {
         ranked &= config::score_submission::key_1_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_2)) {
+    if (mods & utils::mods::key_2) {
         ranked &= config::score_submission::key_2_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_3)) {
+    if (mods & utils::mods::key_3) {
         ranked &= config::score_submission::key_3_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_4)) {
+    if (mods & utils::mods::key_4) {
         ranked &= config::score_submission::key_4_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_5)) {
+    if (mods & utils::mods::key_5) {
         ranked &= config::score_submission::key_5_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_6)) {
+    if (mods & utils::mods::key_6) {
         ranked &= config::score_submission::key_6_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_7)) {
+    if (mods & utils::mods::key_7) {
         ranked &= config::score_submission::key_7_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_8)) {
+    if (mods & utils::mods::key_8) {
         ranked &= config::score_submission::key_8_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_9)) {
+    if (mods & utils::mods::key_9) {
         ranked &= config::score_submission::key_9_ranked;
     }
 
-    if (mods & static_cast<int32_t>(utils::mods::key_coop)) {
+    if (mods & utils::mods::key_coop) {
         ranked &= config::score_submission::key_coop_ranked;
     }
 
@@ -1033,59 +1033,59 @@ std::tuple<bool, std::string> shiro::scores::helper::is_flagged(const shiro::sco
     if (config::score_submission::restrict_impossible_mods) {
         int32_t mods = score.mods;
 
-        if (mods & static_cast<int32_t>(utils::mods::easy) && mods & static_cast<int32_t>(utils::mods::hard_rock)) {
+        if ((mods & utils::mods::easy) && (mods & utils::mods::hard_rock)) {
             return { true, "Impossible mod combination (EZ + HR)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::no_fail) && mods & static_cast<int32_t>(utils::mods::sudden_death)) {
+        if ((mods & utils::mods::no_fail) && (mods & utils::mods::sudden_death)) {
             return { true, "Impossible mod combination (NF + SD)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::no_fail) && mods & static_cast<int32_t>(utils::mods::perfect)) {
+        if ((mods & utils::mods::no_fail) && (mods & utils::mods::perfect)) {
             return { true, "Impossible mod combination (NF + PF)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::half_time) && mods & static_cast<int32_t>(utils::mods::double_time)) {
+        if ((mods & utils::mods::half_time) && (mods & utils::mods::double_time)) {
             return { true, "Impossible mod combination (HT + DT)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::sudden_death) && mods & static_cast<int32_t>(utils::mods::relax)) {
+        if ((mods & utils::mods::sudden_death) && (mods & utils::mods::relax)) {
             return { true, "Impossible mod combination (SD + RX)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::sudden_death) && mods & static_cast<int32_t>(utils::mods::auto_pilot)) {
+        if ((mods & utils::mods::sudden_death) && (mods & utils::mods::auto_pilot)) {
             return { true, "Impossible mod combination (SD + AP)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::sudden_death) && mods & static_cast<int32_t>(utils::mods::auto_play)) {
+        if ((mods & utils::mods::sudden_death) && (mods & utils::mods::auto_play)) {
             return { true, "Impossible mod combination (SD + AUTO)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::relax) && mods & static_cast<int32_t>(utils::mods::no_fail)) {
+        if ((mods & utils::mods::relax) && (mods & utils::mods::no_fail)) {
             return { true, "Impossible mod combination (RX + NF)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::relax) && mods & static_cast<int32_t>(utils::mods::auto_pilot)) {
+        if ((mods & utils::mods::relax) && (mods & utils::mods::auto_pilot)) {
             return { true, "Impossible mod combination (RX + AP)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::relax) && mods & static_cast<int32_t>(utils::mods::auto_play)) {
+        if ((mods & utils::mods::relax) && (mods & utils::mods::auto_play)) {
             return { true, "Impossible mod combination (RX + AUTO)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::auto_pilot) && mods & static_cast<int32_t>(utils::mods::no_fail)) {
+        if ((mods & utils::mods::auto_pilot) && (mods & utils::mods::no_fail)) {
             return { true, "Impossible mod combination (AP + NF)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::auto_pilot) && mods & static_cast<int32_t>(utils::mods::spun_out)) {
+        if ((mods & utils::mods::auto_pilot) && (mods & utils::mods::spun_out)) {
             return { true, "Impossible mod combination (AP + SO)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::auto_pilot) && mods & static_cast<int32_t>(utils::mods::auto_play)) {
+        if ((mods & utils::mods::auto_pilot) && (mods & utils::mods::auto_play)) {
             return { true, "Impossible mod combination (AP + AUTO)" };
         }
 
-        if (mods & static_cast<int32_t>(utils::mods::spun_out) && mods & static_cast<int32_t>(utils::mods::auto_play)) {
+        if ((mods & utils::mods::spun_out) && (mods & utils::mods::auto_play)) {
             return { true, "Impossible mod combination (SO + AUTO)" };
         }
     }
@@ -1212,58 +1212,49 @@ std::string shiro::scores::helper::build_mods_list(int32_t mods)
 {
     std::string modString = "+";
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::no_fail)) {
+    if (mods & shiro::utils::mods::no_fail) {
         modString += "NF";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::easy)) {
+    if (mods & shiro::utils::mods::easy) {
         modString += "EZ";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::half_time)) {
+    if (mods & shiro::utils::mods::half_time) {
         modString += "HT";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::hidden)) {
+    if (mods & shiro::utils::mods::hidden) {
         modString += "HD";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::hard_rock)) {
+    if (mods & shiro::utils::mods::hard_rock) {
         modString += "HR";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::double_time)) {
-        modString += "DT";
+    if (mods & shiro::utils::mods::double_time) {
+        modString += (mods & shiro::utils::mods::nightcore) ? "NC" : "DT";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::nightcore)) {
-        modString += "NC";
-    }
-
-    if (mods & static_cast<int32_t>(shiro::utils::mods::flashlight)) {
+    if (mods & shiro::utils::mods::flashlight) {
         modString += "FL";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::sudden_death)) {
-        modString += "SD";
+    if (mods & shiro::utils::mods::sudden_death) {
+        modString += (mods & shiro::utils::mods::perfect) ? "PF" : "SD";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::perfect)) {
-        modString += "PF";
-    }
-
-    if (mods & static_cast<int32_t>(shiro::utils::mods::relax)) {
+    if (mods & shiro::utils::mods::relax) {
         modString += "RX";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::auto_pilot)) {
+    if (mods & shiro::utils::mods::auto_pilot) {
         modString += "AT";
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::spun_out)) {
+    if (mods & shiro::utils::mods::spun_out) {
         modString += "SO";
     }
-
 
     if (modString == "+") {
         modString = "No Mod";

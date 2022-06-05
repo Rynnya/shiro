@@ -69,21 +69,21 @@ float shiro::pp::ctb::ctb_calculator::calculate() {
         pp *= 1 + 0.025 * (8.0 - this->ar);
     }
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::hidden)) {
+    if (this->mods & shiro::utils::mods::hidden) {
         pp *= 1.05 + 0.075 * (10 - std::min(10.0, this->ar));
     }
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::flashlight)) {
+    if (this->mods & shiro::utils::mods::flashlight) {
         pp *= 1.35 * length_bonus;
     }
 
     pp *= std::pow(this->accuracy, 5.5);
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::no_fail)) {
+    if (this->mods & shiro::utils::mods::no_fail) {
         pp *= 0.9;
     }
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::spun_out)) {
+    if (this->mods & shiro::utils::mods::spun_out) {
         pp *= 0.95;
     }
 
@@ -91,11 +91,11 @@ float shiro::pp::ctb::ctb_calculator::calculate() {
 }
 
 float shiro::pp::ctb::ctb_calculator::adjust_difficulty(float raw_value, float scale) {
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::easy)) {
+    if (this->mods & shiro::utils::mods::easy) {
         raw_value = std::max(0.0f, raw_value / 2);
     }
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::hard_rock)) {
+    if (this->mods & shiro::utils::mods::hard_rock) {
         raw_value = std::min(10.0f, raw_value * scale);
     }
 
@@ -115,11 +115,11 @@ void shiro::pp::ctb::ctb_calculator::calculate_stars() {
         }
     }
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::double_time)) {
+    if (this->mods & shiro::utils::mods::double_time) {
         this->time_rate += 0.5;
     }
 
-    if (this->mods & static_cast<uint32_t>(shiro::utils::mods::half_time)) {
+    if (this->mods & shiro::utils::mods::half_time) {
         this->time_rate -= 0.25;
     }
 

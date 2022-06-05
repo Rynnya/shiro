@@ -53,7 +53,7 @@ void shiro::scores::table_display::set_scoreboard_position(int32_t position) {
     this->scoreboard_position = position;
 }
 
-std::string shiro::scores::table_display::build_present() {
+std::string shiro::scores::table_display::build_present(const std::string& achievements) {
     std::time_t time = this->beatmap.last_update;
     struct std::tm *tm = std::gmtime(&time);
 
@@ -61,7 +61,7 @@ std::string shiro::scores::table_display::build_present() {
     push("beatmapSetId", this->beatmap.beatmapset_id);
     push("beatmapPlaycount", this->beatmap.play_count);
     push("beatmapPasscount", this->beatmap.pass_count);
-    push("approvedDate", std::put_time(tm, "%F %X"));
+    push<true>("approvedDate", std::put_time(tm, "%F %X"));
 
     push("chartId", "beatmap");
     push("chartUrl", this->beatmap.get_url());
@@ -95,13 +95,13 @@ std::string shiro::scores::table_display::build_present() {
     push("accuracyAfter", this->user->stats.accuracy);
     push("ppBefore", this->old_pp);
     push("ppAfter", this->user->stats.pp);
-    push("achievements-new", "");
+    push("achievements-new", achievements);
     push<true>("onlineScoreId", this->score.id);
 
     return this->output.str();
 }
 
-std::string shiro::scores::table_display::build_legacy() {
+std::string shiro::scores::table_display::build_legacy(const std::string& achievements) {
     std::time_t time = this->beatmap.last_update;
     struct std::tm *tm = std::gmtime(&time);
 
@@ -137,12 +137,12 @@ std::string shiro::scores::table_display::build_legacy() {
     push("toNextRank", to_next_rank);
     push("toNextRankUser", user_above);
     push("achievements", "");
-    push("achievements-new", "");
+    push("achievements-new", achievements);
     push<true>("onlineScoreId", this->score.id);
 
     return this->output.str();
 }
 
-std::string shiro::scores::table_display::build() {
-    return this->legacy ? build_legacy() : build_present();
+std::string shiro::scores::table_display::build(const std::string& achievements) {
+    return this->legacy ? build_legacy(achievements) : build_present(achievements);
 }

@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,9 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "request_status_update_handler.hh"
+#ifndef SHIRO_ACHIEVEMENT_FULL_COMBO_HH
+#define SHIRO_ACHIEVEMENT_FULL_COMBO_HH
 
-void shiro::handler::request_status_update::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    user->update(user->stats.current_mods & utils::mods::relax);
-    user->refresh_stats();
+#include "../../achievement.hh"
+
+namespace shiro::achievements {
+
+    class full_combo : public shiro::achievements::achievement {
+    public:
+        void verify(
+            std::vector<std::pair<size_t, std::string>>& output,
+            const std::shared_ptr<shiro::users::user>& user,
+            const shiro::beatmaps::beatmap& beatmap,
+            const shiro::scores::score& score
+        ) override;
+
+    private:
+        float get_difficulty(const shiro::beatmaps::beatmap& beatmap);
+    };
 }
+
+#endif

@@ -93,11 +93,11 @@ std::optional<int32_t> shiro::utils::time::parse_time_string(const std::string &
 }
 
 int32_t shiro::utils::time::adjusted_seconds(int32_t mods, int32_t time) {
-    if (mods & static_cast<int32_t>(shiro::utils::mods::double_time)) {
+    if (mods & shiro::utils::mods::double_time) {
         return time / 1.5;
     }
 
-    if (mods & static_cast<int32_t>(shiro::utils::mods::half_time)) {
+    if (mods & shiro::utils::mods::half_time) {
         return time / 0.75;
     }
 

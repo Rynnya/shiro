@@ -44,17 +44,12 @@ CREATE TABLE `2fa_totp` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
--- TODO: Implement achievements
 DROP TABLE IF EXISTS `achievements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `achievements` (
-  `id` int(11) NOT NULL,
-  `name` mediumtext NOT NULL,
-  `description` mediumtext NOT NULL,
-  `icon` mediumtext NOT NULL,
-  `version` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  `user_id` int(11) NOT NULL,
+  `achievement_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

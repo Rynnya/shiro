@@ -77,7 +77,9 @@ namespace naga::declarations {
 namespace naga::internals {
 
     bool can_log(log_level level) {
-        return (naga::configuration.logging_level & static_cast<uint8_t>(level)) || (naga::configuration.logging_level & static_cast<uint8_t>(log_level::all));
+        return 
+            (naga::configuration.logging_level & static_cast<uint8_t>(level)) ||
+            (naga::configuration.logging_level & static_cast<uint8_t>(log_level::all));
     }
 
     std::string format(const fmt::text_style& style, const char* type, const log_message& message) {
@@ -240,7 +242,7 @@ void naga::detail::write(const fmt::text_style& style, const char* type, const n
 
 void naga::detail::output_to_file(const naga::log_message& message) {
     if (naga::declarations::log_file_) {
-        fmt::print(naga::declarations::log_file_, naga::internals::format(naga::detail::info_color, "FILE_ONLY", message));
+        fmt::print(naga::declarations::log_file_, naga::internals::format(fmt::text_style {}, "FILE_ONLY", message));
         declarations::required_flush_ = true;
     }
 }

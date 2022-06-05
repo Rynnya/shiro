@@ -110,7 +110,7 @@ void shiro::routes::web::get_scores::handle(const crow::request &request, crow::
             }
 
             if (utils::strings::evaluate(mods, mods_list)) {
-                is_relax = (mods_list & static_cast<uint32_t>(utils::mods::relax));
+                is_relax = (mods_list & utils::mods::relax);
                 score_list = scores::helper::fetch_mod_scores(md5sum, mods_list, is_relax);
                 break;
             }

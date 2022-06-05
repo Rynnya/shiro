@@ -1,6 +1,6 @@
 /*
  * shiro - High performance, high quality osu!Bancho C++ re-implementation
- * Copyright (C) 2018-2020 Marc3842h, czapek
+ * Copyright (C) 2021-2022 Rynnya
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,9 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "request_status_update_handler.hh"
+#ifndef SHIRO_ACHIEVEMENTS_TABLE_HH
+#define SHIRO_ACHIEVEMENTS_TABLE_HH
 
-void shiro::handler::request_status_update::handle(shiro::io::osu_packet &in, shiro::io::osu_writer &out, std::shared_ptr<shiro::users::user> user) {
-    user->update(user->stats.current_mods & utils::mods::relax);
-    user->refresh_stats();
+#include <sqlpp11/char_sequence.h>
+#include <sqlpp11/column_types.h>
+#include <sqlpp11/mysql/connection.h>
+#include <sqlpp11/table.h>
+
+#include "common_tables.hh"
+
+namespace shiro::tables {
+
+    struct achievements_objects {
+        object_struct(user_id, sqlpp::integer);
+        object_struct(achievement_id, sqlpp::integer);
+    };
+
+    database_table(achievements,
+        achievements_objects::user_id,
+        achievements_objects::achievement_id
+    );
+
+    constexpr achievements achievements_table {};
 }
+
+#endif  // SHIRO_CHANNEL_TABLE_HH

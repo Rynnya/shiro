@@ -1,0 +1,130 @@
+500 combo std - 0
+1000 combo std - 1
+1500 combo std - 2
+2000 combo std - 3
+500 combo taiko - 4
+1000 combo taiko - 5
+1500 combo taiko - 6
+2000 combo taiko - 7
+500 combo ctb - 8
+1000 combo ctb - 9
+1500 combo ctb - 10
+2000 combo ctb - 11
+500 combo mania - 12
+1000 combo mania - 13
+1500 combo mania - 14
+2000 combo mania - 15
+
+5000 playcount std - 16
+15000 playcount std - 17
+25000 playcount std - 18
+50000 playcount std - 19
+5000 playcount taiko - 20
+15000 playcount taiko - 21
+25000 playcount taiko - 22
+50000 playcount taiko - 23
+5000 playcount ctb - 24
+15000 playcount ctb - 25
+25000 playcount ctb - 26
+50000 playcount ctb - 27
+5000 playcount mania - 28
+15000 playcount mania - 29
+25000 playcount mania - 30
+50000 playcount mania - 31
+
+1* std pass - 32
+2* std pass - 33
+3* std pass - 34
+4* std pass - 35
+5* std pass - 36
+6* std pass - 37
+7* std pass - 38
+8* std pass - 39
+9* std pass - 40
+10* std pass - 41
+1* taiko pass - 42
+2* taiko pass - 43
+3* taiko pass - 44
+4* taiko pass - 45
+5* taiko pass - 46
+6* taiko pass - 47
+7* taiko pass - 48
+8* taiko pass - 49
+9* taiko pass - 50
+10* taiko pass - 51
+1* ctb pass - 52
+2* ctb pass - 53
+3* ctb pass - 54
+4* ctb pass - 55
+5* ctb pass - 56
+6* ctb pass - 57
+7* ctb pass - 58
+8* ctb pass - 59
+9* ctb pass - 60
+10* ctb pass - 61
+1* mania pass - 62
+2* mania pass - 63
+3* mania pass - 64
+4* mania pass - 65
+5* mania pass - 66
+6* mania pass - 67
+7* mania pass - 68
+8* mania pass - 69
+9* mania pass - 70
+10* mania pass - 71
+
+1* std fc - 72
+2* std fc - 73
+3* std fc - 74
+4* std fc - 75
+5* std fc - 76
+6* std fc - 77
+7* std fc - 78
+8* std fc - 79
+9* std fc - 80
+10* std fc - 81
+1* taiko fc - 82
+2* taiko fc - 83
+3* taiko fc - 84
+8* taiko fc - 85
+5* taiko fc - 86
+6* taiko fc - 87
+7* taiko fc - 88
+8* taiko fc - 89
+9* taiko fc - 90
+10* taiko fc - 91
+1* ctb fc - 92
+2* ctb fc - 93
+3* ctb fc - 94
+8* ctb fc - 95
+5* ctb fc - 96
+6* ctb fc - 97
+7* ctb fc - 98
+8* ctb fc - 99
+9* ctb fc - 100
+10* ctb fc - 101
+1* mania fc - 102
+2* mania fc - 103
+3* mania fc - 104
+8* mania fc - 105
+5* mania fc - 106
+6* mania fc - 107
+7* mania fc - 108
+8* mania fc - 109
+9* mania fc - 110
+10* mania fc - 111
+
+Sudden Death - 112
+Perfect - 113
+Hardrock - 114
+Doubletime - 115
+Nightcore - 116
+Hidden - 117
+Flashlight - 118
+Easy - 119
+NoFail - 120
+Halftime - 121
+Spunout - 122
+
+Bunny - 123
+Maria - 124

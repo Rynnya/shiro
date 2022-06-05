@@ -21,6 +21,7 @@
 #include <functional>
 #include <memory>
 
+#include "../../../achievements/achievement.hh"
 #include "../../../beatmaps/beatmap.hh"
 #include "../../../beatmaps/beatmap_helper.hh"
 #include "../../../channels/discord_webhook.hh"
@@ -220,7 +221,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     score.rank = score_metadata.at(12);
     score.fc = utils::strings::evaluate<bool>(score_metadata.at(11));
     score.passed = utils::strings::evaluate<bool>(score_metadata.at(14));
-    score.is_relax = score.mods & static_cast<uint32_t>(utils::mods::relax);
+    score.is_relax = score.mods & utils::mods::relax;
     score.time = seconds.count();
 
     score.accuracy = scores::helper::calculate_accuracy(
@@ -388,7 +389,8 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         // We need save stats to keep play_time, counts and total_hits, also fixes 'sending statistics...' bug
         user->save_stats(score.is_relax);
         display->set_scoreboard_position(0);
-        response.end(display->build());
+        // Achievements cannot be gathered when score not passed or beatmap isn't ranked
+        response.end(display->build(""));
         return;
     }
 
@@ -404,34 +406,25 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
                 user->get_url(), user->presence.username,
                 beatmap.get_url(), beatmap.song_name,
                 utils::play_mode_to_string(static_cast<utils::play_mode>(score.play_mode))
-            ), user, "#announce", false);
+            ), user, "#announce");
 
             shiro::thread::event_loop.push_and_forgot(shiro::channels::discord_webhook::send_top1_message, user, beatmap, score);
-            
-            auto exist = db(sqlpp::select(tables::scores_first_table.beatmap_md5)
-                .from(tables::scores_first_table)
-                .where(tables::scores_first_table.beatmap_md5 == beatmap.beatmap_md5)
-                .limit(1u));
 
-            if (exist.empty()) {
-                db(sqlpp::insert_into(tables::scores_first_table).set(
-                    tables::scores_first_table.score_id = score.id,
-                    tables::scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
-                    tables::scores_first_table.user_id = score.user_id,
-                    tables::scores_first_table.play_mode = score.play_mode,
-                    tables::scores_first_table.is_relax = score.is_relax
-                ));
-            }
-            else {
-                exist.pop_front();
-                db(sqlpp::update(tables::scores_first_table).set(
-                    tables::scores_first_table.score_id = score.id,
-                    tables::scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
-                    tables::scores_first_table.user_id = score.user_id,
-                    tables::scores_first_table.play_mode = score.play_mode,
-                    tables::scores_first_table.is_relax = score.is_relax
-                ).where(tables::scores_first_table.beatmap_md5 == beatmap.beatmap_md5));
-            }
+            // https://github.com/rbock/sqlpp11/issues/183#issuecomment-449065467
+            static auto comma = sqlpp::verbatim(",");
+            db(sqlpp::custom_query(sqlpp::insert_into(tables::scores_first_table).set(
+                tables::scores_first_table.score_id = score.id,
+                tables::scores_first_table.beatmap_md5 = beatmap.beatmap_md5,
+                tables::scores_first_table.user_id = score.user_id,
+                tables::scores_first_table.play_mode = score.play_mode,
+                tables::scores_first_table.is_relax = score.is_relax
+            ), sqlpp::verbatim(" ON DUPLICATE KEY UPDATE "),
+                tables::scores_first_table.score_id = score.id, comma,
+                tables::scores_first_table.beatmap_md5 = beatmap.beatmap_md5, comma,
+                tables::scores_first_table.user_id = score.user_id, comma,
+                tables::scores_first_table.play_mode = score.play_mode, comma,
+                tables::scores_first_table.is_relax = score.is_relax
+            ));
         }
     }
 
@@ -450,5 +443,5 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         ranking::helper::recalculate_ranks(static_cast<utils::play_mode>(score.play_mode), score.is_relax);
     }
 
-    response.end(display->build());
+    response.end(display->build(achievements::build(user, beatmap, score)));
 }

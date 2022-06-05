@@ -60,7 +60,16 @@ namespace shiro::utils {
 
     };
 
-    constexpr uint32_t key_mods = static_cast<uint32_t>(mods::key_1) |
+    constexpr uint32_t operator&(mods this_, mods other_) {
+        return static_cast<uint32_t>(this_) & static_cast<uint32_t>(other_);
+    }
+
+    constexpr uint32_t operator&(uint32_t this_, mods other_) {
+        return this_ & static_cast<uint32_t>(other_);
+    }
+
+    constexpr uint32_t key_mods =
+            static_cast<uint32_t>(mods::key_1) |
             static_cast<uint32_t>(mods::key_2) |
             static_cast<uint32_t>(mods::key_3) |
             static_cast<uint32_t>(mods::key_4) |
@@ -71,13 +80,15 @@ namespace shiro::utils {
             static_cast<uint32_t>(mods::key_9) |
             static_cast<uint32_t>(mods::key_coop);
 
-    constexpr uint32_t unranked_key_mods = static_cast<uint32_t>(mods::key_1) |
+    constexpr uint32_t unranked_key_mods =
+            static_cast<uint32_t>(mods::key_1) |
             static_cast<uint32_t>(mods::key_2) |
             static_cast<uint32_t>(mods::key_3) |
             static_cast<uint32_t>(mods::key_9) |
             static_cast<uint32_t>(mods::key_coop);
 
-    constexpr uint32_t free_mods = static_cast<uint32_t>(mods::no_fail) |
+    constexpr uint32_t free_mods =
+            static_cast<uint32_t>(mods::no_fail) |
             static_cast<uint32_t>(mods::easy) |
             static_cast<uint32_t>(mods::hidden) |
             static_cast<uint32_t>(mods::hard_rock) |
@@ -89,7 +100,8 @@ namespace shiro::utils {
             static_cast<uint32_t>(mods::spun_out) |
             key_mods;
 
-    constexpr uint32_t score_increase_mods = static_cast<uint32_t>(mods::hidden) |
+    constexpr uint32_t score_increase_mods =
+            static_cast<uint32_t>(mods::hidden) |
             static_cast<uint32_t>(mods::hard_rock) |
             static_cast<uint32_t>(mods::double_time) |
             static_cast<uint32_t>(mods::flashlight) |

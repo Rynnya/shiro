@@ -24,8 +24,8 @@ void shiro::handler::user_status::handle(shiro::io::osu_packet &in, shiro::io::o
     io::layouts::user_status status = in.unmarshal<io::layouts::user_status>();
     bool changed_mode = user->stats.play_mode != status.play_mode;
 
-    bool current_relax = user->stats.current_mods & static_cast<int32_t>(utils::mods::relax);
-    bool status_relax = status.current_mods & static_cast<int32_t>(utils::mods::relax);
+    bool current_relax = user->stats.current_mods & utils::mods::relax;
+    bool status_relax = status.current_mods & utils::mods::relax;
     bool changed_relax = current_relax != status_relax;
 
     user->status = status;
