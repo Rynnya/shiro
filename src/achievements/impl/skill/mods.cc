@@ -91,14 +91,16 @@ void shiro::achievements::mods::verify(
     const shiro::scores::score& score
 ) {
     const uint32_t mods = score.mods;
-
     if (mods == 0) {
         return;
     }
 
-    for (size_t i = 0; i < keys::available_mods.size(); i++) {
-        if (mods & keys::available_mods[i]) {
-            output.emplace_back(achievement_offset + i, fmt::format("all-intro-{}+{}+{}", keys::mod_name[i], keys::names[i], keys::descriptions[i]));
+    for (size_t current = 0; current < keys::available_mods.size(); current++) {
+        if (mods & keys::available_mods[current]) {
+            output.emplace_back(
+                achievement_offset + current, 
+                fmt::format("all-intro-{}+{}+{}", keys::mod_name[current], keys::names[current], keys::descriptions[current])
+            );
         }
     }
 }

@@ -64,9 +64,10 @@ server {
     ssl_certificate /home/certs/cert.pem;
     ssl_certificate_key /home/certs/key.pem;
 
+    root /home/ancowi/shiro/assets; # Change this to your Shiro folder
+
     location / {
         default_type image/png;
-
-        root /home/ancowi/shiro/assets/; # Change this to your Shiro folder
+        try_files $uri 404;
     }
 }

@@ -443,5 +443,11 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
         ranking::helper::recalculate_ranks(static_cast<utils::play_mode>(score.play_mode), score.is_relax);
     }
 
+    if (score.mods & utils::mods::relax) {
+        // Achievements cannot be gathered when playing relax
+        response.end(display->build(""));
+        return;
+    }
+
     response.end(display->build(achievements::build(user, beatmap, score)));
 }

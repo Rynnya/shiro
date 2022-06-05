@@ -27,7 +27,13 @@ constexpr size_t achievement_offset = 16;
 namespace keys {
 
     const std::array<int32_t, 4> threshold = { 5000, 15000, 25000, 50000 };
-    const std::array<std::string, 4> mode = { "std", "taiko", "ctb", "mania" };
+
+    const std::array<std::string, 4> names = {
+        "5,000 Plays",
+        "15,000 Plays",
+        "25,000 Plays",
+        "50,000 Plays"
+    };
 
     const std::array<std::string, 4> descriptions = {
         "There's a lot more where that came from.",
@@ -44,20 +50,17 @@ void shiro::achievements::playcount::verify(
     const shiro::beatmaps::beatmap& beatmap, 
     const shiro::scores::score& score
 ) {
-    const uint8_t play_mode = beatmap.play_mode;
-    if (play_mode > 3 || user->stats.play_mode != play_mode) {
+    const uint8_t play_mode = score.play_mode;
+    if (play_mode != 0) {
         return;
     }
 
-    for (size_t i = 0; i < keys::threshold.size(); i++) {
-        const int32_t& required = keys::threshold[i];
-        if (user->stats.play_count > required) {
+    for (size_t current = 0; current < keys::threshold.size(); current++) {
+        const int32_t& required = keys::threshold[current];
+        if (user->stats.play_count >= required) {
             output.emplace_back(
-                achievement_offset + (play_mode * 4 + i),
-                fmt::format(std::locale("en_US.UTF-8"),
-                    "osu-plays-{}+{:L} Plays (osu!{})+{}",
-                    required, required, keys::mode[play_mode], keys::descriptions[i]
-                )
+                achievement_offset + current,
+                fmt::format("osu-plays-{}+{}+{}", required, keys::names[current], keys::descriptions[current])
             );
         }
     }

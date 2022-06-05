@@ -135,26 +135,22 @@ void shiro::achievements::full_combo::verify(
     const uint8_t play_mode = beatmap.play_mode;
     if (
         !score.fc ||
-        shiro::beatmaps::helper::has_leaderboard(beatmap.ranked_status) ||
-        play_mode > 3 ||
-        score.play_mode != beatmap.play_mode ||
-        user->stats.play_mode != play_mode
+        !shiro::beatmaps::helper::has_leaderboard(beatmap.ranked_status)
     ) {
         return;
     }
 
-    const float difficulty = get_difficulty(beatmap);
+    const size_t difficulty = std::floor(std::clamp(get_difficulty(beatmap), 0.0f, 10.0f));
+    const size_t offset = 10 * play_mode;
 
-    for (size_t required = 0; required < 11; required++) {
-        if (difficulty > required) {
-            output.emplace_back(
-                achievement_offset + (play_mode * 4 + required),
-                fmt::format(
-                    "{}-skill-fc-{}+{}+{}",
-                    keys::mode[play_mode], required, keys::names[required * play_mode], keys::descriptions[required * play_mode]
-                )
-            );
-        }
+    for (size_t current = 0; current <= difficulty; current++) {
+        output.emplace_back(
+            achievement_offset + (4 * play_mode + current),
+            fmt::format(
+                "{}-skill-fc-{}+{}+{}",
+                keys::mode[play_mode], current, keys::names[offset + current], keys::descriptions[offset + current]
+            )
+        );
     }
 }
 

@@ -20,6 +20,7 @@
 
 #include "impl/skill/combo.hh"
 #include "impl/skill/full_combo.hh"
+#include "impl/skill/hits.hh"
 #include "impl/skill/mods.hh"
 #include "impl/skill/pass.hh"
 #include "impl/skill/playcount.hh"
@@ -29,9 +30,10 @@
 
 namespace storage {
 
-    const std::array<std::unique_ptr<shiro::achievements::achievement>, 7> achievements = {
+    const std::array<std::unique_ptr<shiro::achievements::achievement>, 8> achievements = {
         std::make_unique<shiro::achievements::combo>(),
         std::make_unique<shiro::achievements::full_combo>(),
+        std::make_unique<shiro::achievements::hits>(),
         std::make_unique<shiro::achievements::mods>(),
         std::make_unique<shiro::achievements::pass>(),
         std::make_unique<shiro::achievements::playcount>(),
@@ -47,6 +49,13 @@ std::string shiro::achievements::build(
     const shiro::beatmaps::beatmap& beatmap,
     const shiro::scores::score& score
 ) {
+    if (
+        user->stats.play_mode != score.play_mode ||
+        score.play_mode > 3
+    ) {
+        return "";
+    }
+
     std::vector<std::pair<int64_t, std::string>> achievements {};
 
     for (const auto& ach : storage::achievements) {

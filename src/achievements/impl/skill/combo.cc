@@ -37,16 +37,13 @@ void shiro::achievements::combo::verify(
     const shiro::beatmaps::beatmap& beatmap, 
     const shiro::scores::score& score
 ) {
-    const uint8_t play_mode = beatmap.play_mode;
-    if (play_mode > 3) {
-        return;
-    }
+    const uint8_t play_mode = score.play_mode;
 
-    for (size_t i = 0; i < keys::threshold.size(); i++) {
-        const int32_t& required = keys::threshold[i];
-        if (score.max_combo > required) {
+    for (size_t current = 0; current < keys::threshold.size(); current++) {
+        const int32_t& required = keys::threshold[current];
+        if (score.max_combo >= required) {
             output.emplace_back(
-                achievement_offset + (play_mode * 4 + i),
+                achievement_offset + (4 * play_mode + current),
                 fmt::format(
                     "osu-combo-{}+{} Combo (osu!{})+{} big ones! You're moving up in the world!", 
                     required, required, keys::mode[play_mode], required

@@ -32,6 +32,22 @@ namespace shiro::utils {
 
     };
 
+    constexpr bool operator==(play_mode this_, uint8_t other_) {
+        return static_cast<uint8_t>(this_) == other_;
+    }
+
+    constexpr bool operator==(uint8_t this_, play_mode other_) {
+        return this_ == static_cast<uint8_t>(other_);
+    }
+
+    constexpr bool operator!=(play_mode this_, uint8_t other_) {
+        return static_cast<uint8_t>(this_) != other_;
+    }
+
+    constexpr bool operator!=(uint8_t this_, play_mode other_) {
+        return this_ != static_cast<uint8_t>(other_);
+    }
+
     std::string play_mode_to_string(play_mode mode, bool long_name = true);
 
 }
