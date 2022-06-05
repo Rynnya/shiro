@@ -78,6 +78,10 @@ namespace sqlpp {
             return *this;
         }
 
+        size_t size() const noexcept {
+            return values_.size();
+        }
+
         template <typename Context>
         void serialize_columns(Context& context) const {
             context << '(';

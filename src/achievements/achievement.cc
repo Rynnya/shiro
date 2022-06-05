@@ -47,7 +47,7 @@ std::string shiro::achievements::build(
     const shiro::beatmaps::beatmap& beatmap,
     const shiro::scores::score& score
 ) {
-    std::vector<std::pair<size_t, std::string>> achievements {};
+    std::vector<std::pair<int64_t, std::string>> achievements {};
 
     for (const auto& ach : storage::achievements) {
         ach->verify(achievements, user, beatmap, score);

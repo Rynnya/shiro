@@ -322,7 +322,9 @@ void shiro::users::user::save_stats(bool to_relax) {
         this->stats.acquired_achievements[i].second = true;
     }
 
-    db(sqlpp::custom_query(sqlpp::insert_into(tables::achievements_table), insert_statement));
+    if (insert_statement.size() > 0) {
+        db(sqlpp::custom_query(sqlpp::insert_into(tables::achievements_table), insert_statement));
+    }
     
     if (to_relax) {
         switch (static_cast<utils::play_mode>(this->stats.play_mode)) {

@@ -26,7 +26,7 @@ namespace shiro::achievements {
     class pass : public shiro::achievements::achievement {
     public:
         void verify(
-            std::vector<std::pair<size_t, std::string>>& output, 
+            std::vector<std::pair<int64_t, std::string>>& output,
             const std::shared_ptr<shiro::users::user>& user, 
             const shiro::beatmaps::beatmap& beatmap, 
             const shiro::scores::score& score
