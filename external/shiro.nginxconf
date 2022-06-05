@@ -5,12 +5,12 @@ server {
     listen 80;
     listen 443 ssl;
 
-    server_name c.ppy.sh ce.ppy.sh c1.ppy.sh c3.ppy.sh c4.ppy.sh c5.ppy.sh c6.ppy.sh c7.ppy.sh c.shiro.host;
+    server_name c.ppy.sh ce.ppy.sh c1.ppy.sh c3.ppy.sh c4.ppy.sh c5.ppy.sh c6.ppy.sh c7.ppy.sh c.yukime.ml;
     client_max_body_size 10m;
 
     add_header Strict-Transport-Security "max-age=31536000" always;
 
-    # This needs to be a self signed certificate matching the host names above (*.ppy.sh recommended)
+    # This needs to be a self signed certificate matching the host names above
     ssl_certificate /home/certs/cert.pem;
     ssl_certificate_key /home/certs/key.pem;
 
@@ -30,12 +30,12 @@ server {
     listen 80;
     listen 443 ssl;
 
-    server_name osu.ppy.sh shiro.host;
+    server_name osu.ppy.sh osu.yukime.ml;
     client_max_body_size 10m;
 
     add_header Strict-Transport-Security "max-age=31536000" always;
 
-    # This needs to be a self signed certificate matching the host names above (*.ppy.sh recommended)
+    # This needs to be a self signed certificate matching the host names above
     ssl_certificate /home/certs/cert.pem;
     ssl_certificate_key /home/certs/key.pem;
 
@@ -47,5 +47,26 @@ server {
 
         proxy_redirect off;
         proxy_pass http://127.0.0.1:8080; # Change the address to your Shiro instance
+    }
+}
+
+# Assets
+server {
+    listen 80;
+    listen 443 ssl;
+
+    server_name assets.ppy.sh assets.yukime.ml;
+    client_max_body_size 10m;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # This needs to be a self signed certificate matching the host names above
+    ssl_certificate /home/certs/cert.pem;
+    ssl_certificate_key /home/certs/key.pem;
+
+    location / {
+        default_type image/png;
+
+        root /home/ancowi/shiro/assets/; # Change this to your Shiro folder
     }
 }

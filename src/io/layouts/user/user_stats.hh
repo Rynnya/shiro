@@ -56,6 +56,8 @@ namespace shiro::io::layouts {
         int32_t rank = 0;
         int16_t pp = 0;
 
+        std::vector<std::pair<int64_t, bool>> acquired_achievements {};
+
         void recalculate_accuracy(bool is_relax);
         void recalculate_pp(bool is_relax);
 

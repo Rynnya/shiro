@@ -19,6 +19,8 @@
 #include <cstring>
 
 #include "../config/ipc_file.hh"
+#include "../database/extensions/multirow_insert.hh"
+#include "../database/tables/achievements_table.hh"
 #include "../database/tables/relationship_table.hh"
 #include "../database/tables/user_table.hh"
 #include "../permissions/permissions.hh"
@@ -70,8 +72,16 @@ bool shiro::users::user::init() {
         this->friends.emplace_back(row.target);
     }
 
+    auto achievements_result = db(select(tables::achievements_table.achievement_id)
+        .from(tables::achievements_table)
+        .where(tables::achievements_table.user_id == this->user_id));
+
+    for (const auto& row : achievements_result) {
+        this->stats.acquired_achievements.emplace_back(row.achievement_id, true);
+    }
+
     this->hidden = users::punishments::is_restricted(this->user_id);
-    this->preferences = std::move(user_preferences(this->user_id));
+    this->preferences = user_preferences { this->user_id };
 
     if (is_relax) {
         auto stats_result = db(sqlpp::select(
@@ -298,6 +308,23 @@ void shiro::users::user::update(bool is_relax) {
 
 void shiro::users::user::save_stats(bool to_relax) {
     auto db = shiro::database::instance->pop();
+    auto insert_statement = sqlpp::multirow_insert(tables::achievements_table)
+        .with_columns(tables::achievements_table.achievement_id, tables::achievements_table.user_id);
+
+    for (size_t i = 0; i < this->stats.acquired_achievements.size(); i++) {
+        const auto [id, already_in_db] = this->stats.acquired_achievements[i];
+
+        if (already_in_db) {
+            continue;
+        }
+
+        insert_statement.set(id, this->user_id);
+        this->stats.acquired_achievements[i].second = true;
+    }
+
+    if (insert_statement.size() > 0) {
+        db(sqlpp::custom_query(sqlpp::insert_into(tables::achievements_table), insert_statement));
+    }
     
     if (to_relax) {
         switch (static_cast<utils::play_mode>(this->stats.play_mode)) {

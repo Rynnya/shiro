@@ -66,9 +66,9 @@ namespace shiro::scores {
             this->output << "|";
         }
 
-        std::string build_present();
-        std::string build_legacy();
-        std::string build();
+        std::string build_present(const std::string& achievements);
+        std::string build_legacy(const std::string& achievements);
+        std::string build(const std::string& achievements);
 
     };
 

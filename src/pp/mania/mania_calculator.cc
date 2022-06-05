@@ -94,7 +94,7 @@ float shiro::pp::mania::mania_calculator::calculate() {
 }
 
 constexpr void shiro::pp::mania::mania_calculator::adjust_modifier(shiro::utils::mods mod, double& modifier, double multiplier) {
-    if (this->mods & static_cast<int32_t>(mod)) {
+    if (this->mods & mod) {
         modifier *= multiplier;
     }
 }
