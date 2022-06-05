@@ -83,7 +83,7 @@ void shiro::achievements::hits::verify(
 
     const int32_t offset = 4 * (play_mode - 1);
 
-    for (size_t current = offset; current < offset + 4; current++) {
+    for (size_t current = offset; current < offset + 3; current++) {
         const int32_t& required = keys::threshold[current];
         if (user->stats.total_hits >= required) {
             output.emplace_back(
