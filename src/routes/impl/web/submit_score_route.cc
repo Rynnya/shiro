@@ -348,6 +348,12 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     std::unique_ptr<scores::table_display> display = std::make_unique<scores::table_display>(user, beatmap, score, legacy);
     display->init();
 
+    // Total score in relax almost always bad calculated
+    // This change will kill a level system in relax, but will made a fair leaderboard
+    if (score.is_relax && score.pp == 0) {
+        score.total_score = pp::calculate(beatmap, score);
+    }
+
     score.id = db(insert_into(tables::scores_table).set(
         tables::scores_table.user_id = score.user_id,
         tables::scores_table.hash = score.hash,
@@ -442,12 +448,7 @@ void shiro::routes::web::submit_score::handle(const crow::request &request, crow
     if (overwrite && !user->hidden) {
         ranking::helper::recalculate_ranks(static_cast<utils::play_mode>(score.play_mode), score.is_relax);
     }
-
-    if (score.mods & utils::mods::relax) {
-        // Achievements cannot be gathered when playing relax
-        response.end(display->build(""));
-        return;
-    }
-
-    response.end(display->build(achievements::build(user, beatmap, score)));
+    
+    // Achievements cannot be gathered when playing relax
+    response.end(display->build(score.is_relax ? "" : achievements::build(user, beatmap, score)));
 }

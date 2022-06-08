@@ -242,7 +242,7 @@ namespace naga {
     };
 
     /* 
-        Simply output formatted string into consoleand file if opened.
+        Simply output formatted string into console and file if opened.
         Example: LOG_F(INFO, "Hello {}!", "World");
     */
     #define LOG_F(TYPE, FORMAT, ...) naga::detail::printer<naga::detail::print_types:: TYPE>::call(FORMAT, __FILE__, __LINE__, ##__VA_ARGS__)
