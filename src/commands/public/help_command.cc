@@ -42,7 +42,7 @@ bool shiro::commands::help(std::deque<std::string>& args, const std::shared_ptr<
     utils::bot::respond("!relax - Switch current mode to Relax leaderboard and presence", user, channel, true);
     utils::bot::respond("!roll - Rolls a random number", user, channel, true);
 
-    for (auto [permission, response] : staff_commands) {
+    for (const auto& [permission, response] : staff_commands) {
         if (shiro::users::manager::has_permissions(user, permission)) {
             utils::bot::respond(response, user, channel, true);
         }

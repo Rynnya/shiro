@@ -136,20 +136,14 @@ namespace sqlpp {
     };
 
     template <typename Context, typename... Columns>
-    struct serializer_t<Context, multirow_insert_with_columns<Columns...>> {
+    Context& serialize(const multirow_insert_with_columns<Columns...>& t, Context& context) {
 
-        using _serialize_check = consistent_t;
-        using T = multirow_insert_with_columns<Columns...>;
+        t.serialize_columns(context);
+        context << " VALUES ";
+        t.serialize_values(context);
 
-        static Context& _(const T& t, Context& context) {
-
-            t.serialize_columns(context);
-            context << " VALUES ";
-            t.serialize_values(context);
-
-            return context;
-        }
-    };
+        return context;
+    }
 
 }
 

@@ -18,12 +18,14 @@ pushd "%~dp0"
         git clone "https://github.com/HowardHinnant/date"
         git clone "https://github.com/rbock/sqlpp11.git"
 
-        mkdir build
-        cd build
+        pushd sqlpp11
+            mkdir build
+            cd build
 
-        cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_INCLUDE_DIR=%VCPKG_ROOT%\installed\x64-windows\include\ ..
-        cmake --build . --config Release --target sqlpp-mysql
-        cmake --build . --config Debug --target sqlpp-mysql
+            cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_INCLUDE_DIR=%VCPKG_ROOT%\installed\x64-windows\include\ ..
+            cmake --build . --config Release --target sqlpp-mysql
+            cmake --build . --config Debug --target sqlpp-mysql
+        popd
     popd
 
     mkdir build
