@@ -19,6 +19,7 @@
 #ifndef SHIRO_MULTIROW_INSERT_HH
 #define SHIRO_MULTIROW_INSERT_HH
 
+#include <sqlpp11/column.h>
 #include <sqlpp11/data_types.h>
 #include <sqlpp11/mysql/connection.h>
 

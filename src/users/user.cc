@@ -312,14 +312,14 @@ void shiro::users::user::save_stats(bool to_relax) {
         .with_columns(tables::achievements_table.achievement_id, tables::achievements_table.user_id);
 
     for (size_t i = 0; i < this->stats.acquired_achievements.size(); i++) {
-        const auto [id, already_in_db] = this->stats.acquired_achievements[i];
+        auto& [id, already_in_db] = this->stats.acquired_achievements[i];
 
         if (already_in_db) {
             continue;
         }
 
         insert_statement.set(id, this->user_id);
-        this->stats.acquired_achievements[i].second = true;
+        already_in_db = true;
     }
 
     if (insert_statement.size() > 0) {
