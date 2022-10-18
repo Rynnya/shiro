@@ -5,6 +5,7 @@ for /f "tokens=*" %%a in ('where vcpkg.exe') do set VCPKG_ROOT=%%~dpa
 if "%VCPKG_ROOT%"=="" (
     echo === UNABLE TO FIND vcpkg.exe ===
     echo Please make sure that you have installed vcpkg.exe, run `vcpkg integrate install` and placed the vcpkg root into your PATH
+    pause
     exit
 )
 
@@ -19,6 +20,8 @@ pushd "%~dp0"
         git clone "https://github.com/rbock/sqlpp11.git"
 
         pushd sqlpp11
+            git apply ../sqlpp11.patch
+
             mkdir build
             cd build
 
@@ -33,3 +36,5 @@ pushd "%~dp0"
         cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true ..
     popd
 popd
+
+pause

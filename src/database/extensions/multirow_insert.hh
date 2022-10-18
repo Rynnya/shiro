@@ -74,7 +74,7 @@ namespace sqlpp {
         multirow_insert_with_columns<Columns...>& set(Values... values) {
             static_assert(sizeof...(Columns) == sizeof...(Values), "amount of values must be same as amount of columns");
             // ?: Is there must be some checks for value types?
-            values_.push_back(multirow_insert_object_t<wrap_operand_t<Values>...>(values...));
+            values_.push_back(std::move(multirow_insert_object_t<wrap_operand_t<Values>...>(values...)));
 
             return *this;
         }

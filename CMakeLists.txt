@@ -58,7 +58,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # These should already be setup from the "windows_setup_build" script
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DNOMINMAX /UIN")
     include_directories("external/sqlpp11/include")
-    include_directories("external/sqlpp11-connector-mysql/include")
 
     find_path(MYSQL_INCLUDE_DIR NAMES mysql.h PATH_SUFFIXES mysql)
     include_directories("${MYSQL_INCLUDE_DIR}")
@@ -135,14 +134,10 @@ set(CMAKE_LINK_LIBS ${CMAKE_LINK_LIBS} cpp_redis tacopie)
 
 if (WIN32)
     set(CMAKE_LINK_LIBS libmysql pdh OpenSSL::Crypto ${CMAKE_LINK_LIBS})
-    
-    link_directories("external/sqlpp11-connector-mysql/build/src")
-    set(CMAKE_LINK_LIBS optimized "Release/sqlpp-mysql" ${CMAKE_LINK_LIBS})
-    set(CMAKE_LINK_LIBS debug "Debug/sqlpp-mysql" ${CMAKE_LINK_LIBS})
 elseif (APPLE)
-    set(CMAKE_LINK_LIBS dl sqlpp-mysql mysqlclient crypto stdc++fs maxminddb ${CMAKE_LINK_LIBS})
+    set(CMAKE_LINK_LIBS dl mysqlclient crypto stdc++fs maxminddb ${CMAKE_LINK_LIBS})
 elseif (UNIX) # Linux
-    set(CMAKE_LINK_LIBS dl sqlpp-mysql mysqlclient crypto stdc++fs maxminddb ${CMAKE_LINK_LIBS})
+    set(CMAKE_LINK_LIBS dl mysqlclient crypto stdc++fs maxminddb ${CMAKE_LINK_LIBS})
 endif()
 
 include_directories(${CURL_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR} ${HinnantDate_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS} ${LIBLZMA_INCLUDE_DIRS})
