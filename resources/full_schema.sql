@@ -570,7 +570,6 @@ CREATE TABLE `users` (
   `background` text DEFAULT NULL,
   `status` text DEFAULT NULL,
   `notes` text DEFAULT NULL,
-  `last_session` text NOT NULL,
   `is_public` tinyint(1) NOT NULL DEFAULT 1,
   `is_relax` tinyint(1) NOT NULL DEFAULT 0,
   `favourite_mode` tinyint(2) NOT NULL DEFAULT 0,

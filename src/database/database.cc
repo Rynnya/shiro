@@ -97,9 +97,9 @@ void shiro::database::pool::destroy() {
 
 void shiro::database::pool::push(shiro::database::connection::handle_t&& handle) {
     std::unique_lock<std::mutex> lock(mtx);
-    stack.push_back(shiro::database::connection{ std::move(handle) });
+    stack.push_back(std::move(handle));
 }
 
 shiro::database::connection shiro::database::pool::create_new() {
-    return shiro::database::connection{ config };
+    return shiro::database::connection { config };
 }

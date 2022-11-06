@@ -11,8 +11,16 @@ if "%VCPKG_ROOT%"=="" (
 
 echo === VCPKG_ROOT is %VCPKG_ROOT% ===
 
-REM install 64bit packages that we need
-vcpkg install --triplet x64-windows "boost" "curl" "cryptopp" "zlib" "liblzma" "date" "libmysql" "libmaxminddb" "cpp-redis" "tacopie"
+rem install 64bit packages that we need
+vcpkg install --triplet x64-windows "boost" "curl" "cryptopp" "zlib" "liblzma" "date" "libmaxminddb" "cpp-redis" "tacopie"
+
+rem choice between libmysql and libmariadb, "libmariadb provides" will be in output regardless of it current state (already installed or was installed)
+vcpkg install --triplet x64-windows "libmariadb" | findstr /I /C:"libmariadb provides" >nul 2>&1
+
+rem verify if libmariadb is installed, if not - fallback to mysql
+if errorlevel 1 (
+    vcpkg install --triplet x64-windows "libmysql"
+)
 
 pushd "%~dp0"
     pushd external
@@ -26,14 +34,12 @@ pushd "%~dp0"
             cd build
 
             cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_INCLUDE_DIR=%VCPKG_ROOT%\installed\x64-windows\include\ ..
-            cmake --build . --config Release --target sqlpp-mysql
-            cmake --build . --config Debug --target sqlpp-mysql
         popd
     popd
 
     mkdir build
     pushd build
-        cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true ..
+        cmake -Wno-dev -DVCPKG_ROOT=%VCPKG_ROOT% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_EXPORT_COMPILE_COMMANDS=true ..
     popd
 popd
 
